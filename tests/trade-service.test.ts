@@ -3,6 +3,7 @@
  * Repository và chat-service được mock để test thuần business rules.
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Prisma } from "@prisma/client";
 import { ApiError } from "@/server/errors";
 
 vi.mock("@/server/repositories/trades", () => ({
@@ -163,6 +164,26 @@ describe("tradeService.create", () => {
   it("409 TRADE_EXISTS khi listing đã có trade chưa cancelled", async () => {
     vi.mocked(getMembership).mockResolvedValue(conversation as never);
     vi.mocked(tradesRepo.findActiveTradeByListing).mockResolvedValue(makeTrade() as never);
+    await expectApiError(
+      tradeService.create("buyer1", { conversationId: "cv1", finalPriceJpy: 50000 }),
+      "TRADE_EXISTS",
+      409
+    );
+  });
+
+  it("409 TRADE_EXISTS khi DB chặn race condition (2 request lọt qua check cùng lúc)", async () => {
+    // findActiveTradeByListing trả null (chưa thấy trade nào) nhưng insert vẫn
+    // vi phạm partial unique index DB (trades_one_active_per_listing) vì 1
+    // request khác vừa insert trước — đúng kịch bản race giữa check và insert.
+    vi.mocked(getMembership).mockResolvedValue(conversation as never);
+    vi.mocked(tradesRepo.findActiveTradeByListing).mockResolvedValue(null);
+    vi.mocked(tradesRepo.createTradeWithListingLock).mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError("Unique constraint failed", {
+        code: "P2002",
+        clientVersion: "test",
+      })
+    );
+
     await expectApiError(
       tradeService.create("buyer1", { conversationId: "cv1", finalPriceJpy: 50000 }),
       "TRADE_EXISTS",

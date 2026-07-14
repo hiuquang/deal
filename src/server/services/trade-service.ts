@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { ApiError } from "@/server/errors";
 import * as tradesRepo from "@/server/repositories/trades";
 import { getMembership } from "@/server/services/chat-service";
@@ -50,15 +51,27 @@ export async function create(
     throw new ApiError(409, "TRADE_EXISTS", "この出品には既に取引が存在します。");
   }
 
-  const trade = await tradesRepo.createTradeWithListingLock({
-    listingId: conversation.listingId,
-    conversationId: conversation.id,
-    sellerId: conversation.listing.sellerId,
-    buyerId: conversation.buyerId,
-    initiatorId: userId,
-    finalPriceJpy: input.finalPriceJpy,
-    autoCloseAt: new Date(Date.now() + AUTO_CLOSE_DAYS * 24 * 60 * 60 * 1000),
-  });
+  // Check-then-insert ở trên có race window: 2 request gần như đồng thời có
+  // thể cùng lọt qua check. DB có partial unique index (trades_one_active_per_listing,
+  // xem migration add_active_trade_partial_unique_index) chặn ở tầng thấp nhất —
+  // bắt vi phạm đó ở đây và dịch thành cùng lỗi nghiệp vụ TRADE_EXISTS.
+  let trade;
+  try {
+    trade = await tradesRepo.createTradeWithListingLock({
+      listingId: conversation.listingId,
+      conversationId: conversation.id,
+      sellerId: conversation.listing.sellerId,
+      buyerId: conversation.buyerId,
+      initiatorId: userId,
+      finalPriceJpy: input.finalPriceJpy,
+      autoCloseAt: new Date(Date.now() + AUTO_CLOSE_DAYS * 24 * 60 * 60 * 1000),
+    });
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      throw new ApiError(409, "TRADE_EXISTS", "この出品には既に取引が存在します。");
+    }
+    throw e;
+  }
   console.log(
     `[trade] created ${trade.id} on listing ${conversation.listingId} by ${userId} (${input.finalPriceJpy} JPY)`
   );
