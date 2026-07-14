@@ -1,0 +1,81 @@
+# Data model (hợp nhất mọi phase)
+
+14 bảng. Schema thật: `prisma/schema.prisma`. Ghi chú `(P2)`/`(P3)`... = phase bổ sung.
+
+```
+users             id, email(unique), password_hash, display_name,
+                  email_verified_at? (P4 — null = chưa xác nhận),
+                  terms_accepted_version?, terms_accepted_at? (P5),
+                  created_at, updated_at, deleted_at (soft delete)
+
+sessions          id, token(unique), user_id→users, expires_at, created_at, updated_at
+
+cards             id, game(pokemon|onepiece), category(single|box) (P3),
+                  set_code, card_number, language(JP|EN),
+                  name_ja, name_en, rarity, created_at, updated_at
+                  unique(game, set_code, card_number, language)
+                  — BOX là entry catalog với category=box, card_number="BOX"
+
+listings          id, seller_id→users, card_id→cards, condition, image_url,
+                  asking_price_jpy?, trade_type(sell|trade), note?,
+                  station? (P6.1 — 最寄り駅, ≤50 ký tự),
+                  status(active|in_trade|closed|cancelled),
+                  created_at, updated_at
+
+conversations     id, listing_id→listings, buyer_id→users, created_at, updated_at
+                  unique(listing_id, buyer_id)
+                  — từ P3 chỉ được tạo qua purchase_requests connect
+
+messages          id, conversation_id→conversations, sender_id→users, body,
+                  created_at, updated_at
+
+trades            id, listing_id→listings (unique khi chưa cancelled), conversation_id,
+                  seller_id, buyer_id, initiator_id, final_price_jpy,
+                  status(pending|confirmed|self_reported|cancelled),
+                  auto_close_at, confirmed_at?, created_at, updated_at
+
+price_records     id, trade_id(unique)→trades, card_id→cards, condition,
+                  price_jpy, reliability(confirmed|self_reported),
+                  flagged BOOLEAN default false (P2), traded_at,
+                  created_at, updated_at
+                  ── KHÔNG có cột user nào: ẩn danh từ tầng schema.
+                     Denormalize card_id/condition từ listing để query giá
+                     không phải join qua trades/listings — bảng an toàn để
+                     public/export cho AI.
+
+ratings (P2)      id, trade_id→trades, rater_id→users, ratee_id→users,
+                  score(1–5), comment?, created_at, updated_at
+                  unique(trade_id, rater_id) — mỗi bên 1 lần/trade
+                  "revealed" = trade đủ 2 rating (derived, không lưu)
+
+reports (P2)      id, reporter_id→users, reported_user_id→users,
+                  listing_id?→listings, reason(10–500 ký tự), created_at, updated_at
+
+comments (P3)     id, listing_id→listings, user_id→users, body(1–500 ký tự),
+                  created_at, updated_at
+
+purchase_requests id, listing_id→listings, buyer_id→users,
+(P3)              status(pending|connected), created_at, updated_at
+                  unique(listing_id, buyer_id)
+
+email_tokens (P4) id, user_id→users, token(unique), type(verify|reset),
+                  expires_at (verify 24h / reset 1h), used_at? (dùng 1 lần)
+
+email_outbox (P4) hộp thư dev — chỉ dùng khi chưa cấu hình SMTP (xem email.md)
+```
+
+## Giá trị enum quan trọng
+
+- `condition` thẻ lẻ: `PSA10 | PSA9 | BGS95 | RAW_NM | RAW_LP | RAW_MP | RAW_HP | DAMAGED`; BOX: `BOX_SHRINK | BOX_NO_SHRINK`. **Condition phải khớp `category` của card** → `400 CONDITION_MISMATCH`.
+- `listings.status`: `active → in_trade` (có trade pending) `→ closed` (trade chốt); `cancelled` (chủ hủy) — hủy trade pending thì mở lại `active`.
+- `trades.status`: `pending → confirmed | self_reported | cancelled`.
+
+## Giá trị derived (KHÔNG lưu cột)
+
+- `contributionCount` của user = COUNT(trades WHERE status IN (confirmed, self_reported) AND user là buyer/seller).
+- `revealed` của rating = trade có đủ 2 rating.
+- `ratingAvg` của user = trung bình score các rating **đã reveal** nhận được; null nếu chưa có.
+
+## Seed (`prisma/seed.ts`)
+
+5 users (verified + đã accept terms sẵn — demo không bị chặn), ~38 thẻ + 8 box, 10 listing active, 66 price records. Idempotent (`npm run db:seed`). **Nhớ sync `TERMS_VERSION` hardcode trong seed khi đổi version** (xem [business-rules.md](business-rules.md)).

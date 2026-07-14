@@ -1,0 +1,401 @@
+// Từ điển 3 ngôn ngữ: ja (mặc định) / vi / en.
+// Placeholder dạng {name} được thay bằng t(key, { name: ... }).
+export type Locale = "ja" | "vi" | "en";
+
+type Entry = Record<Locale, string>;
+
+export const MESSAGES = {
+  // ---- Nav / chung ----
+  "nav.tagline": { ja: "手数料ゼロのTCGトレード", vi: "Trade thẻ TCG phí 0%", en: "Zero-fee TCG trading" },
+  "nav.browse": { ja: "さがす", vi: "Tìm kiếm", en: "Browse" },
+  "nav.sell": { ja: "出品する", vi: "Đăng bán", en: "Sell" },
+  "nav.chat": { ja: "チャット", vi: "Chat", en: "Chat" },
+  "nav.login": { ja: "ログイン", vi: "Đăng nhập", en: "Log in" },
+  "nav.register": { ja: "新規登録", vi: "Đăng ký", en: "Sign up" },
+  "nav.logout": { ja: "ログアウト", vi: "Đăng xuất", en: "Log out" },
+  "common.loading": { ja: "読み込み中…", vi: "Đang tải…", en: "Loading…" },
+  "common.loadError": { ja: "読み込みに失敗しました。", vi: "Tải dữ liệu thất bại.", en: "Failed to load." },
+  "common.error": { ja: "エラーが発生しました。", vi: "Đã xảy ra lỗi.", en: "Something went wrong." },
+  "common.negotiable": { ja: "要相談", vi: "Thương lượng", en: "Negotiable" },
+  "footer.tagline": {
+    ja: "DEAL — 手数料ゼロ・P2P TCGトレードプラットフォーム（MVP）",
+    vi: "DEAL — Nền tảng trade thẻ TCG P2P, phí 0% (MVP)",
+    en: "DEAL — Zero-fee P2P TCG trading platform (MVP)",
+  },
+  "legal.terms": { ja: "利用規約", vi: "Điều khoản sử dụng", en: "Terms of Service" },
+  "legal.privacy": { ja: "プライバシーポリシー", vi: "Chính sách bảo mật", en: "Privacy Policy" },
+
+  // ---- Game / loại / condition / trạng thái ----
+  "game.pokemon": { ja: "ポケモンカード", vi: "Thẻ Pokémon", en: "Pokémon TCG" },
+  "game.onepiece": { ja: "ワンピースカード", vi: "Thẻ One Piece", en: "One Piece TCG" },
+  "cat.single": { ja: "シングルカード", vi: "Thẻ lẻ", en: "Single card" },
+  "cat.box": { ja: "BOX（未開封）", vi: "BOX (chưa khui)", en: "Sealed box" },
+  "cond.PSA10": { ja: "PSA10", vi: "PSA10", en: "PSA 10" },
+  "cond.PSA9": { ja: "PSA9", vi: "PSA9", en: "PSA 9" },
+  "cond.BGS95": { ja: "BGS9.5", vi: "BGS9.5", en: "BGS 9.5" },
+  "cond.RAW_NM": { ja: "素体・美品 (NM)", vi: "Thẻ trần - đẹp (NM)", en: "Raw - Near Mint" },
+  "cond.RAW_LP": { ja: "素体・軽い傷 (LP)", vi: "Thẻ trần - xước nhẹ (LP)", en: "Raw - Lightly Played" },
+  "cond.RAW_MP": { ja: "素体・傷あり (MP)", vi: "Thẻ trần - có xước (MP)", en: "Raw - Moderately Played" },
+  "cond.RAW_HP": { ja: "素体・強い傷 (HP)", vi: "Thẻ trần - xước nặng (HP)", en: "Raw - Heavily Played" },
+  "cond.DAMAGED": { ja: "ダメージ品", vi: "Hư hại", en: "Damaged" },
+  "cond.BOX_SHRINK": { ja: "シュリンク付き未開封", vi: "Nguyên seal (shrink)", en: "Sealed with shrink" },
+  "cond.BOX_NO_SHRINK": { ja: "シュリンクなし未開封", vi: "Chưa khui, mất shrink", en: "Sealed, no shrink" },
+  "lstatus.active": { ja: "出品中", vi: "Đang bán", en: "Active" },
+  "lstatus.in_trade": { ja: "取引中", vi: "Đang giao dịch", en: "In trade" },
+  "lstatus.closed": { ja: "取引成立", vi: "Đã bán", en: "Sold" },
+  "lstatus.cancelled": { ja: "キャンセル", vi: "Đã hủy", en: "Cancelled" },
+  "tstatus.pending": { ja: "相手の確認待ち", vi: "Chờ đối phương xác nhận", en: "Awaiting confirmation" },
+  "tstatus.confirmed": { ja: "成立（両者確認済み）", vi: "Hoàn tất (2 bên xác nhận)", en: "Completed (both confirmed)" },
+  "tstatus.self_reported": { ja: "成立（自己申告）", vi: "Hoàn tất (tự khai)", en: "Completed (self-reported)" },
+  "tstatus.cancelled": { ja: "キャンセル", vi: "Đã hủy", en: "Cancelled" },
+  "ttype.sell": { ja: "販売", vi: "Bán", en: "Sale" },
+  "ttype.trade": { ja: "トレード", vi: "Trao đổi", en: "Trade" },
+  "rel.confirmed": { ja: "両者確認", vi: "2 bên xác nhận", en: "Both confirmed" },
+  "rel.self_reported": { ja: "自己申告", vi: "Tự khai", en: "Self-reported" },
+
+  // ---- Trang chủ ----
+  "home.heroTitle": {
+    ja: "手数料ゼロで、カードを直接トレード。",
+    vi: "Trade thẻ trực tiếp, hoàn toàn miễn phí.",
+    en: "Trade cards directly, with zero fees.",
+  },
+  "home.heroDesc": {
+    ja: "取引を成立させてデータを提供すると、みんなの実際の成約価格が見られます。出品も購入も手数料は一切かかりません。",
+    vi: "Hoàn tất giao dịch để đóng góp dữ liệu và mở khóa giá bán thực tế của cộng đồng. Đăng bán và mua đều không mất phí.",
+    en: "Complete trades to contribute data and unlock real community sale prices. Listing and buying are completely free.",
+  },
+  "home.tabAll": { ja: "すべて", vi: "Tất cả", en: "All" },
+  "home.tabPokemon": { ja: "ポケモン", vi: "Pokémon", en: "Pokémon" },
+  "home.tabOnepiece": { ja: "ワンピース", vi: "One Piece", en: "One Piece" },
+  "home.tabSingle": { ja: "シングル", vi: "Thẻ lẻ", en: "Singles" },
+  "home.tabBox": { ja: "BOX", vi: "BOX", en: "Boxes" },
+  "home.count": { ja: "{n}件の出品", vi: "{n} tin đăng", en: "{n} listings" },
+  "home.empty": {
+    ja: "出品がまだありません。最初の出品者になりましょう！",
+    vi: "Chưa có tin đăng nào. Hãy là người đăng bán đầu tiên!",
+    en: "No listings yet. Be the first to sell!",
+  },
+
+  // ---- Auth ----
+  "auth.loginTitle": { ja: "ログイン", vi: "Đăng nhập", en: "Log in" },
+  "auth.registerTitle": { ja: "新規登録（無料）", vi: "Đăng ký (miễn phí)", en: "Sign up (free)" },
+  "auth.displayName": { ja: "表示名", vi: "Tên hiển thị", en: "Display name" },
+  "auth.email": { ja: "メールアドレス", vi: "Địa chỉ email", en: "Email address" },
+  "auth.password": { ja: "パスワード", vi: "Mật khẩu", en: "Password" },
+  "auth.passwordHint": { ja: "パスワード（8文字以上）", vi: "Mật khẩu (từ 8 ký tự)", en: "Password (8+ characters)" },
+  "auth.forgot": { ja: "パスワードをお忘れですか？", vi: "Quên mật khẩu?", en: "Forgot password?" },
+  "auth.submitLogin": { ja: "ログイン", vi: "Đăng nhập", en: "Log in" },
+  "auth.submitRegister": { ja: "登録する", vi: "Đăng ký", en: "Sign up" },
+  "auth.sending": { ja: "送信中…", vi: "Đang gửi…", en: "Sending…" },
+  "auth.agreePrefix": { ja: "", vi: "Tôi đồng ý với ", en: "I agree to the " },
+  "auth.agreeMid": { ja: "と", vi: " và ", en: " and " },
+  "auth.agreeSuffix": { ja: "に同意します", vi: "", en: "" },
+  "auth.noAccount": { ja: "アカウントがない方は", vi: "Chưa có tài khoản?", en: "Don't have an account?" },
+  "auth.haveAccount": { ja: "既にアカウントをお持ちの方は", vi: "Đã có tài khoản?", en: "Already have an account?" },
+
+  // ---- Đăng tin ----
+  "sell.loginPrompt": { ja: "出品にはログインが必要です。", vi: "Cần đăng nhập để đăng bán.", en: "Log in to create a listing." },
+  "sell.title": { ja: "カードを出品する", vi: "Đăng bán thẻ", en: "Create a listing" },
+  "sell.game": { ja: "ゲーム", vi: "Game", en: "Game" },
+  "sell.category": { ja: "種類", vi: "Loại sản phẩm", en: "Product type" },
+  "sell.selectCard": { ja: "カード（カタログから選択）", vi: "Thẻ (chọn từ danh mục)", en: "Card (pick from catalog)" },
+  "sell.selectBox": { ja: "BOX（カタログから選択）", vi: "BOX (chọn từ danh mục)", en: "Box (pick from catalog)" },
+  "sell.condition": { ja: "状態（必須）", vi: "Tình trạng (bắt buộc)", en: "Condition (required)" },
+  "sell.photo": { ja: "実物写真（必須・5MBまで）", vi: "Ảnh thật (bắt buộc, tối đa 5MB)", en: "Photo of actual item (required, max 5MB)" },
+  "sell.photoPreviewAlt": { ja: "アップロード画像のプレビュー", vi: "Xem trước ảnh tải lên", en: "Upload preview" },
+  "sell.tradeType": { ja: "取引タイプ", vi: "Hình thức", en: "Listing type" },
+  "sell.price": { ja: "希望価格（円・任意）", vi: "Giá mong muốn (¥, không bắt buộc)", en: "Asking price (JPY, optional)" },
+  "sell.priceExample": { ja: "例: 50000", vi: "VD: 50000", en: "e.g. 50000" },
+  "sell.station": {
+    ja: "最寄り駅（手渡し用・任意）",
+    vi: "Ga gần nhất (để hẹn giao trực tiếp, không bắt buộc)",
+    en: "Nearest station (for in-person handoff, optional)",
+  },
+  "sell.stationPlaceholder": {
+    ja: "例: 新宿駅、梅田駅",
+    vi: "VD: 新宿駅 (ga Shinjuku), 梅田駅 (ga Umeda)",
+    en: "e.g. Shinjuku Sta., Umeda Sta.",
+  },
+  "detail.station": { ja: "最寄り駅", vi: "Ga gần nhất", en: "Nearest station" },
+  "sell.note": { ja: "説明（任意・500文字まで）", vi: "Mô tả (không bắt buộc, tối đa 500 ký tự)", en: "Description (optional, max 500 chars)" },
+  "sell.notePlaceholder": {
+    ja: "白かけ・横線の有無、保管状態など",
+    vi: "Tình trạng cạnh thẻ, vết xước, cách bảo quản...",
+    en: "Edge wear, scratches, storage condition...",
+  },
+  "sell.submit": { ja: "出品する（手数料ゼロ）", vi: "Đăng bán (phí 0%)", en: "List it (zero fee)" },
+  "sell.submitting": { ja: "出品中…", vi: "Đang đăng…", en: "Listing…" },
+  "sell.errNoCard": { ja: "カードをカタログから選択してください。", vi: "Hãy chọn thẻ từ danh mục.", en: "Please pick a card from the catalog." },
+  "sell.errNoPhoto": { ja: "カードの実物写真をアップロードしてください。", vi: "Hãy tải lên ảnh thật của thẻ.", en: "Please upload a photo of the actual item." },
+  "sell.errSubmit": { ja: "出品に失敗しました。", vi: "Đăng bán thất bại.", en: "Failed to create listing." },
+  "sell.searchCard": {
+    ja: "カード名・セット番号で検索（例: リザードン, OP01）",
+    vi: "Tìm theo tên thẻ / mã set (VD: Charizard, OP01)",
+    en: "Search by card name / set code (e.g. Charizard, OP01)",
+  },
+  "sell.searchBox": {
+    ja: "BOX名・セット番号で検索（例: 151, OP01）",
+    vi: "Tìm theo tên BOX / mã set (VD: 151, OP01)",
+    en: "Search by box name / set code (e.g. 151, OP01)",
+  },
+  "sell.searchEmpty": {
+    ja: "見つかりません。カタログにあるカードのみ出品できます。",
+    vi: "Không tìm thấy. Chỉ đăng bán được sản phẩm có trong danh mục.",
+    en: "No results. Only items in the catalog can be listed.",
+  },
+
+  // ---- Chi tiết listing ----
+  "detail.condition": { ja: "状態", vi: "Tình trạng", en: "Condition" },
+  "detail.listedOn": { ja: "出品日", vi: "Ngày đăng", en: "Listed on" },
+  "detail.desc": { ja: "説明", vi: "Mô tả", en: "Description" },
+  "detail.cancel": { ja: "出品を取り下げる", vi: "Gỡ tin đăng", en: "Withdraw listing" },
+  "detail.viewPrices": { ja: "この商品の相場データを見る", vi: "Xem dữ liệu giá của sản phẩm này", en: "View price data for this item" },
+  "detail.photoAlt": { ja: "{name}の実物写真", vi: "Ảnh thật của {name}", en: "Photo of {name}" },
+
+  // ---- Seller summary / report ----
+  "seller.noRating": { ja: "評価なし", vi: "Chưa có đánh giá", en: "No ratings yet" },
+  "seller.ratingCount": { ja: "（{n}件の評価）", vi: " ({n} đánh giá)", en: " ({n} ratings)" },
+  "seller.trades": { ja: "成立取引 {n}件", vi: "{n} giao dịch hoàn tất", en: "{n} completed trades" },
+  "seller.report": { ja: "通報する", vi: "Báo cáo", en: "Report" },
+  "seller.reported": { ja: "通報を受け付けました", vi: "Đã ghi nhận báo cáo", en: "Report received" },
+  "seller.reportPlaceholder": {
+    ja: "通報理由（10文字以上）: 詐欺の疑い、規約違反など",
+    vi: "Lý do báo cáo (từ 10 ký tự): nghi lừa đảo, vi phạm điều khoản...",
+    en: "Reason (10+ chars): suspected fraud, terms violation...",
+  },
+  "seller.reportSend": { ja: "通報を送信", vi: "Gửi báo cáo", en: "Send report" },
+  "seller.reportFail": { ja: "通報に失敗しました。", vi: "Gửi báo cáo thất bại.", en: "Failed to send report." },
+
+  // ---- Purchase requests ----
+  "buy.loginPrompt": { ja: "購入希望を送るには", vi: "Để gửi yêu cầu mua, hãy", en: "To send a purchase request, please" },
+  "buy.loginLink": { ja: "ログイン", vi: "đăng nhập", en: "log in" },
+  "buy.loginSuffix": { ja: "してください。", vi: ".", en: "." },
+  "buy.send": { ja: "購入希望を送る", vi: "Gửi yêu cầu mua", en: "Send purchase request" },
+  "buy.sent": {
+    ja: "✓ 購入希望を送信済み — 出品者が連携すると個別チャットが開きます。",
+    vi: "✓ Đã gửi yêu cầu mua — khi người bán kết nối, chat riêng sẽ mở.",
+    en: "✓ Request sent — a private chat opens once the seller connects with you.",
+  },
+  "buy.connectedCta": { ja: "連携済み — チャットで交渉する", vi: "Đã kết nối — vào chat thương lượng", en: "Connected — open chat" },
+  "buy.listTitle": { ja: "購入希望", vi: "Yêu cầu mua", en: "Purchase requests" },
+  "buy.listCount": { ja: "({n}件)", vi: "({n})", en: "({n})" },
+  "buy.none": {
+    ja: "まだ購入希望はありません。購入希望が届くとここに表示されます。",
+    vi: "Chưa có yêu cầu mua nào. Khi có, danh sách sẽ hiện ở đây.",
+    en: "No purchase requests yet. They will appear here.",
+  },
+  "buy.connect": { ja: "連携する", vi: "Kết nối", en: "Connect" },
+  "buy.toChat": { ja: "チャットへ", vi: "Vào chat", en: "Open chat" },
+  "buy.tradesShort": { ja: "取引{n}件", vi: "{n} giao dịch", en: "{n} trades" },
+
+  // ---- Comments ----
+  "cmt.title": { ja: "コメント", vi: "Bình luận", en: "Comments" },
+  "cmt.none": {
+    ja: "まだコメントはありません。気軽に質問してみましょう。",
+    vi: "Chưa có bình luận. Cứ thoải mái đặt câu hỏi nhé!",
+    en: "No comments yet. Feel free to ask a question!",
+  },
+  "cmt.placeholder": {
+    ja: "コメントを書く（値下げ交渉、状態の質問など）",
+    vi: "Viết bình luận (trả giá, hỏi tình trạng...)",
+    en: "Write a comment (haggle, ask about condition...)",
+  },
+  "cmt.post": { ja: "投稿", vi: "Gửi", en: "Post" },
+  "cmt.postFail": { ja: "投稿に失敗しました。", vi: "Gửi bình luận thất bại.", en: "Failed to post." },
+  "cmt.loginPrefix": { ja: "コメントするには", vi: "Để bình luận, hãy", en: "To comment, please" },
+
+  // ---- Chat ----
+  "chat.loginPrompt": { ja: "チャットにはログインが必要です。", vi: "Cần đăng nhập để dùng chat.", en: "Log in to use chat." },
+  "chat.none": {
+    ja: "チャットはまだありません。気になる出品からチャットを始めましょう。",
+    vi: "Chưa có cuộc chat nào. Gửi yêu cầu mua ở tin đăng bạn thích nhé.",
+    en: "No chats yet. Send a purchase request on a listing you like.",
+  },
+  "chat.selectPrompt": { ja: "左の一覧からチャットを選択してください", vi: "Chọn một cuộc chat ở danh sách bên trái", en: "Select a chat from the list" },
+  "chat.partner": { ja: "相手: {name}", vi: "Đối phương: {name}", en: "With: {name}" },
+  "chat.back": { ja: "チャット一覧に戻る", vi: "Quay lại danh sách chat", en: "Back to chats" },
+  "chat.firstMsg": {
+    ja: "最初のメッセージを送って交渉を始めましょう。",
+    vi: "Gửi tin nhắn đầu tiên để bắt đầu thương lượng.",
+    en: "Send the first message to start negotiating.",
+  },
+  "chat.placeholder": { ja: "メッセージを入力…", vi: "Nhập tin nhắn…", en: "Type a message…" },
+  "chat.send": { ja: "送信", vi: "Gửi", en: "Send" },
+
+  // ---- Trade panel ----
+  "trade.explain": {
+    ja: "取引がまとまったら、成約金額を入力して完了報告してください。相手が同じ金額で確認すると相場データに登録されます（トレードの場合は換算額）。",
+    vi: "Khi đã chốt kèo, nhập giá chốt và báo hoàn tất. Đối phương xác nhận cùng số tiền thì dữ liệu giá được ghi nhận (trao đổi thẻ thì nhập giá trị quy đổi).",
+    en: "Once you have a deal, enter the final price and report completion. When the other party confirms the same amount, it's recorded as price data (for swaps, enter the equivalent value).",
+  },
+  "trade.pricePlaceholder": { ja: "成約金額（円）", vi: "Giá chốt (¥)", en: "Final price (JPY)" },
+  "trade.report": { ja: "取引完了を報告", vi: "Báo hoàn tất giao dịch", en: "Report completion" },
+  "trade.reportedAmount": { ja: "報告済み金額: {price}", vi: "Đã khai giá: {price}", en: "Reported amount: {price}" },
+  "trade.incomingReport": { ja: "取引完了の報告があります", vi: "Có báo cáo hoàn tất giao dịch", en: "A completion report has arrived" },
+  "trade.waiting": {
+    ja: "相手の確認を待っています。{date}までに確認がない場合、自己申告データとして自動確定します。",
+    vi: "Đang chờ đối phương xác nhận. Nếu đến {date} không phản hồi, giao dịch tự chốt dạng tự khai.",
+    en: "Waiting for the other party. If not confirmed by {date}, it auto-completes as self-reported.",
+  },
+  "trade.confirmExplain": {
+    ja: "相手が取引完了を報告しました。合意した金額を入力して確認してください（金額が一致すると確定します）。",
+    vi: "Đối phương đã báo hoàn tất. Hãy tự nhập số tiền hai bên đã thỏa thuận để xác nhận (khớp giá thì giao dịch chốt).",
+    en: "The other party reported completion. Enter the agreed amount to confirm (it completes when the amounts match).",
+  },
+  "trade.confirm": { ja: "確認する", vi: "Xác nhận", en: "Confirm" },
+  "trade.cancel": { ja: "取引をキャンセルする", vi: "Hủy giao dịch", en: "Cancel trade" },
+  "trade.done": { ja: "成約: {price}", vi: "Đã chốt: {price}", en: "Completed: {price}" },
+  "trade.thanks": {
+    ja: "🎉 データ提供ありがとうございます！相場データが閲覧できるようになりました。",
+    vi: "🎉 Cảm ơn bạn đã đóng góp dữ liệu! Bạn đã mở khóa xem dữ liệu giá.",
+    en: "🎉 Thanks for contributing data! Price data is now unlocked for you.",
+  },
+  "trade.viewPrices": { ja: "このカードの相場を見る", vi: "Xem giá thẻ này", en: "View this card's prices" },
+
+  // ---- Rating ----
+  "rate.title": { ja: "取引の評価（相互評価）", vi: "Đánh giá giao dịch (2 chiều)", en: "Trade rating (mutual)" },
+  "rate.aria": { ja: "評価", vi: "Đánh giá", en: "Rating" },
+  "rate.commentPlaceholder": { ja: "コメント（任意）", vi: "Nhận xét (không bắt buộc)", en: "Comment (optional)" },
+  "rate.submit": { ja: "評価を送信", vi: "Gửi đánh giá", en: "Submit rating" },
+  "rate.fail": { ja: "評価に失敗しました。", vi: "Gửi đánh giá thất bại.", en: "Failed to submit rating." },
+  "rate.blindNote": {
+    ja: "評価は相手も評価するまで互いに公開されません（報復評価の防止）。",
+    vi: "Đánh giá được giữ kín đến khi cả hai bên đều đánh giá (chống trả đũa).",
+    en: "Ratings stay hidden until both sides have rated (prevents retaliation).",
+  },
+  "rate.doneWaiting": { ja: "✓ 評価済み（{stars}）— 相手の評価後に互いに公開されます。", vi: "✓ Đã đánh giá ({stars}) — sẽ công khai khi đối phương đánh giá xong.", en: "✓ Rated ({stars}) — revealed once the other party rates too." },
+  "rate.mine": { ja: "あなたの評価:", vi: "Đánh giá của bạn:", en: "Your rating:" },
+  "rate.theirs": { ja: "相手からの評価:", vi: "Đối phương đánh giá:", en: "Their rating:" },
+
+  // ---- Prices ----
+  "price.allConditions": { ja: "すべての状態", vi: "Mọi tình trạng", en: "All conditions" },
+  "price.note": {
+    ja: "※ 出品時の希望価格ではなく、実際の成約価格のみ。取引当事者は匿名です。⚠付きは相場から大きく外れた価格で、統計・グラフから除外しています。",
+    vi: "※ Chỉ hiển thị giá chốt thực tế (không phải giá rao). Người giao dịch được ẩn danh. Mục có ⚠ là giá lệch bất thường, đã loại khỏi thống kê & biểu đồ.",
+    en: "※ Actual sale prices only (not asking prices). Parties are anonymous. ⚠ marks outliers excluded from stats & chart.",
+  },
+  "price.count": { ja: "成約件数", vi: "Số giao dịch", en: "Sales" },
+  "price.median": { ja: "中央値", vi: "Trung vị", en: "Median" },
+  "price.min": { ja: "最安値", vi: "Thấp nhất", en: "Lowest" },
+  "price.max": { ja: "最高値", vi: "Cao nhất", en: "Highest" },
+  "price.thDate": { ja: "成約日", vi: "Ngày chốt", en: "Date" },
+  "price.thCondition": { ja: "状態", vi: "Tình trạng", en: "Condition" },
+  "price.thPrice": { ja: "成約価格", vi: "Giá chốt", en: "Price" },
+  "price.thReliability": { ja: "信頼度", vi: "Độ tin cậy", en: "Reliability" },
+  "price.noData": { ja: "この条件の成約データはまだありません。", vi: "Chưa có dữ liệu giá cho điều kiện này.", en: "No sale data for this filter yet." },
+  "price.chartNeed": { ja: "グラフ表示には2件以上のデータが必要です。", vi: "Cần từ 2 giao dịch để vẽ biểu đồ.", en: "At least 2 data points are needed for the chart." },
+  "price.chartAria": { ja: "成約価格の推移グラフ", vi: "Biểu đồ diễn biến giá chốt", en: "Sale price trend chart" },
+  "price.flagTip": { ja: "外れ値の可能性 — 統計・グラフから除外", vi: "Nghi giá bất thường — đã loại khỏi thống kê/biểu đồ", en: "Possible outlier — excluded from stats/chart" },
+  "lock.title": { ja: "相場データはGive-to-Getで開放", vi: "Dữ liệu giá mở khóa theo cơ chế Give-to-Get", en: "Price data unlocks via Give-to-Get" },
+  "lock.desc": {
+    ja: "このカードには {n}件の成約データ が登録されています。閲覧するには、まず1件の取引を成立させてデータを提供してください。",
+    vi: "Sản phẩm này đang có {n} giao dịch được ghi nhận. Để xem, hãy hoàn tất ít nhất 1 giao dịch để đóng góp dữ liệu.",
+    en: "This item has {n} recorded sales. Complete at least 1 trade to contribute data and unlock viewing.",
+  },
+  "lock.note": {
+    ja: "DEALは手数料ゼロ。その代わり、みんなが提供した実際の成約価格で透明な相場をつくっています。",
+    vi: "DEAL miễn phí hoàn toàn — đổi lại, cộng đồng cùng đóng góp giá chốt thật để xây mặt bằng giá minh bạch.",
+    en: "DEAL is zero-fee. In return, everyone contributes real sale prices to build transparent market data.",
+  },
+  "lock.ctaBrowse": { ja: "出品をさがして取引を始める", vi: "Tìm tin đăng và bắt đầu giao dịch", en: "Browse listings and start trading" },
+  "lock.ctaRegister": { ja: "無料で登録して始める", vi: "Đăng ký miễn phí để bắt đầu", en: "Sign up free to get started" },
+
+  // ---- Trang cá nhân ----
+  "me.loginPrompt": { ja: "マイページにはログインが必要です。", vi: "Cần đăng nhập để xem trang cá nhân.", en: "Log in to view your page." },
+  "me.contribution": { ja: "データ提供数", vi: "Số lần đóng góp dữ liệu", en: "Data contributions" },
+  "me.canView": { ja: "✓ 相場データ閲覧OK", vi: "✓ Được xem dữ liệu giá", en: "✓ Price data unlocked" },
+  "me.locked": { ja: "🔒 取引1件で相場データ開放", vi: "🔒 Hoàn tất 1 giao dịch để mở khóa giá", en: "🔒 Complete 1 trade to unlock prices" },
+  "me.noRatingYet": { ja: "評価なし（相互評価後に公開）", vi: "Chưa có đánh giá (công khai sau khi 2 bên đánh giá)", en: "No ratings (revealed after mutual rating)" },
+  "me.trades": { ja: "取引履歴", vi: "Lịch sử giao dịch", en: "Trade history" },
+  "me.noTrades": { ja: "取引はまだありません。", vi: "Chưa có giao dịch nào.", en: "No trades yet." },
+  "me.listings": { ja: "自分の出品", vi: "Tin đăng của tôi", en: "My listings" },
+  "me.noListings": { ja: "出品はまだありません。", vi: "Chưa có tin đăng nào.", en: "No listings yet." },
+  "me.with": { ja: "{name}と・", vi: "với {name} · ", en: "with {name} · " },
+
+  // ---- Verify banner / verify page ----
+  "banner.msg": {
+    ja: "宛の確認メールをご確認ください。確認完了まで出品・購入・コメントはできません。",
+    vi: " — hãy kiểm tra email xác nhận. Chưa xác nhận thì không thể đăng bán / mua / bình luận.",
+    en: " — please check your verification email. You can't sell, buy or comment until verified.",
+  },
+  "banner.resend": { ja: "確認メールを再送する", vi: "Gửi lại email xác nhận", en: "Resend verification email" },
+  "banner.resent": { ja: "✓ 再送しました", vi: "✓ Đã gửi lại", en: "✓ Sent" },
+  "verify.working": { ja: "確認中…", vi: "Đang xác nhận…", en: "Verifying…" },
+  "verify.okTitle": { ja: "メールアドレスを確認しました", vi: "Đã xác nhận email thành công", en: "Email verified" },
+  "verify.okDesc": {
+    ja: "これで出品・購入・コメントなどすべての機能が使えます。",
+    vi: "Giờ bạn dùng được mọi tính năng: đăng bán, mua, bình luận…",
+    en: "You can now use all features: selling, buying, commenting…",
+  },
+  "verify.okCta": { ja: "さっそく出品をさがす", vi: "Khám phá tin đăng ngay", en: "Browse listings now" },
+  "verify.errTitle": { ja: "確認できませんでした", vi: "Xác nhận thất bại", en: "Verification failed" },
+  "verify.badLink": { ja: "リンクが正しくありません。", vi: "Đường link không hợp lệ.", en: "Invalid link." },
+  "verify.home": { ja: "ホームへ戻る", vi: "Về trang chủ", en: "Back to home" },
+
+  // ---- Forgot / reset ----
+  "forgot.title": { ja: "パスワードをお忘れですか？", vi: "Quên mật khẩu?", en: "Forgot your password?" },
+  "forgot.desc": {
+    ja: "登録したメールアドレスを入力してください。パスワード再設定リンクをお送りします。",
+    vi: "Nhập email đã đăng ký, chúng tôi sẽ gửi link đặt lại mật khẩu.",
+    en: "Enter your registered email and we'll send a reset link.",
+  },
+  "forgot.submit": { ja: "再設定リンクを送信", vi: "Gửi link đặt lại", en: "Send reset link" },
+  "forgot.sentTitle": { ja: "メールを送信しました", vi: "Đã gửi email", en: "Email sent" },
+  "forgot.sentDesc": {
+    ja: "宛にパスワード再設定リンクを送信しました（登録済みの場合）。リンクの有効期限は1時間です。",
+    vi: " — link đặt lại mật khẩu đã được gửi (nếu email có đăng ký). Link có hạn 1 giờ.",
+    en: " — a reset link was sent (if the email is registered). The link expires in 1 hour.",
+  },
+  "forgot.back": { ja: "ログインへ戻る", vi: "Quay lại đăng nhập", en: "Back to log in" },
+  "forgot.fail": { ja: "送信に失敗しました。", vi: "Gửi thất bại.", en: "Failed to send." },
+  "reset.title": { ja: "新しいパスワードを設定", vi: "Đặt mật khẩu mới", en: "Set a new password" },
+  "reset.new": { ja: "新しいパスワード（8文字以上）", vi: "Mật khẩu mới (từ 8 ký tự)", en: "New password (8+ characters)" },
+  "reset.confirm": { ja: "新しいパスワード（確認）", vi: "Nhập lại mật khẩu mới", en: "Confirm new password" },
+  "reset.mismatch": { ja: "パスワードが一致しません。", vi: "Mật khẩu không khớp.", en: "Passwords don't match." },
+  "reset.submit": { ja: "パスワードを変更する", vi: "Đổi mật khẩu", en: "Change password" },
+  "reset.submitting": { ja: "変更中…", vi: "Đang đổi…", en: "Changing…" },
+  "reset.doneTitle": { ja: "パスワードを変更しました", vi: "Đã đổi mật khẩu", en: "Password changed" },
+  "reset.doneDesc": {
+    ja: "すべての端末からログアウトしました。新しいパスワードでログインしてください。",
+    vi: "Đã đăng xuất khỏi mọi thiết bị. Hãy đăng nhập bằng mật khẩu mới.",
+    en: "All devices have been logged out. Log in with your new password.",
+  },
+  "reset.badLink": {
+    ja: "リンクが正しくありません。メールのリンクからアクセスしてください。",
+    vi: "Link không hợp lệ. Hãy truy cập từ link trong email.",
+    en: "Invalid link. Please use the link from the email.",
+  },
+  "reset.fail": { ja: "再設定に失敗しました。", vi: "Đặt lại thất bại.", en: "Reset failed." },
+
+  // ---- Terms gate ----
+  "gate.title": { ja: "利用規約への同意のお願い", vi: "Vui lòng đồng ý Điều khoản sử dụng", en: "Please accept the Terms of Service" },
+  "gate.desc": {
+    ja: "DEALを続けてご利用いただくには、最新の利用規約とプライバシーポリシーへの同意が必要です。",
+    vi: "Để tiếp tục dùng DEAL, bạn cần đồng ý Điều khoản sử dụng và Chính sách bảo mật mới nhất.",
+    en: "To keep using DEAL, you need to accept the latest Terms of Service and Privacy Policy.",
+  },
+  "gate.point1": {
+    ja: "・DEALは取引の「場」の提供のみを行い、売買の当事者にはなりません",
+    vi: "· DEAL chỉ cung cấp nơi kết nối, không phải một bên mua/bán",
+    en: "· DEAL only provides the marketplace and is not a party to trades",
+  },
+  "gate.point2": {
+    ja: "・代金・商品の受け渡しは当事者間の責任で行います",
+    vi: "· Thanh toán và giao nhận do hai bên tự chịu trách nhiệm",
+    en: "· Payment and delivery are the users' own responsibility",
+  },
+  "gate.point3": {
+    ja: "・成約価格は匿名化され相場データとして公開されます",
+    vi: "· Giá chốt được ẩn danh và công khai làm dữ liệu thị trường",
+    en: "· Sale prices are anonymized and published as market data",
+  },
+  "gate.fulltext": { ja: "全文:", vi: "Bản đầy đủ:", en: "Full text:" },
+  "gate.agreeLabel": {
+    ja: "利用規約とプライバシーポリシーを読み、同意します",
+    vi: "Tôi đã đọc và đồng ý với Điều khoản sử dụng và Chính sách bảo mật",
+    en: "I have read and agree to the Terms of Service and Privacy Policy",
+  },
+  "gate.accept": { ja: "同意して続ける", vi: "Đồng ý và tiếp tục", en: "Accept and continue" },
+} satisfies Record<string, Entry>;
+
+export type MessageKey = keyof typeof MESSAGES;

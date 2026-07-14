@@ -1,0 +1,11 @@
+node_modules/
+.next/
+*.db
+*.db-journal
+.env
+public/uploads/*
+!public/uploads/.gitkeep
+coverage/
+
+# Bản gốc docs đã tách — giữ trên máy làm tham khảo, không cần công khai
+docs/_archive/

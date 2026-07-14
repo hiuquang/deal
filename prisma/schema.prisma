@@ -1,0 +1,284 @@
+// SQLite không hỗ trợ enum trong Prisma → các cột "enum" dùng String,
+// giá trị hợp lệ được ép ở tầng zod (src/server/validation.ts).
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  passwordHash    String    @map("password_hash")
+  displayName     String    @map("display_name")
+  emailVerifiedAt DateTime? @map("email_verified_at") // null = chưa xác nhận email
+  // Phiên bản 利用規約 user đã đồng ý (null/khác bản hiện hành = phải đồng ý lại)
+  termsAcceptedVersion String?   @map("terms_accepted_version")
+  termsAcceptedAt      DateTime? @map("terms_accepted_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  sessions        Session[]
+  listings        Listing[]
+  conversations   Conversation[] @relation("ConversationBuyer")
+  messages        Message[]
+  tradesAsBuyer   Trade[]        @relation("TradeBuyer")
+  tradesAsSeller  Trade[]        @relation("TradeSeller")
+  ratingsGiven     Rating[]          @relation("RatingsGiven")
+  ratingsReceived  Rating[]          @relation("RatingsReceived")
+  reportsMade      Report[]          @relation("ReportsMade")
+  reportsReceived  Report[]          @relation("ReportsReceived")
+  comments         Comment[]
+  purchaseRequests PurchaseRequest[]
+  emailTokens      EmailToken[]
+
+  @@map("users")
+}
+
+// Token xác nhận email / đặt lại mật khẩu — dùng 1 lần, có hạn.
+model EmailToken {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  token     String    @unique
+  type      String // verify | reset
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@map("email_tokens")
+}
+
+// Hộp thư dev: khi chưa cấu hình SMTP, email "gửi đi" được lưu vào đây
+// và xem tại /dev/mailbox (chỉ dev). Có SMTP thật thì bảng này không dùng.
+model EmailOutbox {
+  id        String   @id @default(cuid())
+  toEmail   String   @map("to_email")
+  subject   String
+  body      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("email_outbox")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Card {
+  id         String   @id @default(cuid())
+  game       String // pokemon | onepiece
+  category   String   @default("single") // single | box (sealed booster box)
+  setCode    String   @map("set_code")
+  cardNumber String   @map("card_number") // box dùng "BOX"
+  language   String // JP | EN
+  nameJa     String   @map("name_ja")
+  nameEn     String   @map("name_en")
+  rarity     String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  listings     Listing[]
+  priceRecords PriceRecord[]
+
+  @@unique([game, setCode, cardNumber, language])
+  @@map("cards")
+}
+
+model Listing {
+  id             String   @id @default(cuid())
+  sellerId       String   @map("seller_id")
+  cardId         String   @map("card_id")
+  condition      String // PSA10 | PSA9 | BGS95 | RAW_NM | RAW_LP | RAW_MP | RAW_HP | DAMAGED
+  imageUrl       String   @map("image_url")
+  askingPriceJpy Int?     @map("asking_price_jpy")
+  tradeType      String   @map("trade_type") // sell | trade
+  // Ga gần nhất (最寄り駅) — cho người mua biết khu vực để hẹn 手渡し. Tùy chọn.
+  station        String?
+  note           String?
+  status         String   @default("active") // active | in_trade | closed | cancelled
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  seller           User              @relation(fields: [sellerId], references: [id])
+  card             Card              @relation(fields: [cardId], references: [id])
+  conversations    Conversation[]
+  trades           Trade[]
+  comments         Comment[]
+  purchaseRequests PurchaseRequest[]
+
+  @@index([cardId, status])
+  @@index([sellerId])
+  @@map("listings")
+}
+
+// Bình luận công khai dưới listing: ai cũng đọc, đăng nhập mới viết.
+model Comment {
+  id        String   @id @default(cuid())
+  listingId String   @map("listing_id")
+  userId    String   @map("user_id")
+  body      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@index([listingId, createdAt])
+  @@map("comments")
+}
+
+// Yêu cầu mua: buyer bấm 購入希望 → seller chọn ai để 連携 (tạo conversation).
+// Conversation CHỈ sinh ra qua connect — seller toàn quyền chọn đối tác.
+model PurchaseRequest {
+  id        String   @id @default(cuid())
+  listingId String   @map("listing_id")
+  buyerId   String   @map("buyer_id")
+  status    String   @default("pending") // pending | connected
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyer   User    @relation(fields: [buyerId], references: [id])
+
+  @@unique([listingId, buyerId])
+  @@index([listingId, status])
+  @@map("purchase_requests")
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  listingId String   @map("listing_id")
+  buyerId   String   @map("buyer_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  listing  Listing   @relation(fields: [listingId], references: [id])
+  buyer    User      @relation("ConversationBuyer", fields: [buyerId], references: [id])
+  messages Message[]
+  trades   Trade[]
+
+  @@unique([listingId, buyerId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String   @map("conversation_id")
+  senderId       String   @map("sender_id")
+  body           String
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId, createdAt])
+  @@map("messages")
+}
+
+model Trade {
+  id             String    @id @default(cuid())
+  listingId      String    @map("listing_id")
+  conversationId String    @map("conversation_id")
+  sellerId       String    @map("seller_id")
+  buyerId        String    @map("buyer_id")
+  initiatorId    String    @map("initiator_id")
+  finalPriceJpy  Int       @map("final_price_jpy")
+  status         String    @default("pending") // pending | confirmed | self_reported | cancelled
+  autoCloseAt    DateTime  @map("auto_close_at")
+  confirmedAt    DateTime? @map("confirmed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  listing      Listing      @relation(fields: [listingId], references: [id])
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+  seller       User         @relation("TradeSeller", fields: [sellerId], references: [id])
+  buyer        User         @relation("TradeBuyer", fields: [buyerId], references: [id])
+  priceRecord  PriceRecord?
+  ratings      Rating[]
+
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([listingId])
+  @@map("trades")
+}
+
+// Rating blind-mutual: mỗi bên rate 1 lần/trade; chỉ "reveal" (hiện cho nhau
+// và tính vào ★ trung bình) khi trade có đủ 2 rating — chống trả đũa.
+model Rating {
+  id        String   @id @default(cuid())
+  tradeId   String   @map("trade_id")
+  raterId   String   @map("rater_id")
+  rateeId   String   @map("ratee_id")
+  score     Int // 1–5, ép ở tầng zod
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  trade Trade @relation(fields: [tradeId], references: [id])
+  rater User  @relation("RatingsGiven", fields: [raterId], references: [id])
+  ratee User  @relation("RatingsReceived", fields: [rateeId], references: [id])
+
+  @@unique([tradeId, raterId])
+  @@index([rateeId])
+  @@map("ratings")
+}
+
+model Report {
+  id             String   @id @default(cuid())
+  reporterId     String   @map("reporter_id")
+  reportedUserId String   @map("reported_user_id")
+  listingId      String?  @map("listing_id")
+  reason         String
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  reporter User @relation("ReportsMade", fields: [reporterId], references: [id])
+  reported User @relation("ReportsReceived", fields: [reportedUserId], references: [id])
+
+  @@index([reportedUserId])
+  @@map("reports")
+}
+
+// Ẩn danh từ tầng schema: KHÔNG có cột user nào — bảng này an toàn để
+// public/export cho AI. card_id/condition denormalize từ listing để query
+// giá không phải join qua trades/listings.
+model PriceRecord {
+  id          String   @id @default(cuid())
+  tradeId     String   @unique @map("trade_id")
+  cardId      String   @map("card_id")
+  condition   String
+  priceJpy    Int      @map("price_jpy")
+  reliability String // confirmed | self_reported
+  // true = lệch >50% so với median thị trường tại thời điểm tạo → loại khỏi
+  // stats/chart, vẫn hiện trong bảng kèm cảnh báo (chống thông đồng bơm giá).
+  flagged     Boolean  @default(false)
+  tradedAt    DateTime @map("traded_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  trade Trade @relation(fields: [tradeId], references: [id])
+  card  Card  @relation(fields: [cardId], references: [id])
+
+  @@index([cardId, condition, tradedAt])
+  @@map("price_records")
+}

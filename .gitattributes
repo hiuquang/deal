@@ -1,0 +1,10 @@
+# Chuẩn hóa xuống dòng: repo dùng LF, tránh diff bẩn giữa Windows/macOS/Linux
+* text=auto eol=lf
+
+# File nhị phân — không đụng vào
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.db binary

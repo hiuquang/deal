@@ -1,0 +1,104 @@
+import { ApiError } from "@/server/errors";
+import * as ratingsRepo from "@/server/repositories/ratings";
+import * as tradesRepo from "@/server/repositories/trades";
+import * as usersRepo from "@/server/repositories/users";
+import type { RatingDto, TradeRatingStateDto, UserSummaryDto } from "@/lib/types";
+import type { Rating } from "@prisma/client";
+
+function toRatingDto(rating: Rating): RatingDto {
+  return {
+    id: rating.id,
+    tradeId: rating.tradeId,
+    raterId: rating.raterId,
+    rateeId: rating.rateeId,
+    score: rating.score,
+    comment: rating.comment,
+    createdAt: rating.createdAt.toISOString(),
+  };
+}
+
+/**
+ * Blind-mutual rating: chỉ rate được trade đã chốt, mỗi bên 1 lần.
+ * Rating của đối phương CHỈ hiện khi cả 2 đã rate — chống trả đũa.
+ * Rating không liên quan việc lưu giá (giá đã lưu lúc chốt trade).
+ */
+export async function rate(
+  userId: string,
+  tradeId: string,
+  input: { score: number; comment?: string | null }
+): Promise<RatingDto> {
+  const trade = await tradesRepo.findTradeById(tradeId);
+  if (!trade) {
+    throw new ApiError(404, "NOT_FOUND", "取引が見つかりません。");
+  }
+  if (trade.buyerId !== userId && trade.sellerId !== userId) {
+    throw new ApiError(403, "FORBIDDEN", "この取引に参加していません。");
+  }
+  if (trade.status !== "confirmed" && trade.status !== "self_reported") {
+    throw new ApiError(409, "TRADE_NOT_CLOSED", "成立した取引のみ評価できます。");
+  }
+  const existing = await ratingsRepo.findRatingsByTrade(tradeId);
+  if (existing.some((r) => r.raterId === userId)) {
+    throw new ApiError(409, "ALREADY_RATED", "この取引は既に評価済みです。");
+  }
+  const rateeId = trade.buyerId === userId ? trade.sellerId : trade.buyerId;
+  const rating = await ratingsRepo.createRating({
+    tradeId,
+    raterId: userId,
+    rateeId,
+    score: input.score,
+    comment: input.comment?.trim() || null,
+  });
+  console.log(`[rating] ${userId} rated trade ${tradeId} (score ${input.score})`);
+  return toRatingDto(rating);
+}
+
+/** Trạng thái rating của trade dưới góc nhìn viewer (đã ẩn theo blind rule). */
+export async function getState(
+  userId: string,
+  tradeId: string
+): Promise<TradeRatingStateDto> {
+  const trade = await tradesRepo.findTradeById(tradeId);
+  if (!trade) {
+    throw new ApiError(404, "NOT_FOUND", "取引が見つかりません。");
+  }
+  if (trade.buyerId !== userId && trade.sellerId !== userId) {
+    throw new ApiError(403, "FORBIDDEN", "この取引に参加していません。");
+  }
+  const ratings = await ratingsRepo.findRatingsByTrade(tradeId);
+  const mine = ratings.find((r) => r.raterId === userId) ?? null;
+  const theirs = ratings.find((r) => r.raterId !== userId) ?? null;
+  const revealed = ratings.length >= 2;
+  return {
+    myRating: mine ? toRatingDto(mine) : null,
+    // Blind: chưa đủ 2 rating thì không tiết lộ rating (kể cả sự tồn tại nội dung)
+    counterpartRating: revealed && theirs ? toRatingDto(theirs) : null,
+    revealed,
+  };
+}
+
+/** Hồ sơ công khai: ★ trung bình (chỉ từ rating đã reveal) + số giao dịch. */
+export async function getUserSummary(userId: string): Promise<UserSummaryDto> {
+  const user = await ratingsRepo.findUserById(userId);
+  if (!user) {
+    throw new ApiError(404, "NOT_FOUND", "ユーザーが見つかりません。");
+  }
+  const [revealed, contributionCount] = await Promise.all([
+    ratingsRepo.listRevealedRatingsForUser(userId),
+    usersRepo.countContributions(userId),
+  ]);
+  const ratingAvg =
+    revealed.length > 0
+      ? Math.round(
+          (revealed.reduce((sum, r) => sum + r.score, 0) / revealed.length) * 10
+        ) / 10
+      : null;
+  return {
+    id: user.id,
+    displayName: user.displayName,
+    ratingAvg,
+    ratingCount: revealed.length,
+    contributionCount,
+    memberSince: user.createdAt.toISOString(),
+  };
+}
