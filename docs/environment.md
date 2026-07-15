@@ -11,6 +11,8 @@ npx prisma migrate dev   # tạo db + generate client + seed tự động
 npm run dev              # → http://localhost:3000
 ```
 
+Dev server dùng **Turbopack** (`next dev --turbopack`, từ 2026-07-16) — compile nhanh hơn Webpack nhiều lần, hết khựng theo đợt khi vào route mới. Dev server chạy lâu ngày (>1 ngày) vẫn có thể suy thoái tích tụ → chậm bất thường (API 8–15s) thì cứ restart.
+
 Tài khoản demo (seed sẵn, verified + đã accept terms): `demo@example.com` / `password123` (4 tài khoản khác: `taro|hanako|kenji|yuki@example.com`, cùng mật khẩu).
 
 Lệnh khác:
