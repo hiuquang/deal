@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [0.7.1] — 2026-07-16 — Mở rộng độ phủ unit test cho tầng service
+
+### Kiểm thử
+- Thêm test cho 4 service trước đây chưa có unit test (61 → 95 test):
+  - **auth-service** (16 test): các thuộc tính bảo mật — quên mật khẩu *luôn* im lặng thành công (không lộ email nào tồn tại), token verify/reset sai/hết hạn → `400 INVALID_TOKEN`, reset mật khẩu thu hồi mọi phiên, mật khẩu lưu dạng hash (không plaintext), give-to-get gate `canViewPrices`, cờ `emailVerified`/`termsAccepted` (version cũ → phải re-accept).
+  - **listing-service** (11 test): khớp condition với loại sản phẩm (BOX ⟷ thẻ lẻ → `400 CONDITION_MISMATCH`), station trim rỗng thành null, guard hủy tin (không phải chủ, đang giao dịch, đã kết thúc).
+  - **report-service** (4 test): guard tự tố cáo, mục tiêu không tồn tại, `listingId` mặc định null.
+  - **comment-service** (4 test): 404 khi listing không tồn tại (đọc & viết), map DTO.
+- Không đổi code sản phẩm — chỉ bổ sung test. `tsc --noEmit` sạch.
+
 ## [0.7.0] — 2026-07-16 — Tìm kiếm, điều hướng, số lượng, thông báo chưa đọc + gia cố nền tảng
 
 ### Tính năng
