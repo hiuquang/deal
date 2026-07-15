@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## [0.7.2] — 2026-07-16 — Sửa lỗi trang /me sập khi session bị thu hồi
+
+### Sửa lỗi
+- **Trang `/me` không còn nổ overlay `ApiClientError` khi phiên chết giữa chừng.** Khi `me` vẫn nằm trong React state nhưng cookie phiên đã bị thu hồi (vd. vừa đổi mật khẩu ở tab khác → `deleteAllSessions`), 3 lời gọi API trong `useEffect` trả `401`. Trước đây dùng `.then()` không `.catch()` → unhandled rejection → overlay `ログインが必要です`. Giờ gộp vào `Promise.all` trong try/catch; gặp 401 → gọi `refresh()` để đồng bộ về trạng thái đăng xuất (hiện màn "ログインが必要です" + nav đăng xuất). Thêm cờ `cancelled` chống setState sau unmount.
+
 ## [0.7.1] — 2026-07-16 — Mở rộng độ phủ unit test cho tầng service
 
 ### Kiểm thử
