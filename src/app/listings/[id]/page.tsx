@@ -2,6 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { api, ApiClientError } from "@/lib/api-client";
 import type { ListingDto } from "@/lib/types";
 import { formatDate, formatJpy } from "@/lib/labels";
@@ -20,6 +21,14 @@ export default function ListingDetailPage({
   const { id } = use(params);
   const { me } = useAuth();
   const { t } = useI18n();
+  const router = useRouter();
+
+  // Quay lại trang trước để giữ nguyên bộ lọc/tìm kiếm ở trang chủ; nếu mở
+  // link trực tiếp (không có lịch sử trong app) thì về trang chủ.
+  function handleBack() {
+    if (window.history.length > 1) router.back();
+    else router.push("/");
+  }
   const [listing, setListing] = useState<ListingDto | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -34,8 +43,29 @@ export default function ListingDetailPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  if (error) return <ErrorBox message={error} />;
-  if (!listing) return <Loading />;
+  const backButton = (
+    <button
+      onClick={handleBack}
+      className="inline-flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-indigo-700"
+    >
+      <span aria-hidden="true">←</span> {t("detail.back")}
+    </button>
+  );
+
+  if (error)
+    return (
+      <div className="space-y-4">
+        {backButton}
+        <ErrorBox message={error} />
+      </div>
+    );
+  if (!listing)
+    return (
+      <div className="space-y-4">
+        {backButton}
+        <Loading />
+      </div>
+    );
 
   const isOwner = me?.id === listing.sellerId;
 
@@ -53,6 +83,7 @@ export default function ListingDetailPage({
 
   return (
     <div className="space-y-6">
+      {backButton}
       <div className="grid gap-6 md:grid-cols-2">
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
           {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -156,6 +156,7 @@ export const MESSAGES = {
   },
 
   // ---- Chi tiết listing ----
+  "detail.back": { ja: "戻る", vi: "Quay lại", en: "Back" },
   "detail.condition": { ja: "状態", vi: "Tình trạng", en: "Condition" },
   "detail.listedOn": { ja: "出品日", vi: "Ngày đăng", en: "Listed on" },
   "detail.desc": { ja: "説明", vi: "Mô tả", en: "Description" },

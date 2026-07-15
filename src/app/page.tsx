@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { api, ApiClientError } from "@/lib/api-client";
 import type { Category, Game, ListingDto } from "@/lib/types";
 import { ListingCard } from "@/components/listing-card";
@@ -8,13 +9,32 @@ import { Empty, ErrorBox, Loading } from "@/components/ui";
 import { useI18n } from "@/lib/i18n";
 
 export default function HomePage() {
+  // useSearchParams cần Suspense boundary trong App Router.
+  return (
+    <Suspense fallback={<Loading />}>
+      <HomeContent />
+    </Suspense>
+  );
+}
+
+function HomeContent() {
   const { t } = useI18n();
-  const [game, setGame] = useState<Game | "">("");
-  const [category, setCategory] = useState<Category | "">("");
-  // query: gõ tức thì; debouncedQuery: giá trị thật sự gọi API (chờ 350ms
-  // ngừng gõ) — tránh bắn 1 request mỗi phím.
-  const [query, setQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  // URL là nguồn chân lý cho tìm kiếm/bộ lọc → back giữ nguyên trạng thái,
+  // link đã lọc có thể chia sẻ/bookmark. State khởi tạo từ URL khi mount.
+  const [game, setGame] = useState<Game | "">(
+    (searchParams.get("game") as Game) || ""
+  );
+  const [category, setCategory] = useState<Category | "">(
+    (searchParams.get("category") as Category) || ""
+  );
+  // query: gõ tức thì; debouncedQuery: giá trị thật sự gọi API + ghi lên URL
+  // (chờ 350ms ngừng gõ) — tránh bắn 1 request / 1 history entry mỗi phím.
+  const [query, setQuery] = useState(searchParams.get("q") || "");
+  const [debouncedQuery, setDebouncedQuery] = useState(
+    (searchParams.get("q") || "").trim()
+  );
   const [listings, setListings] = useState<ListingDto[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -24,6 +44,18 @@ export default function HomePage() {
     const timer = setTimeout(() => setDebouncedQuery(query.trim()), 350);
     return () => clearTimeout(timer);
   }, [query]);
+
+  // Đồng bộ trạng thái lọc lên URL (replace: không tạo thêm history entry cho
+  // mỗi lần gõ/đổi tab). Khi nhấn vào 1 listing rồi Quay lại, browser khôi
+  // phục đúng URL này → tìm kiếm/bộ lọc còn nguyên.
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (debouncedQuery) params.set("q", debouncedQuery);
+    if (game) params.set("game", game);
+    if (category) params.set("category", category);
+    const qs = params.toString();
+    router.replace(qs ? `/?${qs}` : "/", { scroll: false });
+  }, [debouncedQuery, game, category, router]);
 
   const gameTabs: { value: Game | ""; label: string }[] = [
     { value: "", label: t("home.tabAll") },
