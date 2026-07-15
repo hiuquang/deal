@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { api } from "@/lib/api-client";
+import { api, ApiClientError } from "@/lib/api-client";
 import type { ListingDto, TradeDto, UserSummaryDto } from "@/lib/types";
 import { formatDate, formatJpy } from "@/lib/labels";
 import { useAuth } from "@/components/auth-context";
@@ -10,7 +10,7 @@ import { Empty, Loading, TradeStatusBadge } from "@/components/ui";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 
 export default function MePage() {
-  const { me, loading } = useAuth();
+  const { me, loading, refresh } = useAuth();
   const { t } = useI18n();
   const [trades, setTrades] = useState<TradeDto[] | null>(null);
   const [listings, setListings] = useState<ListingDto[] | null>(null);
@@ -18,10 +18,30 @@ export default function MePage() {
 
   useEffect(() => {
     if (!me) return;
-    void api.listTrades().then(({ trades }) => setTrades(trades));
-    void api.listListings({ mine: true }).then(({ listings }) => setListings(listings));
-    void api.getUserSummary(me.id).then(({ user }) => setSummary(user));
-  }, [me]);
+    let cancelled = false;
+    void (async () => {
+      try {
+        const [{ trades }, { listings }, { user }] = await Promise.all([
+          api.listTrades(),
+          api.listListings({ mine: true }),
+          api.getUserSummary(me.id),
+        ]);
+        if (cancelled) return;
+        setTrades(trades);
+        setListings(listings);
+        setSummary(user);
+      } catch (e) {
+        // Session bị thu hồi (vd. vừa đổi mật khẩu ở tab khác) → 401.
+        // Đồng bộ lại trạng thái đăng nhập thay vì để lỗi làm sập trang.
+        if (e instanceof ApiClientError && e.status === 401) {
+          void refresh();
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [me, refresh]);
 
   if (loading) return <Loading />;
   if (!me) {
