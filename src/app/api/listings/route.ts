@@ -7,6 +7,7 @@ import * as listingService from "@/server/services/listing-service";
 export const GET = withErrorHandling(async (req: NextRequest) => {
   const params = req.nextUrl.searchParams;
   const input = listListingsSchema.parse({
+    q: params.get("q") ?? undefined,
     game: params.get("game") ?? undefined,
     category: params.get("category") ?? undefined,
     cardId: params.get("cardId") ?? undefined,

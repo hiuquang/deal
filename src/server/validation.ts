@@ -78,6 +78,8 @@ export const patchListingSchema = z.object({
 });
 
 export const listListingsSchema = z.object({
+  // Từ khóa tìm sản phẩm: khớp tên/set/số của thẻ trong listing.
+  q: z.string().trim().max(100).optional(),
   game: z.enum(GAMES).optional(),
   category: z.enum(CATEGORIES).optional(),
   cardId: z.string().optional(),

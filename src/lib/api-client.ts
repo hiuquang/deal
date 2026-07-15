@@ -109,6 +109,7 @@ export const api = {
   // ---- listings ----
   listListings: (
     params: {
+      q?: string;
       game?: Game;
       category?: Category;
       cardId?: string;
@@ -117,6 +118,7 @@ export const api = {
     } = {}
   ) => {
     const qs = new URLSearchParams();
+    if (params.q) qs.set("q", params.q);
     if (params.game) qs.set("game", params.game);
     if (params.category) qs.set("category", params.category);
     if (params.cardId) qs.set("cardId", params.cardId);

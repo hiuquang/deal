@@ -13,6 +13,7 @@ export type ListingWithRelations = Prisma.ListingGetPayload<{
 const PAGE_SIZE = 20;
 
 export async function listListings(filter: {
+  q?: string;
   game?: string;
   category?: string;
   cardId?: string;
@@ -23,6 +24,18 @@ export async function listListings(filter: {
   const cardFilter: Prisma.CardWhereInput = {
     ...(filter.game ? { game: filter.game } : {}),
     ...(filter.category ? { category: filter.category } : {}),
+    // Tìm sản phẩm = tìm theo thẻ liên kết (tên JP/EN, set, số thẻ) —
+    // cùng cách khớp với autocomplete thẻ ở searchCards.
+    ...(filter.q
+      ? {
+          OR: [
+            { nameJa: { contains: filter.q } },
+            { nameEn: { contains: filter.q } },
+            { setCode: { contains: filter.q } },
+            { cardNumber: { contains: filter.q } },
+          ],
+        }
+      : {}),
   };
   const where: Prisma.ListingWhereInput = {
     ...(filter.cardId ? { cardId: filter.cardId } : {}),

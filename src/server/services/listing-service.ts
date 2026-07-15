@@ -6,7 +6,9 @@ import { BOX_CONDITIONS } from "@/server/validation";
 import type { ListingDto } from "@/lib/types";
 
 export async function list(filter: {
+  q?: string;
   game?: string;
+  category?: string;
   cardId?: string;
   status?: string;
   sellerId?: string;

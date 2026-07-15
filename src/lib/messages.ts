@@ -70,10 +70,21 @@ export const MESSAGES = {
   "home.tabSingle": { ja: "シングル", vi: "Thẻ lẻ", en: "Singles" },
   "home.tabBox": { ja: "BOX", vi: "BOX", en: "Boxes" },
   "home.count": { ja: "{n}件の出品", vi: "{n} tin đăng", en: "{n} listings" },
+  "home.searchPlaceholder": {
+    ja: "カード名・セット・番号で検索",
+    vi: "Tìm theo tên thẻ, set hoặc số thẻ",
+    en: "Search by card name, set or number",
+  },
+  "home.searchClear": { ja: "検索をクリア", vi: "Xóa tìm kiếm", en: "Clear search" },
   "home.empty": {
     ja: "出品がまだありません。最初の出品者になりましょう！",
     vi: "Chưa có tin đăng nào. Hãy là người đăng bán đầu tiên!",
     en: "No listings yet. Be the first to sell!",
+  },
+  "home.emptySearch": {
+    ja: "「{q}」に一致する出品は見つかりませんでした。",
+    vi: "Không tìm thấy tin đăng nào khớp với “{q}”.",
+    en: "No listings match “{q}”.",
   },
 
   // ---- Auth ----

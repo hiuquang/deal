@@ -4,6 +4,7 @@ import {
   createListingSchema,
   createMessageSchema,
   createTradeSchema,
+  listListingsSchema,
   registerSchema,
 } from "@/server/validation";
 
@@ -65,6 +66,22 @@ describe("giới hạn giá giao dịch (1 ~ 10,000,000 JPY)", () => {
     expect(() =>
       createTradeSchema.parse({ conversationId: "cv1", finalPriceJpy: price })
     ).not.toThrow();
+  });
+});
+
+describe("listListingsSchema — tìm sản phẩm", () => {
+  it("trim từ khóa q và mặc định page = 1", () => {
+    const parsed = listListingsSchema.parse({ q: "  リザードン  " });
+    expect(parsed.q).toBe("リザードン");
+    expect(parsed.page).toBe(1);
+  });
+
+  it("q optional — bỏ trống vẫn hợp lệ", () => {
+    expect(() => listListingsSchema.parse({})).not.toThrow();
+  });
+
+  it("từ chối q quá 100 ký tự", () => {
+    expect(() => listListingsSchema.parse({ q: "あ".repeat(101) })).toThrow();
   });
 });
 
