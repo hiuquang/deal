@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## [0.7.0] — 2026-07-16 — Tìm kiếm, điều hướng, số lượng, thông báo chưa đọc + gia cố nền tảng
+
+### Tính năng
+- **Thanh tìm kiếm sản phẩm** ở trang chủ: tìm listing theo tên thẻ (JP/EN)/set/số thẻ (`GET /api/listings?q=`), debounce 350ms. Trạng thái tìm kiếm + bộ lọc game/category đưa lên URL (`?q=&game=&category=`) → nút back giữ nguyên kết quả, link đã lọc chia sẻ/bookmark được.
+- **Nút quay lại dùng chung** (`components/back-bar.tsx` trong layout): mọi trang tự có, trừ trang chủ. `router.back()`, fallback `/`.
+- **Số lượng (quantity)** trên tin đăng: cột `listings.quantity` (1–99, mặc định 1); form đăng bán + dòng chi tiết + badge ×N ở thẻ. **Chỉ là thông tin** — luồng trade giữ nguyên (chưa trừ tồn từng đơn).
+- **Huy hiệu đỏ đếm tin chưa đọc** trên nav Chat: `conversations.buyer/seller_last_read_at`; `GET /api/conversations/unread-count`, `POST /api/conversations/:id/read`. Hội thoại vừa match (chưa mở) tính tối thiểu 1. Nav poll 15s + refetch khi focus/đổi route/sự kiện `deal:unread`.
+
+### Gia cố nền tảng
+- **Chống race condition trade**: partial unique index `trades_one_active_per_listing` (WHERE status != cancelled) ép ở DB; service bắt lỗi P2002 → `409 TRADE_EXISTS`. Trước đây chỉ check ở tầng service (check-then-insert có race window → có thể 2 trade/1 listing → bẩn dữ liệu giá).
+- **Chuẩn bị chịu tải (đợt 1)**: index `(status, created_at)` cho query trang chủ; throttle lazy auto-close 1 lần/phút/process (thay vì mỗi request); chat polling 4s→6s + chỉ poll khi tab hiển thị.
+
+### Kiểm thử
+- 61 unit test pass (thêm test cho race, throttle, quantity, unread). Verify browser cho từng tính năng.
+
 ## [0.6.1] — 2026-07-14 — Tên ga (最寄り駅) trên tin đăng
 
 - Form đăng bán thêm trường **📍 最寄り駅** (tùy chọn, ≤50 ký tự) — người mua biết khu vực người bán để hẹn giao dịch trực tiếp (手渡し).
