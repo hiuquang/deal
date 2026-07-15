@@ -167,11 +167,6 @@ export const MESSAGES = {
   "detail.cancel": { ja: "出品を取り下げる", vi: "Gỡ tin đăng", en: "Withdraw listing" },
   "detail.viewPrices": { ja: "この商品の相場データを見る", vi: "Xem dữ liệu giá của sản phẩm này", en: "View price data for this item" },
   "detail.photoAlt": { ja: "{name}の実物写真", vi: "Ảnh thật của {name}", en: "Photo of {name}" },
-  "safety.detail": {
-    ja: "詐欺（前払い要求・偽物・すり替え）にご注意ください。取引前に現物の状態を必ずご確認を。",
-    vi: "Cảnh giác lừa đảo (đòi trả trước, hàng giả, tráo hàng). Luôn kiểm tra kỹ hiện vật trước khi giao dịch.",
-    en: "Beware of scams (upfront payment, fakes, swaps). Always inspect the item carefully before trading.",
-  },
   "safety.chat": {
     ja: "詐欺にご注意。前払いは避け、現物を確認してから取引してください。",
     vi: "Cảnh giác lừa đảo. Tránh trả trước; chỉ giao dịch sau khi đã kiểm tra hiện vật.",
