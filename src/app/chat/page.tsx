@@ -10,6 +10,7 @@ import { useAuth } from "@/components/auth-context";
 import { ChatPanel } from "@/components/chat-panel";
 import { TradePanel } from "@/components/trade-panel";
 import { Empty, Loading } from "@/components/ui";
+import { UNREAD_EVENT } from "@/components/nav-bar";
 import { useI18n } from "@/lib/i18n";
 
 function ChatContent() {
@@ -33,6 +34,23 @@ function ChatContent() {
   useEffect(() => {
     if (me) void reload();
   }, [me, reload]);
+
+  // Mở 1 hội thoại = đã đọc → gọi API đánh dấu rồi báo nav cập nhật huy hiệu.
+  const markRead = useCallback((conversationId: string) => {
+    void api
+      .markConversationRead(conversationId)
+      .then(() => window.dispatchEvent(new Event(UNREAD_EVENT)))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (me && selectedId) markRead(selectedId);
+  }, [me, selectedId, markRead]);
+
+  // Callback ổn định (chỉ đổi khi selectedId đổi) để không reset ChatPanel mỗi render.
+  const handleIncoming = useCallback(() => {
+    if (selectedId) markRead(selectedId);
+  }, [selectedId, markRead]);
 
   if (loading || (me && !loaded)) return <Loading />;
   if (!me) {
@@ -109,7 +127,11 @@ function ChatContent() {
                 </p>
               </div>
             </div>
-            <ChatPanel conversationId={selected.id} myUserId={me.id} />
+            <ChatPanel
+              conversationId={selected.id}
+              myUserId={me.id}
+              onIncoming={handleIncoming}
+            />
             <TradePanel conversation={selected} myUserId={me.id} onTradeChange={reload} />
           </>
         ) : (

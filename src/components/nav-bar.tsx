@@ -1,10 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { useAuth } from "@/components/auth-context";
 import { LOCALE_OPTIONS, useI18n } from "@/lib/i18n";
+
+const UNREAD_POLL_MS = 15000;
+/** Sự kiện để chat page báo nav refetch ngay sau khi đánh dấu đã đọc. */
+export const UNREAD_EVENT = "deal:unread";
 
 function LanguageSwitcher() {
   const { locale, setLocale } = useI18n();
@@ -50,6 +55,43 @@ export function NavBar() {
   const { me, loading, logout } = useAuth();
   const { t } = useI18n();
   const router = useRouter();
+  const pathname = usePathname();
+  const [unread, setUnread] = useState(0);
+
+  const refreshUnread = useCallback(async () => {
+    if (!me) {
+      setUnread(0);
+      return;
+    }
+    try {
+      const { count } = await api.unreadCount();
+      setUnread(count);
+    } catch {
+      // lỗi tạm thời — giữ số cũ, thử lại ở lần poll sau
+    }
+  }, [me]);
+
+  // Poll định kỳ + khi quay lại tab + khi đổi trang (mở/đóng chat) + khi chat
+  // page phát sự kiện sau lúc đánh dấu đã đọc → huy hiệu cập nhật gần như tức thì.
+  useEffect(() => {
+    void refreshUnread();
+    if (!me) return;
+    const timer = setInterval(refreshUnread, UNREAD_POLL_MS);
+    const onFocus = () => refreshUnread();
+    const onEvent = () => refreshUnread();
+    window.addEventListener("focus", onFocus);
+    window.addEventListener(UNREAD_EVENT, onEvent);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener(UNREAD_EVENT, onEvent);
+    };
+  }, [me, refreshUnread]);
+
+  // Đổi route (vd vào/ra trang chat) → cập nhật lại số.
+  useEffect(() => {
+    void refreshUnread();
+  }, [pathname, refreshUnread]);
 
   async function handleLogout() {
     await logout();
@@ -73,8 +115,19 @@ export function NavBar() {
             {t("nav.sell")}
           </Link>
           {me && (
-            <Link href="/chat" className="rounded-md px-3 py-1.5 hover:bg-slate-100">
+            <Link
+              href="/chat"
+              className="relative rounded-md px-3 py-1.5 hover:bg-slate-100"
+            >
               {t("nav.chat")}
+              {unread > 0 && (
+                <span
+                  aria-label={t("nav.unreadAria", { n: unread })}
+                  className="absolute -right-0.5 -top-0.5 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-500 px-1 text-[11px] font-bold leading-none text-white"
+                >
+                  {unread > 99 ? "99+" : unread}
+                </span>
+              )}
             </Link>
           )}
           {loading ? (

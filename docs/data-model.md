@@ -26,7 +26,10 @@ listings          id, seller_id→users, card_id→cards, condition, image_url,
                      luồng trade chưa trừ tồn từng đơn (đóng listing khi 1
                      giao dịch chốt). Muốn tồn kho thật = thay đổi lớn ở trade.
 
-conversations     id, listing_id→listings, buyer_id→users, created_at, updated_at
+conversations     id, listing_id→listings, buyer_id→users,
+                  buyer_last_read_at?, seller_last_read_at? (mốc đã đọc/bên,
+                    null = chưa mở → dùng đếm tin chưa đọc + báo match),
+                  created_at, updated_at
                   unique(listing_id, buyer_id)
                   — từ P3 chỉ được tạo qua purchase_requests connect
 

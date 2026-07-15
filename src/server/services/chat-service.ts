@@ -41,6 +41,35 @@ export async function listMine(userId: string): Promise<ConversationDto[]> {
   return rows.map((row) => toConversationDto(row, userId));
 }
 
+/**
+ * Tổng số tin chưa đọc để hiện huy hiệu ở nav. Với mỗi hội thoại: đếm tin của
+ * bên kia gửi sau mốc "đã đọc" của mình. Hội thoại chưa mở lần nào (mốc null)
+ * tính tối thiểu 1 — để báo "được match" ngay cả khi chưa có tin nhắn.
+ * (Vòng lặp count/hội thoại: đủ cho MVP, số hội thoại/user nhỏ.)
+ */
+export async function getUnreadCount(userId: string): Promise<number> {
+  const rows = await conversations.listConversationsWithReadState(userId);
+  let total = 0;
+  for (const row of rows) {
+    const isBuyer = row.buyerId === userId;
+    const myLastRead = isBuyer ? row.buyerLastReadAt : row.sellerLastReadAt;
+    const unread = await conversations.countUnreadMessages(row.id, userId, myLastRead);
+    total += myLastRead === null ? Math.max(unread, 1) : unread;
+  }
+  return total;
+}
+
+/** Đánh dấu 1 hội thoại là đã đọc cho user (khi mở/đang xem). */
+export async function markRead(userId: string, conversationId: string): Promise<void> {
+  const conversation = await conversations.findConversationById(conversationId);
+  if (!conversation) {
+    throw new ApiError(404, "NOT_FOUND", "チャットが見つかりません。");
+  }
+  assertMember(conversation, userId);
+  const role = conversation.buyerId === userId ? "buyer" : "seller";
+  await conversations.markConversationRead(conversationId, role);
+}
+
 export async function getMessages(
   userId: string,
   conversationId: string,
@@ -74,6 +103,9 @@ export async function sendMessage(
   }
   assertMember(conversation, userId);
   const message = await conversations.createMessage(conversationId, userId, body);
+  // Người gửi coi như đã đọc tới thời điểm này (không tự tính tin mình gửi).
+  const role = conversation.buyerId === userId ? "buyer" : "seller";
+  await conversations.markConversationRead(conversationId, role);
   return toMessageDto(message);
 }
 

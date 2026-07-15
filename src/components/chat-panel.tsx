@@ -15,9 +15,12 @@ const POLL_MS = 6000;
 export function ChatPanel({
   conversationId,
   myUserId,
+  onIncoming,
 }: {
   conversationId: string;
   myUserId: string;
+  /** Gọi khi có tin mới của đối phương lúc đang xem → đánh dấu đã đọc. */
+  onIncoming?: () => void;
 }) {
   const { t } = useI18n();
   const [messages, setMessages] = useState<MessageDto[]>([]);
@@ -39,11 +42,13 @@ export function ChatPanel({
           const seen = new Set(prev.map((m) => m.id));
           return [...prev, ...incoming.filter((m) => !seen.has(m.id))];
         });
+        // Có tin của đối phương lúc đang xem → đánh dấu đã đọc, huy hiệu giữ 0.
+        if (incoming.some((m) => m.senderId !== myUserId)) onIncoming?.();
       }
     } catch {
       // lỗi polling tạm thời — thử lại ở tick sau
     }
-  }, [conversationId]);
+  }, [conversationId, myUserId, onIncoming]);
 
   useEffect(() => {
     setMessages([]);

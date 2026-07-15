@@ -13,6 +13,7 @@ export const MESSAGES = {
   "nav.login": { ja: "ログイン", vi: "Đăng nhập", en: "Log in" },
   "nav.register": { ja: "新規登録", vi: "Đăng ký", en: "Sign up" },
   "nav.logout": { ja: "ログアウト", vi: "Đăng xuất", en: "Log out" },
+  "nav.unreadAria": { ja: "未読メッセージ{n}件", vi: "{n} tin nhắn chưa đọc", en: "{n} unread messages" },
   "common.loading": { ja: "読み込み中…", vi: "Đang tải…", en: "Loading…" },
   "common.loadError": { ja: "読み込みに失敗しました。", vi: "Tải dữ liệu thất bại.", en: "Failed to load." },
   "common.error": { ja: "エラーが発生しました。", vi: "Đã xảy ra lỗi.", en: "Something went wrong." },

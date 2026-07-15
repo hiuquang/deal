@@ -171,6 +171,12 @@ export const api = {
   // ---- chat ----
   listConversations: () =>
     request<{ conversations: ConversationDto[] }>("/api/conversations"),
+  unreadCount: () =>
+    request<{ count: number }>("/api/conversations/unread-count"),
+  markConversationRead: (conversationId: string) =>
+    request<{ ok: boolean }>(`/api/conversations/${conversationId}/read`, {
+      method: "POST",
+    }),
   getMessages: (conversationId: string, after?: string) =>
     request<{ messages: MessageDto[] }>(
       `/api/conversations/${conversationId}/messages${after ? `?after=${after}` : ""}`

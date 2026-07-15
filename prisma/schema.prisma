@@ -173,6 +173,10 @@ model Conversation {
   id        String   @id @default(cuid())
   listingId String   @map("listing_id")
   buyerId   String   @map("buyer_id")
+  // Mốc "đã đọc" của từng bên (null = chưa mở lần nào). Tin chưa đọc = tin của
+  // bên kia có created_at > mốc này. Buyer null khi vừa được match → báo là 1.
+  buyerLastReadAt  DateTime? @map("buyer_last_read_at")
+  sellerLastReadAt DateTime? @map("seller_last_read_at")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

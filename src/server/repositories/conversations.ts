@@ -28,8 +28,50 @@ export function findOrCreateConversation(listingId: string, buyerId: string) {
   return prisma.conversation.upsert({
     where: { listingId_buyerId: { listingId, buyerId } },
     update: {},
-    create: { listingId, buyerId },
+    // Hội thoại chỉ sinh ra khi seller connect → seller vừa "thấy" nó (mốc =
+    // now); buyer chưa đọc (null) để hiện thông báo được match.
+    create: { listingId, buyerId, sellerLastReadAt: new Date() },
     include: conversationInclude,
+  });
+}
+
+/** Cập nhật mốc đã đọc của 1 bên về thời điểm hiện tại. */
+export function markConversationRead(conversationId: string, role: "buyer" | "seller") {
+  return prisma.conversation.update({
+    where: { id: conversationId },
+    data:
+      role === "buyer"
+        ? { buyerLastReadAt: new Date() }
+        : { sellerLastReadAt: new Date() },
+  });
+}
+
+/** Số tin của bên kia (senderId != me) gửi sau mốc `after` (null = đếm tất cả). */
+export function countUnreadMessages(
+  conversationId: string,
+  excludeSenderId: string,
+  after: Date | null
+) {
+  return prisma.message.count({
+    where: {
+      conversationId,
+      senderId: { not: excludeSenderId },
+      ...(after ? { createdAt: { gt: after } } : {}),
+    },
+  });
+}
+
+/** Hội thoại của user kèm mốc đã đọc — phục vụ đếm tổng tin chưa đọc. */
+export function listConversationsWithReadState(userId: string) {
+  return prisma.conversation.findMany({
+    where: { OR: [{ buyerId: userId }, { listing: { sellerId: userId } }] },
+    select: {
+      id: true,
+      buyerId: true,
+      buyerLastReadAt: true,
+      sellerLastReadAt: true,
+      listing: { select: { sellerId: true } },
+    },
   });
 }
 
