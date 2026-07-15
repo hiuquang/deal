@@ -17,6 +17,7 @@ export const MESSAGES = {
   "common.loadError": { ja: "読み込みに失敗しました。", vi: "Tải dữ liệu thất bại.", en: "Failed to load." },
   "common.error": { ja: "エラーが発生しました。", vi: "Đã xảy ra lỗi.", en: "Something went wrong." },
   "common.negotiable": { ja: "要相談", vi: "Thương lượng", en: "Negotiable" },
+  "common.back": { ja: "戻る", vi: "Quay lại", en: "Back" },
   "footer.tagline": {
     ja: "DEAL — 手数料ゼロ・P2P TCGトレードプラットフォーム（MVP）",
     vi: "DEAL — Nền tảng trade thẻ TCG P2P, phí 0% (MVP)",
@@ -156,7 +157,6 @@ export const MESSAGES = {
   },
 
   // ---- Chi tiết listing ----
-  "detail.back": { ja: "戻る", vi: "Quay lại", en: "Back" },
   "detail.condition": { ja: "状態", vi: "Tình trạng", en: "Condition" },
   "detail.listedOn": { ja: "出品日", vi: "Ngày đăng", en: "Listed on" },
   "detail.desc": { ja: "説明", vi: "Mô tả", en: "Description" },

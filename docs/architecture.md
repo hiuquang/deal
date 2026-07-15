@@ -54,3 +54,5 @@ deal/
 
 - **Auto-close trade 7 ngày** dùng **lazy evaluation** (kiểm tra khi có request đọc trade/price), không cron — đủ cho MVP. Có **throttle 1 phút/process** (`autoCloseExpiredThrottled` trong trade-service) để không quét DB ở mọi request dưới tải cao.
 - Route frontend: `/` (browse + filter), `/login`, `/register`, `/forgot-password`, `/reset-password`, `/verify`, `/listings/new`, `/listings/[id]`, `/chat`, `/prices/[cardId]`, `/me`, `/terms`, `/privacy`, `/dev/mailbox` (dev only).
+- **Nút quay lại dùng chung** (`components/back-bar.tsx`) đặt trong layout → mọi trang tự có, TRỪ `/` (trang chủ). Dùng `router.back()` (giữ trạng thái trang trước), fallback `/` khi mở link trực tiếp.
+- **Trạng thái tìm kiếm/lọc trang chủ nằm trên URL** (`?q=&game=&category=`, đồng bộ qua `router.replace`) — back giữ nguyên kết quả, link đã lọc chia sẻ/bookmark được.

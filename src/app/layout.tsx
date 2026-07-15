@@ -16,6 +16,7 @@ import { NavBar } from "@/components/nav-bar";
 import { VerifyBanner } from "@/components/verify-banner";
 import { TermsGate } from "@/components/terms-gate";
 import { SiteFooter } from "@/components/site-footer";
+import { BackBar } from "@/components/back-bar";
 
 export const metadata: Metadata = {
   title: "DEAL — 手数料ゼロのTCGトレード",
@@ -32,7 +33,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <NavBar />
             <VerifyBanner />
             <TermsGate />
-            <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
+            <main className="mx-auto max-w-5xl px-4 py-6">
+              <BackBar />
+              {children}
+            </main>
             <SiteFooter />
           </AuthProvider>
         </I18nProvider>
