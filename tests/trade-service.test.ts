@@ -219,6 +219,19 @@ describe("tradeService.cancel", () => {
   });
 });
 
+describe("tradeService.autoCloseExpiredThrottled", () => {
+  it("chỉ quét DB 1 lần trong khoảng throttle — các lần gọi sau bỏ qua", async () => {
+    tradeService.__resetAutoCloseThrottle();
+    vi.mocked(tradesRepo.listExpiredPendingTrades).mockResolvedValue([]);
+
+    await tradeService.autoCloseExpiredThrottled();
+    await tradeService.autoCloseExpiredThrottled();
+    await tradeService.autoCloseExpiredThrottled();
+
+    expect(tradesRepo.listExpiredPendingTrades).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("tradeService.autoCloseExpired", () => {
   it("chốt self_reported cho trade quá hạn, giữ nguyên giá và card/condition", async () => {
     const expired = makeTrade();

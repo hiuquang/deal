@@ -4,7 +4,7 @@ Quy ước chung: [README.md](README.md).
 
 > **P3**: `POST /api/conversations` đã bị GỠ — conversation chỉ được tạo qua `POST /api/requests/:id/connect` (xem [purchase-requests.md](purchase-requests.md)).
 
-Chat dùng **polling 3–5s**, incremental qua `?after=` (không WebSocket).
+Chat dùng **polling 6s**, incremental qua `?after=` (không WebSocket). Client chỉ poll khi tab đang hiển thị (`visibilitychange`), quay lại tab thì poll bù ngay.
 
 ### GET /api/conversations
 

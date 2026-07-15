@@ -8,7 +8,7 @@
 | Backend | Next.js Route Handlers, kiến trúc `routes → services → repositories` | Không cần server riêng, vẫn tách được business logic để unit test |
 | Database | **SQLite (dev) qua Prisma ORM** | Zero-setup trên Windows; đổi sang Postgres/Supabase khi deploy chỉ cần đổi connection string |
 | Auth | Session cookie (`deal_session`, httpOnly, 30 ngày) + email/password (bcrypt) | LINE Login + SMS OTP cần tài khoản ngoài → để V-next |
-| Chat realtime | **Polling 3–5s**, incremental qua `?after=` | Đơn giản nhất chạy được; WebSocket/Pusher để sau |
+| Chat realtime | **Polling 6s**, incremental qua `?after=`, chỉ poll khi tab hiển thị | Đơn giản nhất chạy được; WebSocket/Pusher để sau |
 | UI | Tailwind CSS 4, tiếng Nhật chính + i18n ja/vi/en | Xem [i18n.md](i18n.md) |
 | Mail | nodemailer; SMTP thật hoặc dev mailbox | Xem [email.md](email.md) |
 | Test | Vitest (unit tầng service) + bộ E2E qua API thật | 48+ unit test, 4 bộ E2E |
@@ -52,5 +52,5 @@ deal/
 
 ## Ghi chú thiết kế
 
-- **Auto-close trade 7 ngày** dùng **lazy evaluation** (kiểm tra khi có request đọc trade/price), không cron — đủ cho MVP.
+- **Auto-close trade 7 ngày** dùng **lazy evaluation** (kiểm tra khi có request đọc trade/price), không cron — đủ cho MVP. Có **throttle 1 phút/process** (`autoCloseExpiredThrottled` trong trade-service) để không quét DB ở mọi request dưới tải cao.
 - Route frontend: `/` (browse + filter), `/login`, `/register`, `/forgot-password`, `/reset-password`, `/verify`, `/listings/new`, `/listings/[id]`, `/chat`, `/prices/[cardId]`, `/me`, `/terms`, `/privacy`, `/dev/mailbox` (dev only).

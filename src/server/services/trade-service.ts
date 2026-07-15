@@ -16,9 +16,30 @@ function assertParticipant(trade: TradeWithRelations, userId: string) {
 }
 
 /**
+ * Throttle cho lazy auto-close: autoCloseAt có độ phân giải NGÀY nên quét
+ * mỗi request là thừa — dưới tải cao (hàng nghìn GET /trades / /prices mỗi
+ * phút) sẽ thành hàng nghìn lần quét trùng nhau. Giới hạn mỗi process chỉ
+ * quét tối đa 1 lần/phút; các request trong khoảng đó bỏ qua.
+ */
+const AUTO_CLOSE_CHECK_INTERVAL_MS = 60_000;
+let nextAutoCloseCheckAt = 0;
+
+export async function autoCloseExpiredThrottled(): Promise<number> {
+  const now = Date.now();
+  if (now < nextAutoCloseCheckAt) return 0;
+  nextAutoCloseCheckAt = now + AUTO_CLOSE_CHECK_INTERVAL_MS;
+  return autoCloseExpired();
+}
+
+/** Chỉ dùng trong test: reset trạng thái throttle giữa các test case. */
+export function __resetAutoCloseThrottle() {
+  nextAutoCloseCheckAt = 0;
+}
+
+/**
  * Lazy auto-close: mọi trade pending quá autoCloseAt được chốt thành
  * self_reported + sinh price_record. Gọi ở các endpoint đọc trade/price
- * thay cho cron — đủ cho MVP (design.md mục 4).
+ * (qua bản throttled) thay cho cron — đủ cho MVP (design.md mục 4).
  */
 export async function autoCloseExpired(): Promise<number> {
   const expired = await tradesRepo.listExpiredPendingTrades(new Date());
@@ -79,13 +100,13 @@ export async function create(
 }
 
 export async function listMine(userId: string): Promise<TradeDto[]> {
-  await autoCloseExpired();
+  await autoCloseExpiredThrottled();
   const trades = await tradesRepo.listTradesForUser(userId);
   return trades.map((trade) => toTradeDto(trade, userId));
 }
 
 export async function getById(userId: string, id: string): Promise<TradeDto> {
-  await autoCloseExpired();
+  await autoCloseExpiredThrottled();
   const trade = await tradesRepo.findTradeById(id);
   if (!trade) {
     throw new ApiError(404, "NOT_FOUND", "取引が見つかりません。");

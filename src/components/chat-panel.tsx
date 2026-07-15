@@ -1,14 +1,16 @@
 "use client";
 
-// Khung chat 1 conversation — polling tin nhắn mới mỗi 4 giây (design.md: MVP
-// dùng polling thay WebSocket).
+// Khung chat 1 conversation — polling tin nhắn mới mỗi 6 giây, CHỈ khi tab
+// đang hiển thị (tab ẩn/thu nhỏ thì ngừng — tiết kiệm phần lớn request khi
+// nhiều người treo tab); quay lại tab là poll bù ngay. MVP dùng polling thay
+// WebSocket (design.md).
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api-client";
 import type { MessageDto } from "@/lib/types";
 import { formatDateTime } from "@/lib/labels";
 import { useI18n } from "@/lib/i18n";
 
-const POLL_MS = 4000;
+const POLL_MS = 6000;
 
 export function ChatPanel({
   conversationId,
@@ -47,8 +49,17 @@ export function ChatPanel({
     setMessages([]);
     lastIdRef.current = undefined;
     void poll();
-    const timer = setInterval(poll, POLL_MS);
-    return () => clearInterval(timer);
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") void poll();
+    }, POLL_MS);
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") void poll();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
   }, [poll]);
 
   useEffect(() => {

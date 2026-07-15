@@ -127,6 +127,8 @@ model Listing {
 
   @@index([cardId, status])
   @@index([sellerId])
+  // Trang chủ: WHERE status='active' ORDER BY created_at DESC — query nóng nhất
+  @@index([status, createdAt])
   @@map("listings")
 }
 

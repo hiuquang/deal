@@ -2,7 +2,7 @@ import { ApiError } from "@/server/errors";
 import * as cards from "@/server/repositories/cards";
 import * as prices from "@/server/repositories/prices";
 import * as users from "@/server/repositories/users";
-import { autoCloseExpired } from "@/server/services/trade-service";
+import { autoCloseExpiredThrottled } from "@/server/services/trade-service";
 import { toCardDto } from "@/server/serializers";
 import type { CardDto, Condition, PriceRecordDto, PriceStatsDto, Reliability } from "@/lib/types";
 
@@ -38,7 +38,7 @@ export async function getForCard(
   cardId: string,
   condition?: string
 ): Promise<{ card: CardDto; records: PriceRecordDto[]; stats: PriceStatsDto }> {
-  await autoCloseExpired();
+  await autoCloseExpiredThrottled();
 
   const card = await cards.findCardById(cardId);
   if (!card) {
