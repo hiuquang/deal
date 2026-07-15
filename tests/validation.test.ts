@@ -52,6 +52,17 @@ describe("createListingSchema", () => {
       createListingSchema.parse({ ...base, imageUrl: "https://evil.com/x.jpg" })
     ).toThrow();
   });
+
+  it("quantity mặc định 1 khi không nhập", () => {
+    expect(createListingSchema.parse(base).quantity).toBe(1);
+  });
+
+  it("quantity ép số nguyên 1–99, từ chối ngoài khoảng và số lẻ", () => {
+    expect(createListingSchema.parse({ ...base, quantity: 3 }).quantity).toBe(3);
+    expect(() => createListingSchema.parse({ ...base, quantity: 0 })).toThrow();
+    expect(() => createListingSchema.parse({ ...base, quantity: 100 })).toThrow();
+    expect(() => createListingSchema.parse({ ...base, quantity: 2.5 })).toThrow();
+  });
 });
 
 describe("giới hạn giá giao dịch (1 ~ 10,000,000 JPY)", () => {

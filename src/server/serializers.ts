@@ -41,6 +41,7 @@ export function toListingDto(listing: ListingWithRelations): ListingDto {
     condition: listing.condition as Condition,
     imageUrl: listing.imageUrl,
     askingPriceJpy: listing.askingPriceJpy,
+    quantity: listing.quantity,
     tradeType: listing.tradeType as TradeType,
     station: listing.station,
     note: listing.note,

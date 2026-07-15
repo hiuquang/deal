@@ -68,6 +68,12 @@ export const createListingSchema = z.object({
     .string()
     .regex(/^\/uploads\/[\w.-]+$/, "画像をアップロードしてください"),
   askingPriceJpy: priceJpy.optional().nullable(),
+  quantity: z.coerce
+    .number()
+    .int()
+    .min(1, "数量は1以上を入力してください")
+    .max(99, "数量は99以下を入力してください")
+    .default(1),
   tradeType: z.enum(TRADE_TYPES),
   station: z.string().trim().max(50).optional().nullable(),
   note: z.string().trim().max(500).optional().nullable(),

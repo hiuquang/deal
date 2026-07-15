@@ -25,6 +25,7 @@ export async function create(
     condition: string;
     imageUrl: string;
     askingPriceJpy?: number | null;
+    quantity: number;
     tradeType: string;
     station?: string | null;
     note?: string | null;
@@ -52,6 +53,7 @@ export async function create(
     condition: input.condition,
     imageUrl: input.imageUrl,
     askingPriceJpy: input.askingPriceJpy ?? null,
+    quantity: input.quantity,
     tradeType: input.tradeType,
     station: input.station?.trim() || null,
     note: input.note ?? null,

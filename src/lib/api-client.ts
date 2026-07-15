@@ -133,6 +133,7 @@ export const api = {
     condition: Condition;
     imageUrl: string;
     askingPriceJpy?: number | null;
+    quantity: number;
     tradeType: "sell" | "trade";
     station?: string | null;
     note?: string | null;

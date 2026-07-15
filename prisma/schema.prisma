@@ -110,6 +110,9 @@ model Listing {
   condition      String // PSA10 | PSA9 | BGS95 | RAW_NM | RAW_LP | RAW_MP | RAW_HP | DAMAGED
   imageUrl       String   @map("image_url")
   askingPriceJpy Int?     @map("asking_price_jpy")
+  // Số lượng cùng loại người bán đang có (thông tin để thương lượng; luồng
+  // trade hiện vẫn đóng listing khi 1 giao dịch chốt — chưa trừ tồn từng đơn).
+  quantity       Int      @default(1)
   tradeType      String   @map("trade_type") // sell | trade
   // Ga gần nhất (最寄り駅) — cho người mua biết khu vực để hẹn 手渡し. Tùy chọn.
   station        String?

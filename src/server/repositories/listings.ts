@@ -66,6 +66,7 @@ export function createListing(data: {
   condition: string;
   imageUrl: string;
   askingPriceJpy: number | null;
+  quantity: number;
   tradeType: string;
   station: string | null;
   note: string | null;

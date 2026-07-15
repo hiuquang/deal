@@ -79,6 +79,8 @@ export interface ListingDto {
   condition: Condition;
   imageUrl: string;
   askingPriceJpy: number | null;
+  /** số lượng cùng loại người bán đang có (≥1) */
+  quantity: number;
   tradeType: TradeType;
   /** ga gần nhất (最寄り駅) để hẹn giao dịch trực tiếp — null nếu không khai */
   station: string | null;

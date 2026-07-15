@@ -23,10 +23,11 @@ Quy ước chung: [README.md](README.md).
 
 ```json
 { "cardId": "cm...", "condition": "RAW_NM", "imageUrl": "/uploads/xxx.jpg",
-  "askingPriceJpy": 13000, "tradeType": "sell", "station": "新宿駅", "note": "..." }
+  "askingPriceJpy": 13000, "quantity": 3, "tradeType": "sell", "station": "新宿駅", "note": "..." }
 ```
 
 - `condition` thẻ lẻ ∈ `PSA10|PSA9|BGS95|RAW_NM|RAW_LP|RAW_MP|RAW_HP|DAMAGED`; BOX ∈ `BOX_SHRINK|BOX_NO_SHRINK` — **phải khớp `category` của card**, lệch → `400 CONDITION_MISMATCH`.
+- `quantity`: số nguyên 1–99, mặc định 1 — số lượng cùng loại người bán có. **Hiện chỉ là thông tin** (thương lượng trong chat); luồng trade vẫn đóng listing khi 1 giao dịch chốt, chưa trừ tồn từng đơn.
 - `tradeType` ∈ `sell|trade`; `askingPriceJpy`, `note`, `station` (≤50 ký tự, P6.1) optional.
 - `askingPriceJpy` chỉ để thương lượng — **không bao giờ vào dữ liệu giá thị trường**.
 

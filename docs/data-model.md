@@ -17,10 +17,14 @@ cards             id, game(pokemon|onepiece), category(single|box) (P3),
                   — BOX là entry catalog với category=box, card_number="BOX"
 
 listings          id, seller_id→users, card_id→cards, condition, image_url,
-                  asking_price_jpy?, trade_type(sell|trade), note?,
+                  asking_price_jpy?, quantity(default 1, 1–99),
+                  trade_type(sell|trade), note?,
                   station? (P6.1 — 最寄り駅, ≤50 ký tự),
                   status(active|in_trade|closed|cancelled),
                   created_at, updated_at
+                  ── quantity hiện CHỈ là thông tin (số lượng người bán có);
+                     luồng trade chưa trừ tồn từng đơn (đóng listing khi 1
+                     giao dịch chốt). Muốn tồn kho thật = thay đổi lớn ở trade.
 
 conversations     id, listing_id→listings, buyer_id→users, created_at, updated_at
                   unique(listing_id, buyer_id)

@@ -118,6 +118,7 @@ export const MESSAGES = {
   "sell.tradeType": { ja: "取引タイプ", vi: "Hình thức", en: "Listing type" },
   "sell.price": { ja: "希望価格（円・任意）", vi: "Giá mong muốn (¥, không bắt buộc)", en: "Asking price (JPY, optional)" },
   "sell.priceExample": { ja: "例: 50000", vi: "VD: 50000", en: "e.g. 50000" },
+  "sell.quantity": { ja: "数量", vi: "Số lượng", en: "Quantity" },
   "sell.station": {
     ja: "最寄り駅（手渡し用・任意）",
     vi: "Ga gần nhất (để hẹn giao trực tiếp, không bắt buộc)",
@@ -158,6 +159,8 @@ export const MESSAGES = {
 
   // ---- Chi tiết listing ----
   "detail.condition": { ja: "状態", vi: "Tình trạng", en: "Condition" },
+  "detail.quantity": { ja: "数量", vi: "Số lượng", en: "Quantity" },
+  "detail.quantityValue": { ja: "{n}点", vi: "{n} sản phẩm", en: "{n} pcs" },
   "detail.listedOn": { ja: "出品日", vi: "Ngày đăng", en: "Listed on" },
   "detail.desc": { ja: "説明", vi: "Mô tả", en: "Description" },
   "detail.cancel": { ja: "出品を取り下げる", vi: "Gỡ tin đăng", en: "Withdraw listing" },

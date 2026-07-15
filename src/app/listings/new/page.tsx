@@ -24,6 +24,7 @@ export default function NewListingPage() {
   const [condition, setCondition] = useState<Condition>("RAW_NM");
   const [tradeType, setTradeType] = useState<TradeType>("sell");
   const [price, setPrice] = useState("");
+  const [quantity, setQuantity] = useState("1");
   const [station, setStation] = useState("");
   const [note, setNote] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -61,6 +62,7 @@ export default function NewListingPage() {
         condition,
         imageUrl: url,
         askingPriceJpy: price ? Number(price) : null,
+        quantity: Number(quantity) || 1,
         tradeType,
         station: station || null,
         note: note || null,
@@ -175,6 +177,21 @@ export default function NewListingPage() {
             </select>
           </div>
           <div>
+            <label htmlFor="quantity" className="mb-1 block text-sm font-medium">
+              {t("sell.quantity")}
+            </label>
+            <input
+              id="quantity"
+              type="number"
+              min={1}
+              max={99}
+              step={1}
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              className={input}
+            />
+          </div>
+          <div className="col-span-2">
             <label htmlFor="price" className="mb-1 block text-sm font-medium">
               {t("sell.price")}
             </label>

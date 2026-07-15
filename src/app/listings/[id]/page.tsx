@@ -96,6 +96,12 @@ export default function ListingDetailPage({
                 {t(`cond.${listing.condition}` as MessageKey)}
               </dd>
             </div>
+            <div className="flex justify-between">
+              <dt className="text-slate-500">{t("detail.quantity")}</dt>
+              <dd className="font-medium">
+                {t("detail.quantityValue", { n: listing.quantity })}
+              </dd>
+            </div>
             {listing.station && (
               <div className="flex justify-between">
                 <dt className="text-slate-500">📍 {t("detail.station")}</dt>

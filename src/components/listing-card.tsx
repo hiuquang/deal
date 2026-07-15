@@ -32,6 +32,11 @@ export function ListingCard({ listing }: { listing: ListingDto }) {
             {t(`lstatus.${listing.status}` as MessageKey)}
           </span>
         )}
+        {listing.quantity > 1 && (
+          <span className="absolute bottom-2 right-2 rounded-full bg-indigo-600/90 px-2 py-0.5 text-xs font-bold text-white">
+            ×{listing.quantity}
+          </span>
+        )}
       </div>
       <div className="flex flex-1 flex-col gap-1 p-3">
         <p className="line-clamp-1 text-sm font-semibold group-hover:text-indigo-600">
