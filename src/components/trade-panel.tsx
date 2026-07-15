@@ -7,7 +7,7 @@ import Link from "next/link";
 import { api, ApiClientError } from "@/lib/api-client";
 import type { ConversationDto, TradeDto } from "@/lib/types";
 import { formatDate, formatJpy } from "@/lib/labels";
-import { ErrorBox, TradeStatusBadge } from "@/components/ui";
+import { ErrorBox, SafetyNote, TradeStatusBadge } from "@/components/ui";
 import { RatingSection } from "@/components/rating-section";
 import { useI18n } from "@/lib/i18n";
 
@@ -120,6 +120,7 @@ export function TradePanel({ conversation, myUserId, onTradeChange }: Props) {
           ) : (
             <div className="space-y-2">
               <p className="text-xs text-slate-600">{t("trade.confirmExplain")}</p>
+              <SafetyNote messageKey="safety.confirm" />
               <div className="flex gap-2">
                 {priceInput}
                 <button

@@ -9,7 +9,7 @@ import { cardTitle, formatJpy } from "@/lib/labels";
 import { useAuth } from "@/components/auth-context";
 import { ChatPanel } from "@/components/chat-panel";
 import { TradePanel } from "@/components/trade-panel";
-import { Empty, Loading } from "@/components/ui";
+import { Empty, Loading, SafetyNote } from "@/components/ui";
 import { UNREAD_EVENT } from "@/components/nav-bar";
 import { useI18n } from "@/lib/i18n";
 
@@ -126,6 +126,9 @@ function ChatContent() {
                   {t("chat.partner", { name: selected.otherPartyName })}
                 </p>
               </div>
+            </div>
+            <div className="border-b border-red-100 bg-red-50/50 px-3 py-1.5">
+              <SafetyNote messageKey="safety.chat" />
             </div>
             <ChatPanel
               conversationId={selected.id}

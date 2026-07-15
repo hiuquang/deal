@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [0.7.2] — 2026-07-16 — Sửa lỗi trang /me sập khi session bị thu hồi
+## [0.7.3] — 2026-07-16 — Dòng nhắc chống lừa đảo
+
+### Tính năng
+- **Dòng nhắc an toàn màu đỏ** (component dùng chung `SafetyNote` trong `ui.tsx`, ⚠️ + chữ đỏ nhỏ) nhắc người dùng cảnh giác lừa đảo (đòi trả trước / hàng giả / tráo hàng) và kiểm tra kỹ hiện vật, xuất hiện ở 3 nơi:
+  - **Trang chi tiết sản phẩm** (`safety.detail`): ngay trên nút 購入希望を送る.
+  - **Chat** (`safety.chat`): băng đỏ nhạt trong header hội thoại.
+  - **Bước xác nhận giao dịch** (`safety.confirm`, mạnh hơn — nhấn mạnh không hoàn tác): trong khối xác nhận của bên nhận, trên nút 確認する.
+- Đủ 3 ngôn ngữ ja/vi/en. Không đổi API/schema.
 
 ### Sửa lỗi
 - **Trang `/me` không còn nổ overlay `ApiClientError` khi phiên chết giữa chừng.** Khi `me` vẫn nằm trong React state nhưng cookie phiên đã bị thu hồi (vd. vừa đổi mật khẩu ở tab khác → `deleteAllSessions`), 3 lời gọi API trong `useEffect` trả `401`. Trước đây dùng `.then()` không `.catch()` → unhandled rejection → overlay `ログインが必要です`. Giờ gộp vào `Promise.all` trong try/catch; gặp 401 → gọi `refresh()` để đồng bộ về trạng thái đăng xuất (hiện màn "ログインが必要です" + nav đăng xuất). Thêm cờ `cancelled` chống setState sau unmount.

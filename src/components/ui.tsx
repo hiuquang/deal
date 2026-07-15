@@ -25,6 +25,17 @@ export function ErrorBox({ message }: { message: string }) {
   );
 }
 
+/** Dòng nhắc an toàn màu đỏ (chống lừa đảo). Nhỏ, không chiếm chỗ. */
+export function SafetyNote({ messageKey }: { messageKey: MessageKey }) {
+  const { t } = useI18n();
+  return (
+    <p role="note" className="flex items-start gap-1 text-xs text-red-600">
+      <span aria-hidden="true">⚠️</span>
+      <span>{t(messageKey)}</span>
+    </p>
+  );
+}
+
 export function Empty({ message }: { message: string }) {
   return (
     <div className="rounded-lg border border-dashed border-slate-300 py-12 text-center text-sm text-slate-500">

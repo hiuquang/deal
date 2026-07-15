@@ -6,7 +6,7 @@ import { api, ApiClientError } from "@/lib/api-client";
 import type { ListingDto } from "@/lib/types";
 import { formatDate, formatJpy } from "@/lib/labels";
 import { useAuth } from "@/components/auth-context";
-import { ErrorBox, Loading } from "@/components/ui";
+import { ErrorBox, Loading, SafetyNote } from "@/components/ui";
 import { SellerSummary } from "@/components/seller-summary";
 import { PurchasePanel } from "@/components/purchase-panel";
 import { CommentsSection } from "@/components/comments-section";
@@ -121,6 +121,8 @@ export default function ListingDetailPage({
           </dl>
 
           <SellerSummary sellerId={listing.sellerId} listingId={listing.id} />
+
+          <SafetyNote messageKey="safety.detail" />
 
           <PurchasePanel listing={listing} />
 
