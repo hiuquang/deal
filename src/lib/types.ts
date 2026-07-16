@@ -156,13 +156,24 @@ export interface ConversationDto {
 
 export interface TradeDto {
   id: string;
-  listing: ListingDto;
+  /** nguồn gốc trade: từ listing hay từ tin gom */
+  kind: ConversationKind;
+  /** chỉ khác null khi kind==="listing" */
+  listing: ListingDto | null;
+  /** thẻ giao dịch — luôn có (denormalize trên trade) */
+  card: CardDto;
+  condition: Condition;
+  /** số bản trao đổi (listing trade luôn 1) */
+  quantity: number;
   conversationId: string;
   buyerId: string;
   sellerId: string;
   initiatorId: string;
   counterpartName: string;
-  /** null khi trade còn pending và viewer là bên chưa xác nhận (chống lộ giá trước khi tự nhập) */
+  /**
+   * ĐƠN GIÁ (giá/1 bản) với trade buy-order; giá thẻ với trade listing.
+   * null khi trade còn pending và viewer là bên chưa xác nhận (chống lộ giá trước khi tự nhập)
+   */
   finalPriceJpy: number | null;
   status: TradeStatus;
   autoCloseAt: string;

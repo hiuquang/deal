@@ -50,10 +50,16 @@ buy_order_offers  id, buy_order_id→buy_orders (cascade), seller_id→users,
 messages          id, conversation_id→conversations, sender_id→users, body,
                   created_at, updated_at
 
-trades            id, listing_id→listings (unique khi chưa cancelled), conversation_id,
-                  seller_id, buyer_id, initiator_id, final_price_jpy,
+trades            id, listing_id?→listings, buy_order_id?→buy_orders (P9),
+                  conversation_id, seller_id, buyer_id, initiator_id,
+                  card_id→cards, condition, quantity(default 1) (P9 —
+                    denormalize: nguồn cho price_record, hết phụ thuộc listing;
+                    backfill từ listing cho trade cũ),
+                  final_price_jpy (= ĐƠN GIÁ/1 bản với trade buy-order),
                   status(pending|confirmed|self_reported|cancelled),
                   auto_close_at, confirmed_at?, created_at, updated_at
+                  ── 2 partial unique index (WHERE status != cancelled):
+                     trades_one_active_per_listing + trades_one_active_per_conversation
 
 price_records     id, trade_id(unique)→trades, card_id→cards, condition,
                   price_jpy, reliability(confirmed|self_reported),

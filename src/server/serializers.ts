@@ -94,7 +94,11 @@ export function toTradeDto(trade: TradeWithRelations, viewerId: string): TradeDt
     trade.status !== "pending" || trade.initiatorId === viewerId;
   return {
     id: trade.id,
-    listing: toListingDto(trade.listing),
+    kind: trade.buyOrderId ? "buy_order" : "listing",
+    listing: trade.listing ? toListingDto(trade.listing) : null,
+    card: toCardDto(trade.card),
+    condition: trade.condition as Condition,
+    quantity: trade.quantity,
     conversationId: trade.conversationId,
     buyerId: trade.buyerId,
     sellerId: trade.sellerId,

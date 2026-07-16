@@ -126,11 +126,17 @@ export const createMessageSchema = z.object({
 
 export const createTradeSchema = z.object({
   conversationId: z.string().min(1),
+  // Với trade từ buy-order: finalPriceJpy là ĐƠN GIÁ (giá/1 bản), kèm
+  // condition + quantity do bên khởi tạo khai (service kiểm tra bắt buộc).
   finalPriceJpy: priceJpy,
+  condition: z.enum(CONDITIONS).optional().nullable(),
+  quantity: buyQuantity.optional().nullable(),
 });
 
 export const confirmTradeSchema = z.object({
   finalPriceJpy: priceJpy,
+  // Trade buy-order: bên xác nhận phải nhập đúng số lượng (chống khai láo).
+  quantity: buyQuantity.optional().nullable(),
 });
 
 export const pricesQuerySchema = z.object({

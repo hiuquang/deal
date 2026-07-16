@@ -101,7 +101,10 @@ export default function MePage() {
                     href={`/chat?c=${trade.conversationId}`}
                     className="line-clamp-1 text-sm font-medium hover:text-indigo-600"
                   >
-                    {trade.listing.card.nameJa}
+                    {trade.card.nameJa}
+                    {trade.quantity > 1 && (
+                      <span className="ml-1 text-xs text-slate-500">×{trade.quantity}</span>
+                    )}
                   </Link>
                   <p className="text-xs text-slate-500">
                     {t("me.with", { name: trade.counterpartName })}

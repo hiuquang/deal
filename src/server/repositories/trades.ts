@@ -4,6 +4,7 @@ import { listingInclude } from "@/server/repositories/listings";
 
 export const tradeInclude = {
   listing: { include: listingInclude },
+  card: true,
   buyer: { select: { id: true, displayName: true } },
   seller: { select: { id: true, displayName: true } },
 } satisfies Prisma.TradeInclude;
@@ -23,6 +24,13 @@ export function findActiveTradeByListing(listingId: string) {
   });
 }
 
+/** Trade "còn sống" trong 1 hội thoại — chặn TRADE_EXISTS cho trade buy-order. */
+export function findActiveTradeByConversation(conversationId: string) {
+  return prisma.trade.findFirst({
+    where: { conversationId, status: { not: "cancelled" } },
+  });
+}
+
 export function listTradesForUser(userId: string) {
   return prisma.trade.findMany({
     where: { OR: [{ buyerId: userId }, { sellerId: userId }] },
@@ -31,13 +39,16 @@ export function listTradesForUser(userId: string) {
   });
 }
 
-/** Tạo trade + chuyển listing sang in_trade trong 1 transaction. */
+/** Tạo trade từ listing + chuyển listing sang in_trade trong 1 transaction. */
 export function createTradeWithListingLock(data: {
   listingId: string;
   conversationId: string;
   sellerId: string;
   buyerId: string;
   initiatorId: string;
+  cardId: string;
+  condition: string;
+  quantity: number;
   finalPriceJpy: number;
   autoCloseAt: Date;
 }) {
@@ -51,6 +62,25 @@ export function createTradeWithListingLock(data: {
       data: { status: "in_trade" },
     });
     return trade;
+  });
+}
+
+/** Tạo trade từ buy-order — không có listing để khóa. */
+export function createBuyOrderTrade(data: {
+  buyOrderId: string;
+  conversationId: string;
+  sellerId: string;
+  buyerId: string;
+  initiatorId: string;
+  cardId: string;
+  condition: string;
+  quantity: number;
+  finalPriceJpy: number; // đơn giá (giá/1 bản)
+  autoCloseAt: Date;
+}) {
+  return prisma.trade.create({
+    data: { ...data, status: "pending" },
+    include: tradeInclude,
   });
 }
 
@@ -89,10 +119,14 @@ export function closeTrade(
         tradedAt: record.tradedAt,
       },
     });
-    await tx.listing.update({
-      where: { id: trade.listingId },
-      data: { status: "closed" },
-    });
+    // Trade từ buy-order không có listing để đóng (buy-order KHÔNG tự đóng —
+    // chủ tin gom từ nhiều người bán, tự gỡ khi đủ).
+    if (trade.listingId) {
+      await tx.listing.update({
+        where: { id: trade.listingId },
+        data: { status: "closed" },
+      });
+    }
     return trade;
   });
 }
@@ -110,6 +144,15 @@ export function cancelTradeWithListingUnlock(tradeId: string, listingId: string)
       data: { status: "active" },
     });
     return trade;
+  });
+}
+
+/** Hủy trade pending không gắn listing (trade từ buy-order). */
+export function cancelTrade(tradeId: string) {
+  return prisma.trade.update({
+    where: { id: tradeId },
+    data: { status: "cancelled" },
+    include: tradeInclude,
   });
 }
 

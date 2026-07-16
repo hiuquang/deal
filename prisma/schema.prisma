@@ -102,6 +102,7 @@ model Card {
   listings     Listing[]
   priceRecords PriceRecord[]
   buyOrders    BuyOrder[]
+  trades       Trade[]
 
   @@unique([game, setCode, cardNumber, language])
   @@map("cards")
@@ -219,6 +220,7 @@ model BuyOrder {
   card          Card            @relation(fields: [cardId], references: [id])
   offers        BuyOrderOffer[]
   conversations Conversation[]
+  trades        Trade[]
 
   @@index([cardId, status])
   @@index([status, createdAt])
@@ -261,21 +263,34 @@ model Message {
   @@map("messages")
 }
 
+// Trade đến từ listing HOẶC buy-order (P9). card_id/condition/quantity
+// denormalize lên trades (nguồn cho price_record, hết phụ thuộc listing):
+// - listing trade: copy từ listing lúc tạo, quantity=1, final_price_jpy = giá thẻ.
+// - buy-order trade: bên khởi tạo khai condition + quantity; final_price_jpy
+//   là ĐƠN GIÁ (giá/1 bản) — price_record ghi đơn giá để so sánh được.
+// Chống race: partial unique index trades_one_active_per_listing (cũ) +
+// trades_one_active_per_conversation (P9) — xem migration.
 model Trade {
   id             String    @id @default(cuid())
-  listingId      String    @map("listing_id")
+  listingId      String?   @map("listing_id") // null nếu trade từ buy-order
+  buyOrderId     String?   @map("buy_order_id") // null nếu trade từ listing
   conversationId String    @map("conversation_id")
   sellerId       String    @map("seller_id")
   buyerId        String    @map("buyer_id")
   initiatorId    String    @map("initiator_id")
-  finalPriceJpy  Int       @map("final_price_jpy")
+  cardId         String    @map("card_id")
+  condition      String
+  quantity       Int       @default(1)
+  finalPriceJpy  Int       @map("final_price_jpy") // đơn giá (giá/1 bản)
   status         String    @default("pending") // pending | confirmed | self_reported | cancelled
   autoCloseAt    DateTime  @map("auto_close_at")
   confirmedAt    DateTime? @map("confirmed_at")
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
-  listing      Listing      @relation(fields: [listingId], references: [id])
+  listing      Listing?     @relation(fields: [listingId], references: [id])
+  buyOrder     BuyOrder?    @relation(fields: [buyOrderId], references: [id])
+  card         Card         @relation(fields: [cardId], references: [id])
   conversation Conversation @relation(fields: [conversationId], references: [id])
   seller       User         @relation("TradeSeller", fields: [sellerId], references: [id])
   buyer        User         @relation("TradeBuyer", fields: [buyerId], references: [id])

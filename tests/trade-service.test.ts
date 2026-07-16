@@ -9,9 +9,12 @@ import { ApiError } from "@/server/errors";
 vi.mock("@/server/repositories/trades", () => ({
   findTradeById: vi.fn(),
   findActiveTradeByListing: vi.fn(),
+  findActiveTradeByConversation: vi.fn(),
   createTradeWithListingLock: vi.fn(),
+  createBuyOrderTrade: vi.fn(),
   closeTrade: vi.fn(),
   cancelTradeWithListingUnlock: vi.fn(),
+  cancelTrade: vi.fn(),
   listTradesForUser: vi.fn(),
   listExpiredPendingTrades: vi.fn().mockResolvedValue([]),
 }));
@@ -29,6 +32,7 @@ import * as tradeService from "@/server/services/trade-service";
 const card = {
   id: "card1",
   game: "pokemon",
+  category: "single",
   setCode: "sv4a",
   cardNumber: "205/190",
   language: "JP",
@@ -43,10 +47,15 @@ function makeTrade(overrides: Record<string, unknown> = {}) {
   return {
     id: "t1",
     listingId: "l1",
+    buyOrderId: null,
     conversationId: "cv1",
     sellerId: "seller1",
     buyerId: "buyer1",
     initiatorId: "seller1",
+    cardId: "card1",
+    condition: "PSA10",
+    quantity: 1,
+    card,
     finalPriceJpy: 50000,
     status: "pending",
     autoCloseAt: new Date(Date.now() + 86400000),
@@ -154,10 +163,13 @@ describe("tradeService.create", () => {
   const conversation = {
     id: "cv1",
     listingId: "l1",
+    buyOrderId: null,
     buyerId: "buyer1",
+    sellerId: "seller1",
     createdAt: new Date(),
     updatedAt: new Date(),
     listing: makeTrade().listing,
+    buyOrder: null,
     buyer: { id: "buyer1", displayName: "Buyer" },
   };
 
@@ -248,5 +260,200 @@ describe("tradeService.autoCloseExpired", () => {
       "self_reported",
       expect.objectContaining({ priceJpy: 50000, cardId: "card1" })
     );
+  });
+
+  it("trade buy-order quá hạn: price_record dùng card/condition denormalize trên trade", async () => {
+    // Trade từ tin gom không có listing — nguồn duy nhất là cột trên trades.
+    const expired = makeTrade({
+      listingId: null,
+      listing: null,
+      buyOrderId: "bo1",
+      condition: "RAW_NM",
+      quantity: 8,
+      finalPriceJpy: 75000, // đơn giá
+    });
+    vi.mocked(tradesRepo.listExpiredPendingTrades).mockResolvedValue([expired] as never);
+    vi.mocked(tradesRepo.closeTrade).mockResolvedValue(
+      makeTrade({ status: "self_reported", listingId: null, listing: null, buyOrderId: "bo1" }) as never
+    );
+
+    await tradeService.autoCloseExpired();
+
+    expect(tradesRepo.closeTrade).toHaveBeenCalledWith(
+      "t1",
+      "self_reported",
+      expect.objectContaining({ cardId: "card1", condition: "RAW_NM", priceJpy: 75000 })
+    );
+  });
+});
+
+// ---- Trade từ tin gom số lượng lớn (P9) ----
+
+describe("tradeService.create — buy-order", () => {
+  const boConversation = {
+    id: "cv9",
+    listingId: null,
+    buyOrderId: "bo1",
+    buyerId: "buyer1",
+    sellerId: "seller1",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    listing: null,
+    buyOrder: {
+      id: "bo1",
+      buyerId: "buyer1",
+      cardId: "card1",
+      quantity: 20,
+      maxUnitPriceJpy: 80000,
+      status: "active",
+      card,
+    },
+    buyer: { id: "buyer1", displayName: "Buyer" },
+  };
+  const boInput = {
+    conversationId: "cv9",
+    finalPriceJpy: 75000, // đơn giá
+    condition: "RAW_NM",
+    quantity: 8,
+  };
+
+  beforeEach(() => {
+    vi.mocked(getMembership).mockResolvedValue(boConversation as never);
+    vi.mocked(tradesRepo.findActiveTradeByConversation).mockResolvedValue(null);
+  });
+
+  it("409 NOT_ACTIVE khi tin gom đã đóng", async () => {
+    vi.mocked(getMembership).mockResolvedValue({
+      ...boConversation,
+      buyOrder: { ...boConversation.buyOrder, status: "cancelled" },
+    } as never);
+    await expectApiError(tradeService.create("seller1", boInput), "NOT_ACTIVE", 409);
+  });
+
+  it("400 VALIDATION khi thiếu condition/quantity", async () => {
+    await expectApiError(
+      tradeService.create("seller1", { conversationId: "cv9", finalPriceJpy: 75000 }),
+      "VALIDATION",
+      400
+    );
+  });
+
+  it("400 CONDITION_MISMATCH khi condition lệch loại sản phẩm (thẻ lẻ dùng condition BOX)", async () => {
+    await expectApiError(
+      tradeService.create("seller1", { ...boInput, condition: "BOX_SHRINK" }),
+      "CONDITION_MISMATCH",
+      400
+    );
+  });
+
+  it("409 TRADE_EXISTS khi hội thoại đã có trade chưa cancelled", async () => {
+    vi.mocked(tradesRepo.findActiveTradeByConversation).mockResolvedValue(makeTrade() as never);
+    await expectApiError(tradeService.create("seller1", boInput), "TRADE_EXISTS", 409);
+  });
+
+  it("409 TRADE_EXISTS khi DB chặn race (P2002 từ trades_one_active_per_conversation)", async () => {
+    vi.mocked(tradesRepo.createBuyOrderTrade).mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError("Unique constraint failed", {
+        code: "P2002",
+        clientVersion: "test",
+      })
+    );
+    await expectApiError(tradeService.create("seller1", boInput), "TRADE_EXISTS", 409);
+  });
+
+  it("hợp lệ → tạo trade với đơn giá + quantity + condition, KHÔNG khóa listing", async () => {
+    vi.mocked(tradesRepo.createBuyOrderTrade).mockResolvedValue(
+      makeTrade({
+        listingId: null,
+        listing: null,
+        buyOrderId: "bo1",
+        condition: "RAW_NM",
+        quantity: 8,
+        finalPriceJpy: 75000,
+        initiatorId: "seller1",
+      }) as never
+    );
+
+    const dto = await tradeService.create("seller1", boInput);
+
+    expect(tradesRepo.createBuyOrderTrade).toHaveBeenCalledWith(
+      expect.objectContaining({
+        buyOrderId: "bo1",
+        sellerId: "seller1",
+        buyerId: "buyer1",
+        cardId: "card1",
+        condition: "RAW_NM",
+        quantity: 8,
+        finalPriceJpy: 75000,
+      })
+    );
+    expect(tradesRepo.createTradeWithListingLock).not.toHaveBeenCalled();
+    expect(dto.kind).toBe("buy_order");
+  });
+});
+
+describe("tradeService.confirm — buy-order (khớp cả đơn giá lẫn số lượng)", () => {
+  function makeBoTrade(over: Record<string, unknown> = {}) {
+    return makeTrade({
+      listingId: null,
+      listing: null,
+      buyOrderId: "bo1",
+      condition: "RAW_NM",
+      quantity: 8,
+      finalPriceJpy: 75000,
+      initiatorId: "seller1",
+      ...over,
+    });
+  }
+
+  it("409 QUANTITY_MISMATCH khi số lượng lệch — chống khai láo số lượng", async () => {
+    vi.mocked(tradesRepo.findTradeById).mockResolvedValue(makeBoTrade() as never);
+    await expectApiError(
+      tradeService.confirm("buyer1", "t1", 75000, 5),
+      "QUANTITY_MISMATCH",
+      409
+    );
+    expect(tradesRepo.closeTrade).not.toHaveBeenCalled();
+  });
+
+  it("409 PRICE_MISMATCH khi đơn giá lệch", async () => {
+    vi.mocked(tradesRepo.findTradeById).mockResolvedValue(makeBoTrade() as never);
+    await expectApiError(
+      tradeService.confirm("buyer1", "t1", 70000, 8),
+      "PRICE_MISMATCH",
+      409
+    );
+  });
+
+  it("khớp cả hai → chốt, price_record ghi ĐƠN GIÁ với condition đã khai", async () => {
+    vi.mocked(tradesRepo.findTradeById).mockResolvedValue(makeBoTrade() as never);
+    vi.mocked(tradesRepo.closeTrade).mockResolvedValue(
+      makeBoTrade({ status: "confirmed", confirmedAt: new Date() }) as never
+    );
+
+    const dto = await tradeService.confirm("buyer1", "t1", 75000, 8);
+
+    expect(tradesRepo.closeTrade).toHaveBeenCalledWith(
+      "t1",
+      "confirmed",
+      expect.objectContaining({ cardId: "card1", condition: "RAW_NM", priceJpy: 75000 })
+    );
+    expect(dto.status).toBe("confirmed");
+  });
+});
+
+describe("tradeService.cancel — buy-order", () => {
+  it("hủy trade buy-order → không đụng listing (cancelTrade thuần)", async () => {
+    const boTrade = makeTrade({ listingId: null, listing: null, buyOrderId: "bo1" });
+    vi.mocked(tradesRepo.findTradeById).mockResolvedValue(boTrade as never);
+    vi.mocked(tradesRepo.cancelTrade).mockResolvedValue(
+      makeTrade({ listingId: null, listing: null, buyOrderId: "bo1", status: "cancelled" }) as never
+    );
+
+    const dto = await tradeService.cancel("buyer1", "t1");
+
+    expect(tradesRepo.cancelTrade).toHaveBeenCalledWith("t1");
+    expect(tradesRepo.cancelTradeWithListingUnlock).not.toHaveBeenCalled();
+    expect(dto.status).toBe("cancelled");
   });
 });

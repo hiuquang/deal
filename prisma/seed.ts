@@ -186,7 +186,7 @@ async function main() {
         },
       });
       const conversation = await prisma.conversation.create({
-        data: { listingId: listing.id, buyerId: buyer.id },
+        data: { listingId: listing.id, buyerId: buyer.id, sellerId: seller.id },
       });
       await prisma.message.create({
         data: { conversationId: conversation.id, senderId: buyer.id, body: "こちらの価格で取引お願いします。" },
@@ -198,6 +198,8 @@ async function main() {
           sellerId: seller.id,
           buyerId: buyer.id,
           initiatorId: seller.id,
+          cardId: card.id,
+          condition,
           finalPriceJpy: price,
           status: isConfirmed ? "confirmed" : "self_reported",
           autoCloseAt: new Date(tradedAt.getTime() + 7 * DAY),
@@ -325,7 +327,7 @@ async function seedBoxes() {
         },
       });
       const conversation = await prisma.conversation.create({
-        data: { listingId: listing.id, buyerId: buyer.id },
+        data: { listingId: listing.id, buyerId: buyer.id, sellerId: seller.id },
       });
       const trade = await prisma.trade.create({
         data: {
@@ -334,6 +336,8 @@ async function seedBoxes() {
           sellerId: seller.id,
           buyerId: buyer.id,
           initiatorId: seller.id,
+          cardId: box.id,
+          condition: "BOX_SHRINK",
           finalPriceJpy: price,
           status: isConfirmed ? "confirmed" : "self_reported",
           autoCloseAt: new Date(tradedAt.getTime() + 7 * DAY),

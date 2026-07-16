@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [0.9.0] — 2026-07-16 — Tin gom số lượng lớn — Giai đoạn 2: chốt giao dịch + ghi nhận giá
+
+### Tính năng
+- **Chat buy-order chốt trade + ghi giá được** (bỏ `TRADE_NOT_SUPPORTED`): bên khởi tạo khai **đơn giá (giá/1 bản) + số lượng + condition** (select theo loại thẻ — tin gom không khai condition); bên xác nhận nhập lại **đúng cả đơn giá lẫn số lượng** (`PRICE_MISMATCH`/`QUANTITY_MISMATCH` — mở rộng cơ chế chống khai láo, số đã khai vẫn ẩn với bên xác nhận).
+- `price_records.price_jpy` ghi **đơn giá** → dữ liệu giá so sánh được giữa giao dịch 1 bản và N bản. Outlier flag/auto-close 7 ngày/rating blind-mutual áp dụng nguyên vẹn.
+- Tin gom KHÔNG tự đóng khi trade chốt (chủ tin gom từ nhiều người bán, tự gỡ khi đủ). `/me` hiện ×n cho trade nhiều bản.
+
+### Nền tảng
+- **Tổng quát hóa `Trade`** (mirror cách làm Conversation ở 0.8.0): `listing_id` nullable + thêm `buy_order_id`; **denormalize `card_id`/`condition`/`quantity`** lên trades — nguồn duy nhất cho price_record, hết phụ thuộc listing. Migration backfill 104 trade cũ từ listing (JOIN trong INSERT, verify 0 lệch).
+- Chống race mở rộng: partial unique index mới `trades_one_active_per_conversation` (WHERE status != cancelled) — 1 hội thoại chỉ 1 trade sống, bọc luôn cả trade listing; service bắt P2002 → `409 TRADE_EXISTS`.
+
+### Kiểm thử
+- 119 unit test pass (+11: create/confirm/cancel/auto-close nhánh buy-order, QUANTITY_MISMATCH, race P2002, condition mismatch). Verify browser end-to-end: demo khai ¥75.000×8 RAW_NM → taro nhập sai số lượng bị chặn → nhập đúng → chốt confirmed → price_record ghi đơn giá ¥75.000 (kiểm DB); trade listing cũ + quyền thành viên chat không đổi hành vi.
+
 ## [0.8.0] — 2026-07-16 — Tin gom số lượng lớn (まとめ買い募集) — Giai đoạn 1
 
 ### Tính năng

@@ -11,7 +11,7 @@ Buyer đăng tin gom (thẻ + số lượng + đơn giá tối đa)
   → tạo conversation riêng → chat riêng
 ```
 
-**Giai đoạn 1**: chỉ tới bước chat riêng. Chốt trade + ghi giá là Giai đoạn 2 (xem [../roadmap.md](../roadmap.md)). Conversation từ buy-order KHÔNG hiện TradePanel; gọi `POST /api/trades` cho conversation loại này → `409 TRADE_NOT_SUPPORTED`.
+Từ **Giai đoạn 2 (P9)**: chat riêng của buy-order chốt trade + ghi giá được — bên khởi tạo khai **đơn giá + số lượng + condition** (tin gom không khai condition); bên xác nhận nhập lại đúng đơn giá + số lượng. Chi tiết: [trades.md](trades.md).
 
 ### GET /api/buy-orders
 

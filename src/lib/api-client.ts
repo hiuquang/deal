@@ -231,12 +231,18 @@ export const api = {
     ),
 
   // ---- trades ----
-  createTrade: (data: { conversationId: string; finalPriceJpy: number }) =>
-    request<{ trade: TradeDto }>("/api/trades", json(data)),
+  createTrade: (data: {
+    conversationId: string;
+    /** trade buy-order: ĐƠN GIÁ (giá/1 bản); trade listing: giá thẻ */
+    finalPriceJpy: number;
+    /** bắt buộc với trade buy-order (tin gom không khai condition) */
+    condition?: Condition | null;
+    quantity?: number | null;
+  }) => request<{ trade: TradeDto }>("/api/trades", json(data)),
   listTrades: () => request<{ trades: TradeDto[] }>("/api/trades"),
   getTrade: (id: string) => request<{ trade: TradeDto }>(`/api/trades/${id}`),
-  confirmTrade: (id: string, finalPriceJpy: number) =>
-    request<{ trade: TradeDto }>(`/api/trades/${id}/confirm`, json({ finalPriceJpy })),
+  confirmTrade: (id: string, finalPriceJpy: number, quantity?: number | null) =>
+    request<{ trade: TradeDto }>(`/api/trades/${id}/confirm`, json({ finalPriceJpy, quantity })),
   cancelTrade: (id: string) =>
     request<{ trade: TradeDto }>(`/api/trades/${id}/cancel`, { method: "POST" }),
 

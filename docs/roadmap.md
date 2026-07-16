@@ -2,7 +2,7 @@
 
 ## Việc nên làm kế tiếp
 
-- **Tin gom số lượng lớn (まとめ買い) — Giai đoạn 2**: chốt giao dịch từ chat riêng của buy-order + **ghi nhận giá**. Cần tổng quát hóa `Trade`/`toTradeDto` (bỏ ràng buộc listing), nhập **condition + đơn giá** lúc chốt (buy-order không khai condition mà `price_records` cần), ghi PriceRecord theo đơn giá. Giai đoạn 1 (bảng tin + chào bán + kết nối chat riêng) đã XONG 2026-07-16.
+- ~~Tin gom số lượng lớn (まとめ買い)~~ — **XONG cả 2 giai đoạn 2026-07-16**: GĐ1 bảng tin + chào bán + kết nối chat riêng (0.8.0); GĐ2 chốt trade + ghi giá theo ĐƠN GIÁ, khai condition/số lượng lúc chốt, khớp cả giá lẫn số lượng (0.9.0). Ý tưởng sau: theo dõi số lượng đã gom / tự đóng tin khi đủ.
 - ~~Tạo repo GitHub và push code~~ — **XONG 2026-07-15**: https://github.com/hiuquang/deal (nhánh `main`).
 - ~~Chuyển dự án ra ngoài OneDrive~~ — **XONG 2026-07-15**: dự án giờ ở `C:\dev\deal` (đã copy `.env`, `prisma/dev.db`, `public/uploads/`, `docs/_archive/`; 49 test pass, app verify OK). Bản cũ trên OneDrive chờ user tự xóa.
 - Nhờ luật sư rà `/terms` `/privacy` trước khi vận hành thương mại thật (hiện là bản mẫu).

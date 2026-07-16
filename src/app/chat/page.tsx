@@ -151,10 +151,7 @@ function ChatContent() {
               myUserId={me.id}
               onIncoming={handleIncoming}
             />
-            {/* Trade/ghi giá mới hỗ trợ hội thoại từ listing (Giai đoạn 1). */}
-            {selected.kind === "listing" && (
-              <TradePanel conversation={selected} myUserId={me.id} onTradeChange={reload} />
-            )}
+            <TradePanel conversation={selected} myUserId={me.id} onTradeChange={reload} />
           </>
         ) : (
           <div className="flex flex-1 items-center justify-center text-sm text-slate-400">

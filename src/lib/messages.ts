@@ -502,6 +502,30 @@ export const MESSAGES = {
     en: "Log in to make an offer.",
   },
   "bod.alreadyOffered": { ja: "応募済み", vi: "Đã chào bán", en: "Offer submitted" },
+  // Trade từ tin gom (đơn giá × số lượng + condition khai lúc chốt)
+  "trade.unitPricePlaceholder": { ja: "単価（円/1点）", vi: "Đơn giá (¥/bản)", en: "Unit price (JPY/ea)" },
+  "trade.qtyPlaceholder": { ja: "数量", vi: "Số lượng", en: "Qty" },
+  "trade.conditionLabel": { ja: "状態", vi: "Tình trạng", en: "Condition" },
+  "trade.boExplain": {
+    ja: "取引が完了したら、単価・数量・状態を報告してください。相手の確認後、単価が相場データとして記録されます。",
+    vi: "Sau khi giao dịch xong, hãy khai đơn giá, số lượng và tình trạng. Đối phương xác nhận thì đơn giá được ghi vào dữ liệu thị trường.",
+    en: "After completing the deal, report unit price, quantity and condition. Once confirmed, the unit price is recorded as market data.",
+  },
+  "trade.boReported": {
+    ja: "報告済み: 単価{price} × {n}点（{cond}）",
+    vi: "Đã khai: {price}/bản × {n} ({cond})",
+    en: "Reported: {price}/ea × {n} ({cond})",
+  },
+  "trade.boConfirmExplain": {
+    ja: "相手から取引完了の報告があります（状態: {cond}）。単価と数量を自分で入力して確認してください。",
+    vi: "Đối phương báo đã hoàn tất giao dịch (tình trạng: {cond}). Hãy tự nhập đơn giá và số lượng để xác nhận.",
+    en: "The other party reported completion (condition: {cond}). Enter the unit price and quantity yourself to confirm.",
+  },
+  "trade.boDone": {
+    ja: "成約: 単価{price} × {n}点",
+    vi: "Đã chốt: {price}/bản × {n}",
+    en: "Completed: {price}/ea × {n}",
+  },
 } satisfies Record<string, Entry>;
 
 export type MessageKey = keyof typeof MESSAGES;

@@ -9,7 +9,7 @@ export const POST = withErrorHandling(
     const user = await requireVerifiedUser();
     const { id } = await ctx.params;
     const input = confirmTradeSchema.parse(await req.json());
-    const trade = await tradeService.confirm(user.id, id, input.finalPriceJpy);
+    const trade = await tradeService.confirm(user.id, id, input.finalPriceJpy, input.quantity);
     return NextResponse.json({ trade });
   }
 );
