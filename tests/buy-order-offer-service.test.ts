@@ -4,6 +4,7 @@
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/server/errors";
+import { expectApiError } from "./helpers";
 
 vi.mock("@/server/repositories/buy-order-offers", () => ({
   findOfferById: vi.fn(),
@@ -35,15 +36,6 @@ import * as buyOrdersRepo from "@/server/repositories/buy-orders";
 import * as conversationsRepo from "@/server/repositories/conversations";
 import * as offerService from "@/server/services/buy-order-offer-service";
 
-async function expectApiError(promise: Promise<unknown>, code: string) {
-  try {
-    await promise;
-    expect.fail(`expected ApiError ${code}`);
-  } catch (e) {
-    expect(e).toBeInstanceOf(ApiError);
-    expect((e as ApiError).code).toBe(code);
-  }
-}
 
 const activeOrder = { id: "bo1", buyerId: "buyer1", status: "active" } as never;
 

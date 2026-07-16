@@ -96,8 +96,8 @@ function ChatContent() {
                   <p className="text-xs text-slate-500">
                     {conversation.otherPartyName}・
                     {conversation.kind === "buy_order"
-                      ? t("chat.buyOrderQty", { n: conversation.buyOrder!.quantity })
-                      : formatJpy(conversation.listing!.askingPriceJpy)}
+                      ? t("chat.buyOrderQty", { n: conversation.buyOrder.quantity })
+                      : formatJpy(conversation.listing.askingPriceJpy)}
                   </p>
                   {conversation.lastMessage && (
                     <p className="line-clamp-1 text-xs text-slate-400">
@@ -126,8 +126,8 @@ function ChatContent() {
                 <Link
                   href={
                     selected.kind === "buy_order"
-                      ? `/buy-orders/${selected.buyOrder!.id}`
-                      : `/listings/${selected.listing!.id}`
+                      ? `/buy-orders/${selected.buyOrder.id}`
+                      : `/listings/${selected.listing.id}`
                   }
                   className="line-clamp-1 text-sm font-semibold hover:text-indigo-600"
                 >

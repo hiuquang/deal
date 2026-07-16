@@ -27,12 +27,15 @@ listings          id, seller_id→users, card_id→cards, condition, image_url,
                      giao dịch chốt). Muốn tồn kho thật = thay đổi lớn ở trade.
 
 conversations     id, listing_id?→listings, buy_order_id?→buy_orders (P8),
-                  buyer_id→users, seller_id?→users (P8 — lưu trực tiếp,
-                    trước đây suy từ listing.seller_id; backfill cho hàng cũ),
+                  buyer_id→users, seller_id→users NOT NULL (P8 lưu trực tiếp
+                    thay vì suy từ listing.seller_id, backfill hàng cũ;
+                    P9.1 siết NOT NULL),
                   buyer_last_read_at?, seller_last_read_at? (mốc đã đọc/bên,
                     null = chưa mở → dùng đếm tin chưa đọc + báo match),
                   created_at, updated_at
                   unique(listing_id, buyer_id); unique(buy_order_id, seller_id)
+                  index(buyer_id); index(seller_id) — phục vụ poll tin chưa
+                    đọc 15s/user (query nóng nhất app)
                   — nguồn gốc: listing (mua thường) HOẶC buy_order (tin gom).
                     Chỉ tạo qua connect (purchase_requests / buy_order_offers).
 

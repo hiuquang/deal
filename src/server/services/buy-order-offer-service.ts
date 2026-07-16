@@ -2,8 +2,8 @@ import { ApiError } from "@/server/errors";
 import * as offersRepo from "@/server/repositories/buy-order-offers";
 import * as buyOrdersRepo from "@/server/repositories/buy-orders";
 import * as conversationsRepo from "@/server/repositories/conversations";
-import { getUserSummary } from "@/server/services/rating-service";
-import type { BuyOrderOfferDto, BuyOrderOfferStatus } from "@/lib/types";
+import { getUserSummaries, getUserSummary } from "@/server/services/rating-service";
+import type { BuyOrderOfferDto, BuyOrderOfferStatus, UserSummaryDto } from "@/lib/types";
 import type { OfferWithRelations } from "@/server/repositories/buy-order-offers";
 
 /**
@@ -11,6 +11,27 @@ import type { OfferWithRelations } from "@/server/repositories/buy-order-offers"
  * chào bán công khai (số lượng + lời nhắn) → người mua (chủ tin) chọn 1 người
  * bán để 連携 → sinh conversation riêng. Conversation CHỈ tạo qua connect.
  */
+function buildOfferDto(
+  offer: OfferWithRelations,
+  summary: UserSummaryDto | undefined,
+  conversationId: string | null
+): BuyOrderOfferDto {
+  return {
+    id: offer.id,
+    buyOrderId: offer.buyOrderId,
+    sellerId: offer.seller.id,
+    sellerDisplayName: offer.seller.displayName,
+    sellerRatingAvg: summary?.ratingAvg ?? null,
+    sellerRatingCount: summary?.ratingCount ?? 0,
+    sellerContributionCount: summary?.contributionCount ?? 0,
+    quantity: offer.quantity,
+    message: offer.message,
+    status: offer.status as BuyOrderOfferStatus,
+    conversationId,
+    createdAt: offer.createdAt.toISOString(),
+  };
+}
+
 async function toOfferDto(offer: OfferWithRelations): Promise<BuyOrderOfferDto> {
   const summary = await getUserSummary(offer.seller.id);
   // Hội thoại riêng chỉ có khi đã connected — key theo (buyOrderId, sellerId).
@@ -18,30 +39,32 @@ async function toOfferDto(offer: OfferWithRelations): Promise<BuyOrderOfferDto> 
     offer.status === "connected"
       ? await conversationsRepo.findBuyOrderConversationByPair(offer.buyOrderId, offer.seller.id)
       : null;
-  return {
-    id: offer.id,
-    buyOrderId: offer.buyOrderId,
-    sellerId: offer.seller.id,
-    sellerDisplayName: offer.seller.displayName,
-    sellerRatingAvg: summary.ratingAvg,
-    sellerRatingCount: summary.ratingCount,
-    sellerContributionCount: summary.contributionCount,
-    quantity: offer.quantity,
-    message: offer.message,
-    status: offer.status as BuyOrderOfferStatus,
-    conversationId: conversation?.id ?? null,
-    createdAt: offer.createdAt.toISOString(),
-  };
+  return buildOfferDto(offer, summary, conversation?.id ?? null);
 }
 
-/** Danh sách chào bán — công khai, ai cũng xem được. */
+/**
+ * Danh sách chào bán — công khai, ai cũng xem được (endpoint nóng: mount
+ * effect của trang chi tiết tin gom). Batch uy tín + hội thoại thay vì
+ * 3–4 query/chào bán.
+ */
 export async function listForOrder(buyOrderId: string): Promise<BuyOrderOfferDto[]> {
   const order = await buyOrdersRepo.findBuyOrderById(buyOrderId);
   if (!order) {
     throw new ApiError(404, "NOT_FOUND", "募集が見つかりません。");
   }
   const rows = await offersRepo.listOffersForOrder(buyOrderId);
-  return Promise.all(rows.map(toOfferDto));
+  const [summaries, conversations] = await Promise.all([
+    getUserSummaries(rows.map((row) => row.seller.id)),
+    conversationsRepo.listBuyOrderConversations(buyOrderId),
+  ]);
+  const conversationBySeller = new Map(conversations.map((c) => [c.sellerId, c.id]));
+  return rows.map((row) =>
+    buildOfferDto(
+      row,
+      summaries.get(row.seller.id),
+      row.status === "connected" ? conversationBySeller.get(row.seller.id) ?? null : null
+    )
+  );
 }
 
 /** Người bán đăng chào bán cho 1 tin gom. */

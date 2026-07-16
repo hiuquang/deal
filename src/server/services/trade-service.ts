@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { ApiError } from "@/server/errors";
-import { BOX_CONDITIONS } from "@/server/validation";
+import { assertConditionMatchesCategory } from "@/server/validation";
 import * as tradesRepo from "@/server/repositories/trades";
 import { getMembership } from "@/server/services/chat-service";
 import { computeFlagForTrade } from "@/server/services/outlier";
@@ -74,92 +74,65 @@ export async function create(
   }
 ): Promise<TradeDto> {
   const conversation = await getMembership(userId, input.conversationId);
-  const autoCloseAt = new Date(Date.now() + AUTO_CLOSE_DAYS * 24 * 60 * 60 * 1000);
 
-  // ---- Nhánh trade từ tin gom (buy-order, P9) ----
-  // Tin gom không khai condition → bên khởi tạo khai condition + số lượng khi
-  // báo chốt; finalPriceJpy là ĐƠN GIÁ (giá/1 bản) để price_record so sánh được.
-  if (conversation.buyOrderId && conversation.buyOrder) {
+  // Guard + dữ liệu card/condition/quantity theo nguồn hội thoại. Hai nguồn
+  // khác nhau ở chỗ lấy condition: listing đã khai sẵn; tin gom thì bên khởi
+  // tạo khai lúc báo chốt (finalPriceJpy khi đó là ĐƠN GIÁ để so sánh được).
+  let source: { listingId?: string; buyOrderId?: string; cardId: string; condition: string; quantity: number };
+  if (conversation.buyOrder) {
     if (conversation.buyOrder.status !== "active") {
       throw new ApiError(409, "NOT_ACTIVE", "この募集は既に終了しています。");
     }
     if (!input.condition || !input.quantity) {
       throw new ApiError(400, "VALIDATION", "状態と数量を入力してください。");
     }
-    // Condition phải khớp loại sản phẩm (như khi đăng listing) — dữ liệu giá
-    // sẽ noisy nếu box dùng condition thẻ lẻ và ngược lại.
-    const isBoxCondition = (BOX_CONDITIONS as readonly string[]).includes(input.condition);
-    if ((conversation.buyOrder.card.category === "box") !== isBoxCondition) {
-      throw new ApiError(400, "CONDITION_MISMATCH", "状態が商品種別と一致しません。");
-    }
-    const existing = await tradesRepo.findActiveTradeByConversation(conversation.id);
+    assertConditionMatchesCategory(conversation.buyOrder.card.category, input.condition);
+    source = {
+      buyOrderId: conversation.buyOrder.id,
+      cardId: conversation.buyOrder.cardId,
+      condition: input.condition,
+      quantity: input.quantity,
+    };
+  } else if (conversation.listing) {
+    // Check sớm cho UX (1 listing 1 trade — kể cả từ hội thoại khác);
+    // race window được chặn tiếp ở index DB bên dưới.
+    const existing = await tradesRepo.findActiveTradeByListing(conversation.listing.id);
     if (existing) {
-      throw new ApiError(409, "TRADE_EXISTS", "このチャットには既に取引が存在します。");
+      throw new ApiError(409, "TRADE_EXISTS", "この出品には既に取引が存在します。");
     }
-    // Race window của check-then-insert được chặn ở DB bằng partial unique
-    // index trades_one_active_per_conversation — bắt P2002 và dịch lỗi.
-    let trade;
-    try {
-      trade = await tradesRepo.createBuyOrderTrade({
-        buyOrderId: conversation.buyOrderId,
-        conversationId: conversation.id,
-        sellerId: conversation.sellerId!,
-        buyerId: conversation.buyerId,
-        initiatorId: userId,
-        cardId: conversation.buyOrder.cardId,
-        condition: input.condition,
-        quantity: input.quantity,
-        finalPriceJpy: input.finalPriceJpy,
-        autoCloseAt,
-      });
-    } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
-        throw new ApiError(409, "TRADE_EXISTS", "このチャットには既に取引が存在します。");
-      }
-      throw e;
-    }
-    console.log(
-      `[trade] created ${trade.id} on buy-order ${conversation.buyOrderId} by ${userId} (${input.finalPriceJpy} JPY x${input.quantity})`
-    );
-    return toTradeDto(trade, userId);
-  }
-
-  // ---- Nhánh trade từ listing (như cũ) ----
-  if (!conversation.listingId || !conversation.listing) {
-    throw new ApiError(409, "TRADE_NOT_SUPPORTED", "この取引タイプはまだ対応していません。");
-  }
-
-  const existing = await tradesRepo.findActiveTradeByListing(conversation.listingId);
-  if (existing) {
-    throw new ApiError(409, "TRADE_EXISTS", "この出品には既に取引が存在します。");
-  }
-
-  // Check-then-insert ở trên có race window: 2 request gần như đồng thời có
-  // thể cùng lọt qua check. DB có partial unique index (trades_one_active_per_listing,
-  // xem migration add_active_trade_partial_unique_index) chặn ở tầng thấp nhất —
-  // bắt vi phạm đó ở đây và dịch thành cùng lỗi nghiệp vụ TRADE_EXISTS.
-  let trade;
-  try {
-    trade = await tradesRepo.createTradeWithListingLock({
-      listingId: conversation.listingId,
-      conversationId: conversation.id,
-      sellerId: conversation.listing.sellerId,
-      buyerId: conversation.buyerId,
-      initiatorId: userId,
+    source = {
+      listingId: conversation.listing.id,
       cardId: conversation.listing.cardId,
       condition: conversation.listing.condition,
       quantity: 1,
+    };
+  } else {
+    // Bất biến dữ liệu: hội thoại luôn sinh từ listing hoặc buy-order.
+    throw new Error(`conversation ${conversation.id} has neither listing nor buy order`);
+  }
+
+  // Race window của check-then-insert được chặn ở DB bằng 2 partial unique
+  // index (trades_one_active_per_listing / _per_conversation) — bắt P2002 ở
+  // đây và dịch thành lỗi nghiệp vụ TRADE_EXISTS.
+  let trade;
+  try {
+    trade = await tradesRepo.createTrade({
+      ...source,
+      conversationId: conversation.id,
+      sellerId: conversation.sellerId,
+      buyerId: conversation.buyerId,
+      initiatorId: userId,
       finalPriceJpy: input.finalPriceJpy,
-      autoCloseAt,
+      autoCloseAt: new Date(Date.now() + AUTO_CLOSE_DAYS * 24 * 60 * 60 * 1000),
     });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
-      throw new ApiError(409, "TRADE_EXISTS", "この出品には既に取引が存在します。");
+      throw new ApiError(409, "TRADE_EXISTS", "既に進行中の取引が存在します。");
     }
     throw e;
   }
   console.log(
-    `[trade] created ${trade.id} on listing ${conversation.listingId} by ${userId} (${input.finalPriceJpy} JPY)`
+    `[trade] created ${trade.id} (${source.listingId ? `listing ${source.listingId}` : `buy-order ${source.buyOrderId}`}) by ${userId} (${input.finalPriceJpy} JPY x${source.quantity})`
   );
   return toTradeDto(trade, userId);
 }
@@ -214,9 +187,9 @@ export async function confirm(
       { expectedHint: "金額が一致するまで取引は確定されません。" }
     );
   }
-  // Trade buy-order (quantity > 1 hoặc từ buyOrder): bên xác nhận cũng phải
-  // nhập đúng SỐ LƯỢNG — cùng cơ chế chống khai láo như giá.
-  if (trade.buyOrderId && trade.quantity !== (quantity ?? 1)) {
+  // Bên xác nhận cũng phải nhập đúng SỐ LƯỢNG — cùng cơ chế chống khai láo
+  // như giá. Trade listing luôn quantity=1 và client không gửi → ?? 1 khớp.
+  if (trade.quantity !== (quantity ?? 1)) {
     throw new ApiError(
       409,
       "QUANTITY_MISMATCH",
@@ -252,10 +225,7 @@ export async function cancel(userId: string, id: string): Promise<TradeDto> {
   if (trade.status !== "pending") {
     throw new ApiError(409, "INVALID_STATUS", "確定済みの取引はキャンセルできません。");
   }
-  // Trade listing: mở lại listing về active. Trade buy-order: không có listing.
-  const cancelled = trade.listingId
-    ? await tradesRepo.cancelTradeWithListingUnlock(id, trade.listingId)
-    : await tradesRepo.cancelTrade(id);
+  const cancelled = await tradesRepo.cancelTrade(id, trade.listingId);
   console.log(`[trade] cancelled ${id} by ${userId}`);
   return toTradeDto(cancelled, userId);
 }

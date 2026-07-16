@@ -1,15 +1,15 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { api, ApiClientError } from "@/lib/api-client";
-import type { Category, Game, ListingDto } from "@/lib/types";
+import type { ListingDto } from "@/lib/types";
 import { ListingCard } from "@/components/listing-card";
+import { FilterTabs, useBoardFilters } from "@/components/board-filters";
 import { Empty, ErrorBox, Loading } from "@/components/ui";
 import { useI18n } from "@/lib/i18n";
 
 export default function HomePage() {
-  // useSearchParams cần Suspense boundary trong App Router.
+  // useSearchParams (trong useBoardFilters) cần Suspense boundary trong App Router.
   return (
     <Suspense fallback={<Loading />}>
       <HomeContent />
@@ -19,54 +19,12 @@ export default function HomePage() {
 
 function HomeContent() {
   const { t } = useI18n();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  // URL là nguồn chân lý cho tìm kiếm/bộ lọc → back giữ nguyên trạng thái,
-  // link đã lọc có thể chia sẻ/bookmark. State khởi tạo từ URL khi mount.
-  const [game, setGame] = useState<Game | "">(
-    (searchParams.get("game") as Game) || ""
-  );
-  const [category, setCategory] = useState<Category | "">(
-    (searchParams.get("category") as Category) || ""
-  );
-  // query: gõ tức thì; debouncedQuery: giá trị thật sự gọi API + ghi lên URL
-  // (chờ 350ms ngừng gõ) — tránh bắn 1 request / 1 history entry mỗi phím.
-  const [query, setQuery] = useState(searchParams.get("q") || "");
-  const [debouncedQuery, setDebouncedQuery] = useState(
-    (searchParams.get("q") || "").trim()
-  );
+  const { query, setQuery, debouncedQuery, game, setGame, category, setCategory } =
+    useBoardFilters("/");
   const [listings, setListings] = useState<ListingDto[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedQuery(query.trim()), 350);
-    return () => clearTimeout(timer);
-  }, [query]);
-
-  // Đồng bộ trạng thái lọc lên URL (replace: không tạo thêm history entry cho
-  // mỗi lần gõ/đổi tab). Khi nhấn vào 1 listing rồi Quay lại, browser khôi
-  // phục đúng URL này → tìm kiếm/bộ lọc còn nguyên.
-  useEffect(() => {
-    const params = new URLSearchParams();
-    if (debouncedQuery) params.set("q", debouncedQuery);
-    if (game) params.set("game", game);
-    if (category) params.set("category", category);
-    const qs = params.toString();
-    router.replace(qs ? `/?${qs}` : "/", { scroll: false });
-  }, [debouncedQuery, game, category, router]);
-
-  const gameTabs: { value: Game | ""; label: string }[] = [
-    { value: "", label: t("home.tabAll") },
-    { value: "pokemon", label: t("home.tabPokemon") },
-    { value: "onepiece", label: t("home.tabOnepiece") },
-  ];
-  const categoryTabs: { value: Category | ""; label: string }[] = [
-    { value: "", label: t("home.tabAll") },
-    { value: "single", label: t("home.tabSingle") },
-    { value: "box", label: t("home.tabBox") },
-  ];
 
   useEffect(() => {
     let cancelled = false;
@@ -133,36 +91,14 @@ function HomeContent() {
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        {gameTabs.map((tab) => (
-          <button
-            key={`g-${tab.value}`}
-            onClick={() => setGame(tab.value)}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
-              game === tab.value
-                ? "bg-indigo-600 text-white"
-                : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-100"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-        <span className="mx-1 text-slate-300">|</span>
-        {categoryTabs.map((tab) => (
-          <button
-            key={`c-${tab.value}`}
-            onClick={() => setCategory(tab.value)}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
-              category === tab.value
-                ? "bg-violet-600 text-white"
-                : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-100"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-        <span className="ml-auto text-xs text-slate-500">{t("home.count", { n: total })}</span>
-      </div>
+      <FilterTabs
+        game={game}
+        category={category}
+        onGameChange={setGame}
+        onCategoryChange={setCategory}
+      >
+        {t("home.count", { n: total })}
+      </FilterTabs>
 
       {loading ? (
         <Loading />

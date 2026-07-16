@@ -4,16 +4,13 @@
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Prisma } from "@prisma/client";
-import { ApiError } from "@/server/errors";
+import { expectApiError } from "./helpers";
 
 vi.mock("@/server/repositories/trades", () => ({
   findTradeById: vi.fn(),
   findActiveTradeByListing: vi.fn(),
-  findActiveTradeByConversation: vi.fn(),
-  createTradeWithListingLock: vi.fn(),
-  createBuyOrderTrade: vi.fn(),
+  createTrade: vi.fn(),
   closeTrade: vi.fn(),
-  cancelTradeWithListingUnlock: vi.fn(),
   cancelTrade: vi.fn(),
   listTradesForUser: vi.fn(),
   listExpiredPendingTrades: vi.fn().mockResolvedValue([]),
@@ -81,17 +78,6 @@ function makeTrade(overrides: Record<string, unknown> = {}) {
     seller: { id: "seller1", displayName: "Seller" },
     ...overrides,
   };
-}
-
-async function expectApiError(promise: Promise<unknown>, code: string, status: number) {
-  try {
-    await promise;
-    expect.fail(`expected ApiError ${code}`);
-  } catch (e) {
-    expect(e).toBeInstanceOf(ApiError);
-    expect((e as ApiError).code).toBe(code);
-    expect((e as ApiError).status).toBe(status);
-  }
 }
 
 beforeEach(() => {
@@ -189,7 +175,7 @@ describe("tradeService.create", () => {
     // request khác vừa insert trước — đúng kịch bản race giữa check và insert.
     vi.mocked(getMembership).mockResolvedValue(conversation as never);
     vi.mocked(tradesRepo.findActiveTradeByListing).mockResolvedValue(null);
-    vi.mocked(tradesRepo.createTradeWithListingLock).mockRejectedValue(
+    vi.mocked(tradesRepo.createTrade).mockRejectedValue(
       new Prisma.PrismaClientKnownRequestError("Unique constraint failed", {
         code: "P2002",
         clientVersion: "test",
@@ -206,11 +192,11 @@ describe("tradeService.create", () => {
   it("tạo trade pending với buyer/seller suy ra từ conversation", async () => {
     vi.mocked(getMembership).mockResolvedValue(conversation as never);
     vi.mocked(tradesRepo.findActiveTradeByListing).mockResolvedValue(null);
-    vi.mocked(tradesRepo.createTradeWithListingLock).mockResolvedValue(makeTrade() as never);
+    vi.mocked(tradesRepo.createTrade).mockResolvedValue(makeTrade() as never);
 
     await tradeService.create("buyer1", { conversationId: "cv1", finalPriceJpy: 50000 });
 
-    expect(tradesRepo.createTradeWithListingLock).toHaveBeenCalledWith(
+    expect(tradesRepo.createTrade).toHaveBeenCalledWith(
       expect.objectContaining({
         listingId: "l1",
         sellerId: "seller1",
@@ -319,7 +305,6 @@ describe("tradeService.create — buy-order", () => {
 
   beforeEach(() => {
     vi.mocked(getMembership).mockResolvedValue(boConversation as never);
-    vi.mocked(tradesRepo.findActiveTradeByConversation).mockResolvedValue(null);
   });
 
   it("409 NOT_ACTIVE khi tin gom đã đóng", async () => {
@@ -346,13 +331,8 @@ describe("tradeService.create — buy-order", () => {
     );
   });
 
-  it("409 TRADE_EXISTS khi hội thoại đã có trade chưa cancelled", async () => {
-    vi.mocked(tradesRepo.findActiveTradeByConversation).mockResolvedValue(makeTrade() as never);
-    await expectApiError(tradeService.create("seller1", boInput), "TRADE_EXISTS", 409);
-  });
-
-  it("409 TRADE_EXISTS khi DB chặn race (P2002 từ trades_one_active_per_conversation)", async () => {
-    vi.mocked(tradesRepo.createBuyOrderTrade).mockRejectedValue(
+  it("409 TRADE_EXISTS khi hội thoại đã có trade sống (P2002 từ trades_one_active_per_conversation)", async () => {
+    vi.mocked(tradesRepo.createTrade).mockRejectedValue(
       new Prisma.PrismaClientKnownRequestError("Unique constraint failed", {
         code: "P2002",
         clientVersion: "test",
@@ -362,7 +342,7 @@ describe("tradeService.create — buy-order", () => {
   });
 
   it("hợp lệ → tạo trade với đơn giá + quantity + condition, KHÔNG khóa listing", async () => {
-    vi.mocked(tradesRepo.createBuyOrderTrade).mockResolvedValue(
+    vi.mocked(tradesRepo.createTrade).mockResolvedValue(
       makeTrade({
         listingId: null,
         listing: null,
@@ -376,7 +356,7 @@ describe("tradeService.create — buy-order", () => {
 
     const dto = await tradeService.create("seller1", boInput);
 
-    expect(tradesRepo.createBuyOrderTrade).toHaveBeenCalledWith(
+    expect(tradesRepo.createTrade).toHaveBeenCalledWith(
       expect.objectContaining({
         buyOrderId: "bo1",
         sellerId: "seller1",
@@ -387,7 +367,8 @@ describe("tradeService.create — buy-order", () => {
         finalPriceJpy: 75000,
       })
     );
-    expect(tradesRepo.createTradeWithListingLock).not.toHaveBeenCalled();
+    // Không truyền listingId → repo không khóa listing nào.
+    expect(vi.mocked(tradesRepo.createTrade).mock.calls[0][0].listingId).toBeUndefined();
     expect(dto.kind).toBe("buy_order");
   });
 });
@@ -452,8 +433,8 @@ describe("tradeService.cancel — buy-order", () => {
 
     const dto = await tradeService.cancel("buyer1", "t1");
 
-    expect(tradesRepo.cancelTrade).toHaveBeenCalledWith("t1");
-    expect(tradesRepo.cancelTradeWithListingUnlock).not.toHaveBeenCalled();
+    // listingId null → repo không mở lại listing nào.
+    expect(tradesRepo.cancelTrade).toHaveBeenCalledWith("t1", null);
     expect(dto.status).toBe("cancelled");
   });
 });

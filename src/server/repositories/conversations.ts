@@ -32,6 +32,14 @@ export function findBuyOrderConversationByPair(buyOrderId: string, sellerId: str
   });
 }
 
+/** Mọi hội thoại của 1 tin gom (map sellerId → conversationId trong 1 query). */
+export function listBuyOrderConversations(buyOrderId: string) {
+  return prisma.conversation.findMany({
+    where: { buyOrderId },
+    select: { id: true, sellerId: true },
+  });
+}
+
 export function findOrCreateConversation(listingId: string, buyerId: string, sellerId: string) {
   return prisma.conversation.upsert({
     where: { listingId_buyerId: { listingId, buyerId } },

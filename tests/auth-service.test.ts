@@ -7,6 +7,7 @@
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/server/errors";
+import { expectApiError } from "./helpers";
 import { TERMS_VERSION } from "@/lib/terms";
 
 vi.mock("@/server/repositories/users", () => ({
@@ -52,15 +53,6 @@ function makeUser(over: Record<string, unknown> = {}) {
   } as never;
 }
 
-async function expectApiError(promise: Promise<unknown>, code: string) {
-  try {
-    await promise;
-    expect.fail(`expected ApiError ${code}`);
-  } catch (e) {
-    expect(e).toBeInstanceOf(ApiError);
-    expect((e as ApiError).code).toBe(code);
-  }
-}
 
 beforeEach(() => {
   vi.clearAllMocks();

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ApiError } from "@/server/errors";
 
 // SQLite không có enum → đây là nguồn chân lý duy nhất cho các giá trị "enum".
 export const GAMES = ["pokemon", "onepiece"] as const;
@@ -17,6 +18,24 @@ export const SINGLE_CONDITIONS = [
 // Condition cho BOX chưa khui
 export const BOX_CONDITIONS = ["BOX_SHRINK", "BOX_NO_SHRINK"] as const;
 export const CONDITIONS = [...SINGLE_CONDITIONS, ...BOX_CONDITIONS] as const;
+
+/**
+ * Condition phải khớp loại sản phẩm (single/box) — dữ liệu giá sẽ noisy nếu
+ * box dùng condition thẻ lẻ và ngược lại. Dùng chung cho đăng listing và
+ * khai chốt trade buy-order (nơi condition do bên khởi tạo khai).
+ */
+export function assertConditionMatchesCategory(category: string, condition: string): void {
+  const isBoxCondition = (BOX_CONDITIONS as readonly string[]).includes(condition);
+  if ((category === "box") !== isBoxCondition) {
+    throw new ApiError(
+      400,
+      "CONDITION_MISMATCH",
+      category === "box"
+        ? "BOXにはシュリンク付き/なしの状態を選択してください。"
+        : "シングルカードにはカード用の状態を選択してください。"
+    );
+  }
+}
 export const TRADE_TYPES = ["sell", "trade"] as const;
 
 export const MAX_PRICE_JPY = 10_000_000;

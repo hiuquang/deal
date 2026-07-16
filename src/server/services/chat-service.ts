@@ -20,30 +20,43 @@ function toConversationDto(
   },
   viewerId: string
 ): ConversationDto {
-  // Hội thoại từ listing hoặc từ tin gom (buyOrder). Thẻ + đối phương lấy từ
-  // nguồn tương ứng; seller lưu trực tiếp trên conversation.
   const otherParty =
     conversation.buyerId === viewerId ? conversation.seller : conversation.buyer;
   const last = conversation.messages?.[0] ?? null;
-  const card = conversation.listing?.card ?? conversation.buyOrder?.card;
-  return {
+  const base = {
     id: conversation.id,
-    kind: conversation.buyOrderId ? "buy_order" : "listing",
-    card: card ? toCardDto(card) : null!,
-    listing: conversation.listing ? toListingDto(conversation.listing) : null,
-    buyOrder: conversation.buyOrder
-      ? {
-          id: conversation.buyOrder.id,
-          quantity: conversation.buyOrder.quantity,
-          maxUnitPriceJpy: conversation.buyOrder.maxUnitPriceJpy,
-        }
-      : null,
     buyerId: conversation.buyerId,
-    otherPartyName: otherParty?.displayName ?? "",
+    otherPartyName: otherParty.displayName,
     lastMessage: last ? toMessageDto(last) : null,
     activeTradeId: conversation.trades?.[0]?.id ?? null,
     updatedAt: conversation.updatedAt.toISOString(),
   };
+  // Hội thoại từ listing hoặc từ tin gom — xây DTO trong nhánh tương ứng để
+  // card/listing/buyOrder có kiểu trung thực (union phân biệt theo kind).
+  if (conversation.buyOrder) {
+    return {
+      ...base,
+      kind: "buy_order",
+      card: toCardDto(conversation.buyOrder.card),
+      listing: null,
+      buyOrder: {
+        id: conversation.buyOrder.id,
+        quantity: conversation.buyOrder.quantity,
+        maxUnitPriceJpy: conversation.buyOrder.maxUnitPriceJpy,
+      },
+    };
+  }
+  if (conversation.listing) {
+    return {
+      ...base,
+      kind: "listing",
+      card: toCardDto(conversation.listing.card),
+      listing: toListingDto(conversation.listing),
+      buyOrder: null,
+    };
+  }
+  // Bất biến dữ liệu: hội thoại luôn sinh từ listing hoặc buy-order.
+  throw new Error(`conversation ${conversation.id} has neither listing nor buy order`);
 }
 
 export async function listMine(userId: string): Promise<ConversationDto[]> {

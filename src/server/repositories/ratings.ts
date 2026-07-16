@@ -27,6 +27,21 @@ export async function listRevealedRatingsForUser(rateeId: string) {
   return ratings.filter((r) => r.trade._count.ratings >= 2);
 }
 
+/** Bản batch của listRevealedRatingsForUser — 1 query cho nhiều user. */
+export async function listRevealedRatingsForUsers(rateeIds: string[]) {
+  if (rateeIds.length === 0) return [];
+  const ratings = await prisma.rating.findMany({
+    where: { rateeId: { in: rateeIds } },
+    include: { trade: { select: { _count: { select: { ratings: true } } } } },
+  });
+  return ratings.filter((r) => r.trade._count.ratings >= 2);
+}
+
 export function findUserById(id: string) {
   return prisma.user.findFirst({ where: { id, deletedAt: null } });
+}
+
+export function findUsersByIds(ids: string[]) {
+  if (ids.length === 0) return Promise.resolve([]);
+  return prisma.user.findMany({ where: { id: { in: ids }, deletedAt: null } });
 }

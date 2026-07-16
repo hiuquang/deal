@@ -95,7 +95,6 @@ export function toTradeDto(trade: TradeWithRelations, viewerId: string): TradeDt
   return {
     id: trade.id,
     kind: trade.buyOrderId ? "buy_order" : "listing",
-    listing: trade.listing ? toListingDto(trade.listing) : null,
     card: toCardDto(trade.card),
     condition: trade.condition as Condition,
     quantity: trade.quantity,

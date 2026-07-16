@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## [0.9.1] — 2026-07-16 — Dọn code sau 2 giai đoạn tin gom (review 4 góc: tái dùng / đơn giản / hiệu năng / độ sâu)
+
+### Hiệu năng
+- **Batch N+1 ở `GET /api/buy-orders/:id/offers`** (endpoint công khai, nóng): trước mỗi chào bán tốn 3–4 query (uy tín người bán + hội thoại); nay 4 query cho CẢ danh sách (`getUserSummaries` + `listBuyOrderConversations`).
+- **Thêm index `conversations(buyer_id)` + `(seller_id)`** — phục vụ poll tin chưa đọc 15s/user (query nóng nhất app), trước đây quét cả bảng.
+
+### Làm sạch kiến trúc
+- **`trades` repo hợp nhất**: `createTrade`/`cancelTrade` nhận `listingId` nullable (mirror pattern `closeTrade`) thay cho 4 hàm đôi; `trade-service.create` gộp 2 nhánh thành guard-theo-nguồn + 1 đuôi chung (1 catch P2002); bỏ pre-check trùng với index DB; bỏ nhánh chết `TRADE_NOT_SUPPORTED`.
+- **`conversations.seller_id` siết NOT NULL** (migration; backfill từ P8 đã phủ 100%) → hết `!`/`?? ""` giả định ngầm; `ConversationDto` thành **union phân biệt theo `kind`** (check `kind==="listing"` là TS tự thu hẹp — xóa 4 chỗ `!` ở chat). `TradeDto` bỏ trường `listing` chết (không consumer nào dùng — trade đã denormalize card/condition) kèm join thừa mỗi lần list trade.
+- **Trích dùng chung**: `assertConditionMatchesCategory` (validation.ts — trước lặp ở listing-service + trade-service), `useBoardFilters` + `FilterTabs` (board-filters.tsx — trang chủ và まとめ買い trước lặp ~110 dòng máy lọc/URL-sync), `GameCategoryPicker` (2 form đăng tin), `tests/helpers.ts` (expectApiError trước copy 8 lần).
+- Check khớp số lượng khi xác nhận trade nay đồng nhất mọi loại trade (listing quantity=1 tự khớp).
+
+### Kiểm thử
+- 118 test pass (cập nhật mock theo repo API mới). `tsc` sạch. Verify browser: 2 bảng tin + lọc URL, chat 2 loại (trade pending listing + trade chốt buy-order), `/me`, trang chi tiết tin gom — không lỗi console/server.
+
 ## [0.9.0] — 2026-07-16 — Tin gom số lượng lớn — Giai đoạn 2: chốt giao dịch + ghi nhận giá
 
 ### Tính năng

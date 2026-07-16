@@ -3,6 +3,7 @@
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/server/errors";
+import { expectApiError } from "./helpers";
 
 vi.mock("@/server/repositories/reports", () => ({
   createReport: vi.fn(),
@@ -15,15 +16,6 @@ import * as reportsRepo from "@/server/repositories/reports";
 import * as ratingsRepo from "@/server/repositories/ratings";
 import * as reportService from "@/server/services/report-service";
 
-async function expectApiError(promise: Promise<unknown>, code: string) {
-  try {
-    await promise;
-    expect.fail(`expected ApiError ${code}`);
-  } catch (e) {
-    expect(e).toBeInstanceOf(ApiError);
-    expect((e as ApiError).code).toBe(code);
-  }
-}
 
 beforeEach(() => {
   vi.clearAllMocks();

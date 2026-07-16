@@ -1,9 +1,9 @@
 import { prisma } from "@/server/db";
 import type { Prisma } from "@prisma/client";
-import { listingInclude } from "@/server/repositories/listings";
 
+// KHÔNG join listing: mọi dữ liệu trade cần (card/condition/quantity) đã
+// denormalize trên trades từ P9; listingId (cột) đủ cho khóa/mở listing.
 export const tradeInclude = {
-  listing: { include: listingInclude },
   card: true,
   buyer: { select: { id: true, displayName: true } },
   seller: { select: { id: true, displayName: true } },
@@ -24,13 +24,6 @@ export function findActiveTradeByListing(listingId: string) {
   });
 }
 
-/** Trade "còn sống" trong 1 hội thoại — chặn TRADE_EXISTS cho trade buy-order. */
-export function findActiveTradeByConversation(conversationId: string) {
-  return prisma.trade.findFirst({
-    where: { conversationId, status: { not: "cancelled" } },
-  });
-}
-
 export function listTradesForUser(userId: string) {
   return prisma.trade.findMany({
     where: { OR: [{ buyerId: userId }, { sellerId: userId }] },
@@ -39,9 +32,13 @@ export function listTradesForUser(userId: string) {
   });
 }
 
-/** Tạo trade từ listing + chuyển listing sang in_trade trong 1 transaction. */
-export function createTradeWithListingLock(data: {
-  listingId: string;
+/**
+ * Tạo trade. Nếu gắn listing thì chuyển listing sang in_trade trong cùng
+ * transaction; trade từ buy-order không có listing để khóa.
+ */
+export function createTrade(data: {
+  listingId?: string | null;
+  buyOrderId?: string | null;
   conversationId: string;
   sellerId: string;
   buyerId: string;
@@ -49,7 +46,7 @@ export function createTradeWithListingLock(data: {
   cardId: string;
   condition: string;
   quantity: number;
-  finalPriceJpy: number;
+  finalPriceJpy: number; // với buy-order là ĐƠN GIÁ (giá/1 bản)
   autoCloseAt: Date;
 }) {
   return prisma.$transaction(async (tx) => {
@@ -57,36 +54,19 @@ export function createTradeWithListingLock(data: {
       data: { ...data, status: "pending" },
       include: tradeInclude,
     });
-    await tx.listing.update({
-      where: { id: data.listingId },
-      data: { status: "in_trade" },
-    });
+    if (data.listingId) {
+      await tx.listing.update({
+        where: { id: data.listingId },
+        data: { status: "in_trade" },
+      });
+    }
     return trade;
-  });
-}
-
-/** Tạo trade từ buy-order — không có listing để khóa. */
-export function createBuyOrderTrade(data: {
-  buyOrderId: string;
-  conversationId: string;
-  sellerId: string;
-  buyerId: string;
-  initiatorId: string;
-  cardId: string;
-  condition: string;
-  quantity: number;
-  finalPriceJpy: number; // đơn giá (giá/1 bản)
-  autoCloseAt: Date;
-}) {
-  return prisma.trade.create({
-    data: { ...data, status: "pending" },
-    include: tradeInclude,
   });
 }
 
 /**
  * Chốt trade (confirmed hoặc self_reported): cập nhật trạng thái,
- * tạo price_record đúng 1 lần, đóng listing — tất cả trong 1 transaction.
+ * tạo price_record đúng 1 lần, đóng listing (nếu có) — trong 1 transaction.
  */
 export function closeTrade(
   tradeId: string,
@@ -131,28 +111,21 @@ export function closeTrade(
   });
 }
 
-/** Hủy trade pending + mở lại listing. */
-export function cancelTradeWithListingUnlock(tradeId: string, listingId: string) {
+/** Hủy trade pending; nếu gắn listing thì mở lại listing về active. */
+export function cancelTrade(tradeId: string, listingId: string | null) {
   return prisma.$transaction(async (tx) => {
     const trade = await tx.trade.update({
       where: { id: tradeId },
       data: { status: "cancelled" },
       include: tradeInclude,
     });
-    await tx.listing.update({
-      where: { id: listingId },
-      data: { status: "active" },
-    });
+    if (listingId) {
+      await tx.listing.update({
+        where: { id: listingId },
+        data: { status: "active" },
+      });
+    }
     return trade;
-  });
-}
-
-/** Hủy trade pending không gắn listing (trade từ buy-order). */
-export function cancelTrade(tradeId: string) {
-  return prisma.trade.update({
-    where: { id: tradeId },
-    data: { status: "cancelled" },
-    include: tradeInclude,
   });
 }
 

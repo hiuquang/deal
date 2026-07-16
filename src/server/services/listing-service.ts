@@ -2,7 +2,7 @@ import { ApiError } from "@/server/errors";
 import * as cards from "@/server/repositories/cards";
 import * as listings from "@/server/repositories/listings";
 import { toListingDto } from "@/server/serializers";
-import { BOX_CONDITIONS } from "@/server/validation";
+import { assertConditionMatchesCategory } from "@/server/validation";
 import type { ListingDto } from "@/lib/types";
 
 export async function list(filter: {
@@ -35,18 +35,7 @@ export async function create(
   if (!card) {
     throw new ApiError(404, "CARD_NOT_FOUND", "指定されたカードが見つかりません。");
   }
-  // Condition phải khớp loại sản phẩm — dữ liệu giá sẽ noisy nếu box dùng
-  // condition của thẻ lẻ (và ngược lại).
-  const isBoxCondition = (BOX_CONDITIONS as readonly string[]).includes(input.condition);
-  if ((card.category === "box") !== isBoxCondition) {
-    throw new ApiError(
-      400,
-      "CONDITION_MISMATCH",
-      card.category === "box"
-        ? "BOXにはシュリンク付き/なしの状態を選択してください。"
-        : "シングルカードにはカード用の状態を選択してください。"
-    );
-  }
+  assertConditionMatchesCategory(card.category, input.condition);
   const listing = await listings.createListing({
     sellerId,
     cardId: input.cardId,

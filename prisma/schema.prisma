@@ -183,7 +183,7 @@ model Conversation {
   listingId  String? @map("listing_id")  // null nếu hội thoại đến từ BuyOrder
   buyOrderId String? @map("buy_order_id") // null nếu hội thoại đến từ Listing
   buyerId    String  @map("buyer_id")
-  sellerId   String? @map("seller_id")   // nullable ở DB (backfill), luôn set khi tạo mới
+  sellerId   String  @map("seller_id") // NOT NULL từ P9.1 (backfill xong ở P8)
   // Mốc "đã đọc" của từng bên (null = chưa mở lần nào). Tin chưa đọc = tin của
   // bên kia có created_at > mốc này. Buyer null khi vừa được match → báo là 1.
   buyerLastReadAt  DateTime? @map("buyer_last_read_at")
@@ -194,12 +194,16 @@ model Conversation {
   listing  Listing?  @relation(fields: [listingId], references: [id])
   buyOrder BuyOrder? @relation(fields: [buyOrderId], references: [id])
   buyer    User      @relation("ConversationBuyer", fields: [buyerId], references: [id])
-  seller   User?     @relation("ConversationSeller", fields: [sellerId], references: [id])
+  seller   User      @relation("ConversationSeller", fields: [sellerId], references: [id])
   messages Message[]
   trades   Trade[]
 
   @@unique([listingId, buyerId])
   @@unique([buyOrderId, sellerId])
+  // Poll tin chưa đọc (15s/user đăng nhập) lọc OR buyer_id/seller_id —
+  // 2 index này phục vụ query nóng nhất của app.
+  @@index([buyerId])
+  @@index([sellerId])
   @@map("conversations")
 }
 

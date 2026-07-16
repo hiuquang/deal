@@ -6,6 +6,7 @@ import Link from "next/link";
 import { api, ApiClientError } from "@/lib/api-client";
 import type { CardDto, Category, Game } from "@/lib/types";
 import { CardAutocomplete } from "@/components/card-autocomplete";
+import { GameCategoryPicker } from "@/components/game-category-picker";
 import { useAuth } from "@/components/auth-context";
 import { ErrorBox, Loading } from "@/components/ui";
 import { useI18n, type MessageKey } from "@/lib/i18n";
@@ -60,41 +61,15 @@ export default function NewBuyOrderPage() {
       <h1 className="text-xl font-bold">{t("bon.title")}</h1>
       {error && <ErrorBox message={error} />}
       <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-slate-200 bg-white p-5">
-        <div>
-          <span className="mb-1 block text-sm font-medium">{t("bon.game")}</span>
-          <div className="flex gap-2">
-            {(["pokemon", "onepiece"] as const).map((g) => (
-              <button
-                key={g}
-                type="button"
-                onClick={() => { setGame(g); setCard(null); }}
-                className={`rounded-full px-4 py-1.5 text-sm ${
-                  game === g ? "bg-amber-600 text-white" : "bg-slate-100 text-slate-600"
-                }`}
-              >
-                {t(`home.tab${g === "pokemon" ? "Pokemon" : "Onepiece"}` as MessageKey)}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <span className="mb-1 block text-sm font-medium">{t("bon.category")}</span>
-          <div className="flex gap-2">
-            {(["single", "box"] as const).map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => { setCategory(c); setCard(null); }}
-                className={`rounded-full px-4 py-1.5 text-sm ${
-                  category === c ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-600"
-                }`}
-              >
-                {t(`cat.${c}` as MessageKey)}
-              </button>
-            ))}
-          </div>
-        </div>
+        <GameCategoryPicker
+          game={game}
+          category={category}
+          onGameChange={(g) => { setGame(g); setCard(null); }}
+          onCategoryChange={(c) => { setCategory(c); setCard(null); }}
+          activeGameClass="bg-amber-600 text-white"
+          gameLabel={t("bon.game")}
+          categoryLabel={t("bon.category")}
+        />
 
         <div>
           <span className="mb-1 block text-sm font-medium">

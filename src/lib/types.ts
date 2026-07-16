@@ -137,16 +137,10 @@ export interface MessageDto {
 
 export type ConversationKind = "listing" | "buy_order";
 
-export interface ConversationDto {
+interface ConversationBase {
   id: string;
-  /** nguồn gốc hội thoại: từ 1 listing hay từ 1 tin gom (BuyOrder) */
-  kind: ConversationKind;
   /** thẻ liên quan — luôn có (từ listing hoặc buy-order) */
   card: CardDto;
-  /** chỉ khác null khi kind==="listing" — dùng cho TradePanel + link chi tiết */
-  listing: ListingDto | null;
-  /** chỉ khác null khi kind==="buy_order" */
-  buyOrder: { id: string; quantity: number; maxUnitPriceJpy: number | null } | null;
   buyerId: string;
   otherPartyName: string;
   lastMessage: MessageDto | null;
@@ -154,13 +148,25 @@ export interface ConversationDto {
   updatedAt: string;
 }
 
+/**
+ * Union phân biệt theo `kind`: check `kind === "listing"` là TS tự thu hẹp
+ * `listing` thành non-null (và ngược lại với `buyOrder`) — không cần `!`.
+ */
+export type ConversationDto = ConversationBase &
+  (
+    | { kind: "listing"; listing: ListingDto; buyOrder: null }
+    | {
+        kind: "buy_order";
+        listing: null;
+        buyOrder: { id: string; quantity: number; maxUnitPriceJpy: number | null };
+      }
+  );
+
 export interface TradeDto {
   id: string;
   /** nguồn gốc trade: từ listing hay từ tin gom */
   kind: ConversationKind;
-  /** chỉ khác null khi kind==="listing" */
-  listing: ListingDto | null;
-  /** thẻ giao dịch — luôn có (denormalize trên trade) */
+  /** thẻ giao dịch — luôn có (denormalize trên trade, không phụ thuộc listing) */
   card: CardDto;
   condition: Condition;
   /** số bản trao đổi (listing trade luôn 1) */

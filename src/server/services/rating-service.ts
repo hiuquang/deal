@@ -77,16 +77,11 @@ export async function getState(
   };
 }
 
-/** Hồ sơ công khai: ★ trung bình (chỉ từ rating đã reveal) + số giao dịch. */
-export async function getUserSummary(userId: string): Promise<UserSummaryDto> {
-  const user = await ratingsRepo.findUserById(userId);
-  if (!user) {
-    throw new ApiError(404, "NOT_FOUND", "ユーザーが見つかりません。");
-  }
-  const [revealed, contributionCount] = await Promise.all([
-    ratingsRepo.listRevealedRatingsForUser(userId),
-    usersRepo.countContributions(userId),
-  ]);
+function summarize(
+  user: { id: string; displayName: string; createdAt: Date },
+  revealed: { score: number }[],
+  contributionCount: number
+): UserSummaryDto {
   const ratingAvg =
     revealed.length > 0
       ? Math.round(
@@ -101,4 +96,37 @@ export async function getUserSummary(userId: string): Promise<UserSummaryDto> {
     contributionCount,
     memberSince: user.createdAt.toISOString(),
   };
+}
+
+/**
+ * Bản batch của getUserSummary — 4 query cho CẢ danh sách user thay vì
+ * 3 query/user (dùng cho danh sách chào bán công khai, endpoint nóng).
+ */
+export async function getUserSummaries(
+  userIds: string[]
+): Promise<Map<string, UserSummaryDto>> {
+  const [users, revealed, contributions] = await Promise.all([
+    ratingsRepo.findUsersByIds(userIds),
+    ratingsRepo.listRevealedRatingsForUsers(userIds),
+    usersRepo.countContributionsForUsers(userIds),
+  ]);
+  const byUser = new Map<string, UserSummaryDto>();
+  for (const user of users) {
+    const mine = revealed.filter((r) => r.rateeId === user.id);
+    byUser.set(user.id, summarize(user, mine, contributions.get(user.id) ?? 0));
+  }
+  return byUser;
+}
+
+/** Hồ sơ công khai: ★ trung bình (chỉ từ rating đã reveal) + số giao dịch. */
+export async function getUserSummary(userId: string): Promise<UserSummaryDto> {
+  const user = await ratingsRepo.findUserById(userId);
+  if (!user) {
+    throw new ApiError(404, "NOT_FOUND", "ユーザーが見つかりません。");
+  }
+  const [revealed, contributionCount] = await Promise.all([
+    ratingsRepo.listRevealedRatingsForUser(userId),
+    usersRepo.countContributions(userId),
+  ]);
+  return summarize(user, revealed, contributionCount);
 }
