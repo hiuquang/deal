@@ -114,6 +114,9 @@ export function NavBar() {
           <Link href="/listings/new" className="rounded-md px-3 py-1.5 hover:bg-slate-100">
             {t("nav.sell")}
           </Link>
+          <Link href="/buy-orders" className="rounded-md px-3 py-1.5 hover:bg-slate-100">
+            {t("nav.buyOrders")}
+          </Link>
           {me && (
             <Link
               href="/chat"

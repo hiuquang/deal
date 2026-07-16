@@ -4,7 +4,9 @@ import { listingInclude } from "@/server/repositories/listings";
 
 export const conversationInclude = {
   listing: { include: listingInclude },
+  buyOrder: { include: { card: true } },
   buyer: { select: { id: true, displayName: true } },
+  seller: { select: { id: true, displayName: true } },
 } satisfies Prisma.ConversationInclude;
 
 export type ConversationWithRelations = Prisma.ConversationGetPayload<{
@@ -24,13 +26,35 @@ export function findConversationByPair(listingId: string, buyerId: string) {
   });
 }
 
-export function findOrCreateConversation(listingId: string, buyerId: string) {
+export function findBuyOrderConversationByPair(buyOrderId: string, sellerId: string) {
+  return prisma.conversation.findUnique({
+    where: { buyOrderId_sellerId: { buyOrderId, sellerId } },
+  });
+}
+
+export function findOrCreateConversation(listingId: string, buyerId: string, sellerId: string) {
   return prisma.conversation.upsert({
     where: { listingId_buyerId: { listingId, buyerId } },
     update: {},
     // Hội thoại chỉ sinh ra khi seller connect → seller vừa "thấy" nó (mốc =
     // now); buyer chưa đọc (null) để hiện thông báo được match.
-    create: { listingId, buyerId, sellerLastReadAt: new Date() },
+    create: { listingId, buyerId, sellerId, sellerLastReadAt: new Date() },
+    include: conversationInclude,
+  });
+}
+
+// Hội thoại riêng từ 1 tin gom: người mua (chủ tin) connect 1 chào bán của
+// người bán. Key theo (buyOrderId, sellerId) — 1 hội thoại / cặp. Người bán
+// vừa được người mua chọn → seller đã "thấy" (mốc=now); buyer chưa đọc (null).
+export function findOrCreateBuyOrderConversation(
+  buyOrderId: string,
+  buyerId: string,
+  sellerId: string
+) {
+  return prisma.conversation.upsert({
+    where: { buyOrderId_sellerId: { buyOrderId, sellerId } },
+    update: {},
+    create: { buyOrderId, buyerId, sellerId, sellerLastReadAt: new Date() },
     include: conversationInclude,
   });
 }
@@ -64,22 +88,22 @@ export function countUnreadMessages(
 /** Hội thoại của user kèm mốc đã đọc — phục vụ đếm tổng tin chưa đọc. */
 export function listConversationsWithReadState(userId: string) {
   return prisma.conversation.findMany({
-    where: { OR: [{ buyerId: userId }, { listing: { sellerId: userId } }] },
+    where: { OR: [{ buyerId: userId }, { sellerId: userId }] },
     select: {
       id: true,
       buyerId: true,
+      sellerId: true,
       buyerLastReadAt: true,
       sellerLastReadAt: true,
-      listing: { select: { sellerId: true } },
     },
   });
 }
 
-/** Mọi conversation user tham gia (là buyer, hoặc là seller của listing). */
+/** Mọi conversation user tham gia (là buyer, hoặc là seller). */
 export function listConversationsForUser(userId: string) {
   return prisma.conversation.findMany({
     where: {
-      OR: [{ buyerId: userId }, { listing: { sellerId: userId } }],
+      OR: [{ buyerId: userId }, { sellerId: userId }],
     },
     include: {
       ...conversationInclude,

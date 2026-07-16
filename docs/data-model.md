@@ -1,6 +1,6 @@
 # Data model (hợp nhất mọi phase)
 
-14 bảng. Schema thật: `prisma/schema.prisma`. Ghi chú `(P2)`/`(P3)`... = phase bổ sung.
+16 bảng. Schema thật: `prisma/schema.prisma`. Ghi chú `(P2)`/`(P3)`... = phase bổ sung.
 
 ```
 users             id, email(unique), password_hash, display_name,
@@ -26,12 +26,26 @@ listings          id, seller_id→users, card_id→cards, condition, image_url,
                      luồng trade chưa trừ tồn từng đơn (đóng listing khi 1
                      giao dịch chốt). Muốn tồn kho thật = thay đổi lớn ở trade.
 
-conversations     id, listing_id→listings, buyer_id→users,
+conversations     id, listing_id?→listings, buy_order_id?→buy_orders (P8),
+                  buyer_id→users, seller_id?→users (P8 — lưu trực tiếp,
+                    trước đây suy từ listing.seller_id; backfill cho hàng cũ),
                   buyer_last_read_at?, seller_last_read_at? (mốc đã đọc/bên,
                     null = chưa mở → dùng đếm tin chưa đọc + báo match),
                   created_at, updated_at
-                  unique(listing_id, buyer_id)
-                  — từ P3 chỉ được tạo qua purchase_requests connect
+                  unique(listing_id, buyer_id); unique(buy_order_id, seller_id)
+                  — nguồn gốc: listing (mua thường) HOẶC buy_order (tin gom).
+                    Chỉ tạo qua connect (purchase_requests / buy_order_offers).
+
+buy_orders (P8)   id, buyer_id→users, card_id→cards, quantity(1–999),
+                  max_unit_price_jpy? (đơn giá tối đa mong muốn),
+                  status(active|cancelled), created_at, updated_at
+                  — tin "gom số lượng lớn": người mua cần N bản của 1 thẻ.
+                    Giai đoạn 1 CHƯA ghi giá (chỉ kết nối sang chat riêng).
+
+buy_order_offers  id, buy_order_id→buy_orders (cascade), seller_id→users,
+(P8)              quantity, message? (≤300), status(pending|connected),
+                  created_at, updated_at
+                  unique(buy_order_id, seller_id) — 1 chào bán/người bán/tin
 
 messages          id, conversation_id→conversations, sender_id→users, body,
                   created_at, updated_at

@@ -2,6 +2,8 @@
 // Mọi hàm map 1-1 với API CONTRACT trong design.md mục 5.
 import type {
   ApiErrorBody,
+  BuyOrderDto,
+  BuyOrderOfferDto,
   CardDto,
   Category,
   CommentDto,
@@ -144,6 +146,47 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify({ status: "cancelled" }),
     }),
+
+  // ---- buy orders (tin gom số lượng lớn: người mua đăng → người bán chào bán) ----
+  listBuyOrders: (
+    params: {
+      q?: string;
+      game?: Game;
+      category?: Category;
+      cardId?: string;
+      page?: number;
+      mine?: boolean;
+    } = {}
+  ) => {
+    const qs = new URLSearchParams();
+    if (params.q) qs.set("q", params.q);
+    if (params.game) qs.set("game", params.game);
+    if (params.category) qs.set("category", params.category);
+    if (params.cardId) qs.set("cardId", params.cardId);
+    if (params.page) qs.set("page", String(params.page));
+    if (params.mine) qs.set("mine", "1");
+    return request<{ buyOrders: BuyOrderDto[]; total: number }>(
+      `/api/buy-orders?${qs.toString()}`
+    );
+  },
+  createBuyOrder: (data: {
+    cardId: string;
+    quantity: number;
+    maxUnitPriceJpy?: number | null;
+  }) => request<{ buyOrder: BuyOrderDto }>("/api/buy-orders", json(data)),
+  getBuyOrder: (id: string) =>
+    request<{ buyOrder: BuyOrderDto }>(`/api/buy-orders/${id}`),
+  cancelBuyOrder: (id: string) =>
+    request<{ buyOrder: BuyOrderDto }>(`/api/buy-orders/${id}/cancel`, { method: "POST" }),
+  listOffers: (buyOrderId: string) =>
+    request<{ offers: BuyOrderOfferDto[] }>(`/api/buy-orders/${buyOrderId}/offers`),
+  createOffer: (buyOrderId: string, data: { quantity: number; message?: string | null }) =>
+    request<{ offer: BuyOrderOfferDto }>(`/api/buy-orders/${buyOrderId}/offers`, json(data)),
+  connectOffer: (offerId: string) =>
+    request<{ offer: BuyOrderOfferDto; conversationId: string }>(
+      `/api/buy-orders/offers/${offerId}/connect`,
+      { method: "POST" }
+    ),
 
   // ---- comments (bình luận công khai dưới listing) ----
   listComments: (listingId: string) =>

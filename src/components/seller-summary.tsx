@@ -10,7 +10,8 @@ import { useI18n } from "@/lib/i18n";
 
 interface Props {
   sellerId: string;
-  listingId: string;
+  /** listing liên quan (nếu có) — báo cáo có thể không gắn listing (vd. tin gom) */
+  listingId?: string;
 }
 
 export function SellerSummary({ sellerId, listingId }: Props) {
@@ -31,7 +32,7 @@ export function SellerSummary({ sellerId, listingId }: Props) {
     setBusy(true);
     setError(null);
     try {
-      await api.reportUser({ reportedUserId: sellerId, listingId, reason });
+      await api.reportUser({ reportedUserId: sellerId, listingId: listingId ?? null, reason });
       setDone(true);
       setShowReport(false);
     } catch (e) {

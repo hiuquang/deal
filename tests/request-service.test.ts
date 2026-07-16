@@ -118,7 +118,7 @@ describe("requestService.connect", () => {
 
     const result = await requestService.connect("seller1", "req1");
 
-    expect(conversationsRepo.findOrCreateConversation).toHaveBeenCalledWith("l1", "buyer1");
+    expect(conversationsRepo.findOrCreateConversation).toHaveBeenCalledWith("l1", "buyer1", "seller1");
     expect(requestsRepo.markConnected).toHaveBeenCalledWith("req1");
     expect(result.conversationId).toBe("cv1");
     expect(result.request.status).toBe("connected");

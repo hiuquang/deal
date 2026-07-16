@@ -24,7 +24,8 @@ model User {
 
   sessions        Session[]
   listings        Listing[]
-  conversations   Conversation[] @relation("ConversationBuyer")
+  conversations       Conversation[] @relation("ConversationBuyer")
+  conversationsAsSeller Conversation[] @relation("ConversationSeller")
   messages        Message[]
   tradesAsBuyer   Trade[]        @relation("TradeBuyer")
   tradesAsSeller  Trade[]        @relation("TradeSeller")
@@ -34,6 +35,8 @@ model User {
   reportsReceived  Report[]          @relation("ReportsReceived")
   comments         Comment[]
   purchaseRequests PurchaseRequest[]
+  buyOrders        BuyOrder[]
+  buyOrderOffers   BuyOrderOffer[]
   emailTokens      EmailToken[]
 
   @@map("users")
@@ -98,6 +101,7 @@ model Card {
 
   listings     Listing[]
   priceRecords PriceRecord[]
+  buyOrders    BuyOrder[]
 
   @@unique([game, setCode, cardNumber, language])
   @@map("cards")
@@ -169,10 +173,16 @@ model PurchaseRequest {
   @@map("purchase_requests")
 }
 
+// Hội thoại riêng 1-1. Nguồn gốc: hoặc từ 1 listing (người mua ↔ người bán của
+// listing), hoặc từ 1 tin gom số lượng lớn (BuyOrder: người mua = chủ tin ↔
+// người bán đã chào bán). sellerId lưu trực tiếp (không suy từ listing nữa) để
+// hỗ trợ cả hai nguồn — xem migration backfill cho hàng cũ.
 model Conversation {
-  id        String   @id @default(cuid())
-  listingId String   @map("listing_id")
-  buyerId   String   @map("buyer_id")
+  id         String  @id @default(cuid())
+  listingId  String? @map("listing_id")  // null nếu hội thoại đến từ BuyOrder
+  buyOrderId String? @map("buy_order_id") // null nếu hội thoại đến từ Listing
+  buyerId    String  @map("buyer_id")
+  sellerId   String? @map("seller_id")   // nullable ở DB (backfill), luôn set khi tạo mới
   // Mốc "đã đọc" của từng bên (null = chưa mở lần nào). Tin chưa đọc = tin của
   // bên kia có created_at > mốc này. Buyer null khi vừa được match → báo là 1.
   buyerLastReadAt  DateTime? @map("buyer_last_read_at")
@@ -180,13 +190,60 @@ model Conversation {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  listing  Listing   @relation(fields: [listingId], references: [id])
+  listing  Listing?  @relation(fields: [listingId], references: [id])
+  buyOrder BuyOrder? @relation(fields: [buyOrderId], references: [id])
   buyer    User      @relation("ConversationBuyer", fields: [buyerId], references: [id])
+  seller   User?     @relation("ConversationSeller", fields: [sellerId], references: [id])
   messages Message[]
   trades   Trade[]
 
   @@unique([listingId, buyerId])
+  @@unique([buyOrderId, sellerId])
   @@map("conversations")
+}
+
+// Tin "gom số lượng lớn" (まとめ買い募集): người mua đăng nhu cầu cần N bản của
+// 1 thẻ. Người bán xem và chào bán (BuyOrderOffer). Giai đoạn 1: chỉ kết nối
+// sang chat riêng, CHƯA ghi giá (để Giai đoạn 2).
+model BuyOrder {
+  id              String   @id @default(cuid())
+  buyerId         String   @map("buyer_id")
+  cardId          String   @map("card_id")
+  quantity        Int // số lượng cần gom (1..999)
+  maxUnitPriceJpy Int?     @map("max_unit_price_jpy") // đơn giá tối đa mong muốn, tùy chọn
+  status          String   @default("active") // active | cancelled
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  buyer         User            @relation(fields: [buyerId], references: [id])
+  card          Card            @relation(fields: [cardId], references: [id])
+  offers        BuyOrderOffer[]
+  conversations Conversation[]
+
+  @@index([cardId, status])
+  @@index([status, createdAt])
+  @@index([buyerId])
+  @@map("buy_orders")
+}
+
+// Chào bán công khai dưới 1 tin gom: người bán báo số lượng mình bán được +
+// lời nhắn ngắn. Người mua (chủ tin) chọn 1 chào bán → sinh conversation riêng.
+model BuyOrderOffer {
+  id         String   @id @default(cuid())
+  buyOrderId String   @map("buy_order_id")
+  sellerId   String   @map("seller_id")
+  quantity   Int // số lượng người bán muốn bán
+  message    String? // lời nhắn ngắn (≤300), tùy chọn
+  status     String   @default("pending") // pending | connected
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  buyOrder BuyOrder @relation(fields: [buyOrderId], references: [id], onDelete: Cascade)
+  seller   User     @relation(fields: [sellerId], references: [id])
+
+  @@unique([buyOrderId, sellerId])
+  @@index([buyOrderId, createdAt])
+  @@map("buy_order_offers")
 }
 
 model Message {

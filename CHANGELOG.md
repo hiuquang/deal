@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## [0.8.0] — 2026-07-16 — Tin gom số lượng lớn (まとめ買い募集) — Giai đoạn 1
+
+### Tính năng
+- **Luồng đảo chiều**: người *mua* đăng tin "cần gom N bản của 1 thẻ" → người *bán* chào bán công khai → người mua chọn 1 người bán → chat riêng.
+  - Trang `/buy-orders` (bảng tin, tìm/lọc theo thẻ/game/loại), `/buy-orders/new` (form: thẻ + số lượng 1–999 + đơn giá tối đa tùy chọn), `/buy-orders/:id` (chi tiết + **danh sách chào bán công khai**).
+  - Người bán đăng **chào bán** (số lượng bán được + lời nhắn ≤300). Chủ tin thấy mỗi chào bán kèm ★ uy tín người bán → nút 連携 → tạo conversation riêng → chuyển vào `/chat`.
+  - Bảng mới `buy_orders`, `buy_order_offers`. Endpoint `/api/buy-orders*` (xem [docs/api/buy-orders.md](docs/api/buy-orders.md)). Guard: tạo tin/chào bán/kết nối cần verified; không tự chào bán tin mình (`OWN_ORDER`); 1 chào bán/người bán/tin (`ALREADY_OFFERED`); chỉ chủ tin được kết nối.
+  - Nav thêm link **まとめ買い**; hội thoại từ buy-order có nhãn riêng trong `/chat`. Đủ 3 ngôn ngữ ja/vi/en.
+
+### Nền tảng
+- **Tổng quát hóa `Conversation`**: `listing_id` thành nullable, thêm `buy_order_id` + `seller_id` (lưu người bán trực tiếp thay vì luôn suy từ `listing.seller_id`). Migration **backfill** `seller_id` cho 106 hội thoại cũ → seller-detection 1 code path. Hội thoại listing cũ + TradePanel **không đổi hành vi** (đã verify).
+
+### Giới hạn có chủ đích (Giai đoạn 2)
+- Chốt giao dịch + **ghi giá** từ tin gom CHƯA làm — conversation buy-order không hiện TradePanel; `POST /api/trades` cho loại này trả `409 TRADE_NOT_SUPPORTED`. Lý do: `price_records` cần condition mà tin gom không khai → sẽ nhập lúc chốt ở Giai đoạn 2.
+
+### Kiểm thử
+- 108 unit test pass (thêm `buy-order-service` + `buy-order-offer-service`). `tsc` sạch. Verify browser end-to-end: tạo tin → chào bán (taro) → kết nối (demo) → chat riêng OK; hội thoại listing cũ vẫn chạy.
+
 ## [0.7.3] — 2026-07-16 — Dòng nhắc chống lừa đảo
 
 ### Tính năng

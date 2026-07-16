@@ -1,7 +1,10 @@
 import type { Card, User } from "@prisma/client";
 import type { ListingWithRelations } from "@/server/repositories/listings";
 import type { TradeWithRelations } from "@/server/repositories/trades";
+import type { BuyOrderWithRelations } from "@/server/repositories/buy-orders";
 import type {
+  BuyOrderDto,
+  BuyOrderStatus,
   CardDto,
   Condition,
   Game,
@@ -47,6 +50,20 @@ export function toListingDto(listing: ListingWithRelations): ListingDto {
     note: listing.note,
     status: listing.status as ListingStatus,
     createdAt: listing.createdAt.toISOString(),
+  };
+}
+
+export function toBuyOrderDto(order: BuyOrderWithRelations): BuyOrderDto {
+  return {
+    id: order.id,
+    card: toCardDto(order.card),
+    buyerId: order.buyer.id,
+    buyerDisplayName: order.buyer.displayName,
+    quantity: order.quantity,
+    maxUnitPriceJpy: order.maxUnitPriceJpy,
+    status: order.status as BuyOrderStatus,
+    offerCount: order._count.offers,
+    createdAt: order.createdAt.toISOString(),
   };
 }
 

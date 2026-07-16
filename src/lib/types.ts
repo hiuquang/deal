@@ -71,6 +71,43 @@ export interface PurchaseRequestDto {
   createdAt: string;
 }
 
+export type BuyOrderStatus = "active" | "cancelled";
+
+/** Tin "gom số lượng lớn": người mua cần N bản của 1 thẻ. */
+export interface BuyOrderDto {
+  id: string;
+  card: CardDto;
+  buyerId: string;
+  buyerDisplayName: string;
+  quantity: number;
+  /** đơn giá tối đa mong muốn (JPY) — null nếu không khai */
+  maxUnitPriceJpy: number | null;
+  status: BuyOrderStatus;
+  /** số chào bán hiện có (để hiện ở thẻ danh sách) */
+  offerCount: number;
+  createdAt: string;
+}
+
+export type BuyOrderOfferStatus = "pending" | "connected";
+
+/** Chào bán công khai của người bán dưới 1 tin gom. */
+export interface BuyOrderOfferDto {
+  id: string;
+  buyOrderId: string;
+  sellerId: string;
+  sellerDisplayName: string;
+  /** ★ trung bình của người bán (rating đã reveal) — giúp người mua chọn */
+  sellerRatingAvg: number | null;
+  sellerRatingCount: number;
+  sellerContributionCount: number;
+  quantity: number;
+  message: string | null;
+  status: BuyOrderOfferStatus;
+  /** id conversation riêng, chỉ khác null khi đã connected */
+  conversationId: string | null;
+  createdAt: string;
+}
+
 export interface ListingDto {
   id: string;
   card: CardDto;
@@ -98,9 +135,18 @@ export interface MessageDto {
   createdAt: string;
 }
 
+export type ConversationKind = "listing" | "buy_order";
+
 export interface ConversationDto {
   id: string;
-  listing: ListingDto;
+  /** nguồn gốc hội thoại: từ 1 listing hay từ 1 tin gom (BuyOrder) */
+  kind: ConversationKind;
+  /** thẻ liên quan — luôn có (từ listing hoặc buy-order) */
+  card: CardDto;
+  /** chỉ khác null khi kind==="listing" — dùng cho TradePanel + link chi tiết */
+  listing: ListingDto | null;
+  /** chỉ khác null khi kind==="buy_order" */
+  buyOrder: { id: string; quantity: number; maxUnitPriceJpy: number | null } | null;
   buyerId: string;
   otherPartyName: string;
   lastMessage: MessageDto | null;

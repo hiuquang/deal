@@ -86,11 +86,18 @@ function ChatContent() {
                   }`}
                 >
                   <p className="line-clamp-1 text-sm font-medium">
-                    {conversation.listing.card.nameJa}
+                    {conversation.kind === "buy_order" && (
+                      <span className="mr-1 rounded bg-amber-100 px-1 text-[10px] font-semibold text-amber-700">
+                        {t("chat.buyOrderTag")}
+                      </span>
+                    )}
+                    {conversation.card.nameJa}
                   </p>
                   <p className="text-xs text-slate-500">
                     {conversation.otherPartyName}・
-                    {formatJpy(conversation.listing.askingPriceJpy)}
+                    {conversation.kind === "buy_order"
+                      ? t("chat.buyOrderQty", { n: conversation.buyOrder!.quantity })
+                      : formatJpy(conversation.listing!.askingPriceJpy)}
                   </p>
                   {conversation.lastMessage && (
                     <p className="line-clamp-1 text-xs text-slate-400">
@@ -117,10 +124,19 @@ function ChatContent() {
               </button>
               <div className="min-w-0">
                 <Link
-                  href={`/listings/${selected.listing.id}`}
+                  href={
+                    selected.kind === "buy_order"
+                      ? `/buy-orders/${selected.buyOrder!.id}`
+                      : `/listings/${selected.listing!.id}`
+                  }
                   className="line-clamp-1 text-sm font-semibold hover:text-indigo-600"
                 >
-                  {cardTitle(selected.listing.card)}
+                  {selected.kind === "buy_order" && (
+                    <span className="mr-1 rounded bg-amber-100 px-1 text-[10px] font-semibold text-amber-700">
+                      {t("chat.buyOrderTag")}
+                    </span>
+                  )}
+                  {cardTitle(selected.card)}
                 </Link>
                 <p className="text-xs text-slate-500">
                   {t("chat.partner", { name: selected.otherPartyName })}
@@ -135,7 +151,10 @@ function ChatContent() {
               myUserId={me.id}
               onIncoming={handleIncoming}
             />
-            <TradePanel conversation={selected} myUserId={me.id} onTradeChange={reload} />
+            {/* Trade/ghi giá mới hỗ trợ hội thoại từ listing (Giai đoạn 1). */}
+            {selected.kind === "listing" && (
+              <TradePanel conversation={selected} myUserId={me.id} onTradeChange={reload} />
+            )}
           </>
         ) : (
           <div className="flex flex-1 items-center justify-center text-sm text-slate-400">

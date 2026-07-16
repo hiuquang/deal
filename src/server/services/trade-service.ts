@@ -67,6 +67,16 @@ export async function create(
 ): Promise<TradeDto> {
   const conversation = await getMembership(userId, input.conversationId);
 
+  // Giai đoạn 1: chỉ hội thoại từ listing mới chốt trade/ghi giá. Hội thoại từ
+  // tin gom (buyOrder) chưa hỗ trợ trade — sẽ làm ở Giai đoạn 2.
+  if (!conversation.listingId || !conversation.listing) {
+    throw new ApiError(
+      409,
+      "TRADE_NOT_SUPPORTED",
+      "この取引タイプはまだ対応していません。"
+    );
+  }
+
   const existing = await tradesRepo.findActiveTradeByListing(conversation.listingId);
   if (existing) {
     throw new ApiError(409, "TRADE_EXISTS", "この出品には既に取引が存在します。");

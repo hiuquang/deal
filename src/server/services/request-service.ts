@@ -90,7 +90,8 @@ export async function connect(
   }
   const conversation = await conversationsRepo.findOrCreateConversation(
     request.listingId,
-    request.buyerId
+    request.buyerId,
+    request.listing.sellerId
   );
   const updated =
     request.status === "connected" ? request : await requestsRepo.markConnected(requestId);

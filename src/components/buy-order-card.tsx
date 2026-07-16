@@ -1,0 +1,41 @@
+"use client";
+
+import Link from "next/link";
+import type { BuyOrderDto } from "@/lib/types";
+import { formatJpy } from "@/lib/labels";
+import { useI18n, type MessageKey } from "@/lib/i18n";
+
+export function BuyOrderCard({ order }: { order: BuyOrderDto }) {
+  const { t } = useI18n();
+  return (
+    <Link
+      href={`/buy-orders/${order.id}`}
+      className="group flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <span className="rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">
+          {t(`game.${order.card.game}` as MessageKey)}
+        </span>
+        <span className="rounded-full bg-amber-500 px-2 py-0.5 text-xs font-bold text-white">
+          {t("bo.wants", { n: order.quantity })}
+        </span>
+      </div>
+      <p className="line-clamp-1 text-sm font-semibold group-hover:text-indigo-600">
+        {order.card.nameJa}
+      </p>
+      <p className="text-xs text-slate-500">
+        {order.card.setCode} {order.card.cardNumber}・{order.card.rarity}・{order.card.language}
+      </p>
+      <div className="mt-auto flex items-center justify-between pt-1">
+        <span className="text-sm font-bold text-indigo-700">
+          {order.maxUnitPriceJpy
+            ? t("bo.maxUnit", { price: formatJpy(order.maxUnitPriceJpy) })
+            : t("bo.noMaxPrice")}
+        </span>
+        <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
+          {t("bo.offerCount", { n: order.offerCount })}
+        </span>
+      </div>
+    </Link>
+  );
+}

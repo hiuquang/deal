@@ -93,6 +93,33 @@ export const listListingsSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
 });
 
+// --- Tin gom số lượng lớn (BuyOrder) ---
+const buyQuantity = z.coerce
+  .number()
+  .int()
+  .min(1, "数量は1以上を入力してください")
+  .max(999, "数量は999以下を入力してください");
+
+export const createBuyOrderSchema = z.object({
+  cardId: z.string().min(1),
+  quantity: buyQuantity,
+  maxUnitPriceJpy: priceJpy.optional().nullable(),
+});
+
+export const listBuyOrdersSchema = z.object({
+  q: z.string().trim().max(100).optional(),
+  game: z.enum(GAMES).optional(),
+  category: z.enum(CATEGORIES).optional(),
+  cardId: z.string().optional(),
+  status: z.enum(["active", "cancelled"]).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+});
+
+export const createOfferSchema = z.object({
+  quantity: buyQuantity,
+  message: z.string().trim().max(300, "メッセージは300文字までです").optional().nullable(),
+});
+
 export const createMessageSchema = z.object({
   body: z.string().trim().min(1, "メッセージを入力してください").max(1000),
 });

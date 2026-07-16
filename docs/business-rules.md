@@ -22,6 +22,8 @@
 
 11. **Rating blind-mutual (P2)** — chỉ rate được trade đã chốt, mỗi bên đúng 1 lần; rating đối phương **ẩn cho đến khi cả 2 đã rate** (chống trả đũa). ★ trung bình chỉ tính từ rating đã reveal.
 12. **Seller toàn quyền chọn đối tác (P3)** — conversation CHỈ sinh ra qua luồng 購入希望 → seller 連携 (`POST /api/conversations` đã GỠ khỏi contract). Seller thấy ★ uy tín của từng buyer trước khi connect.
+12b. **Tin gom số lượng lớn (P8, luồng đảo chiều)** — người *mua* đăng `buy_order` (thẻ + số lượng + đơn giá tối đa); người *bán* đăng chào bán công khai (`buy_order_offers`: số lượng + lời nhắn). CHỈ chủ tin (người mua) được `connect` 1 chào bán → sinh conversation riêng (đối xứng với quy tắc 12). Người bán không tự chào bán tin của mình (`409 OWN_ORDER`), 1 chào bán/người bán/tin (`409 ALREADY_OFFERED`). **Giai đoạn 1 CHƯA ghi giá** — conversation từ buy-order không chốt trade được (`409 TRADE_NOT_SUPPORTED`); ghi giá để Giai đoạn 2 (cần nhập condition + đơn giá lúc chốt). `conversations.seller_id` nay lưu trực tiếp (hỗ trợ cả 2 nguồn listing/buy_order).
+
 13. **Catalog chuẩn hóa** — user chỉ chọn thẻ qua autocomplete từ bảng `cards`, không gõ tên tự do; `condition` bắt buộc và phải khớp `category` (`400 CONDITION_MISMATCH`).
 14. **Không tự report mình** (`409 SELF_REPORT`); reason 10–500 ký tự.
 

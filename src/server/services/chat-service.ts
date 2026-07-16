@@ -1,13 +1,13 @@
 import { ApiError } from "@/server/errors";
 import * as conversations from "@/server/repositories/conversations";
-import { toListingDto, toMessageDto } from "@/server/serializers";
+import { toCardDto, toListingDto, toMessageDto } from "@/server/serializers";
 import type { ConversationDto, MessageDto } from "@/lib/types";
 import type { ConversationWithRelations } from "@/server/repositories/conversations";
 
-/** Thành viên hợp lệ của conversation = buyer hoặc seller của listing. */
+/** Thành viên hợp lệ của conversation = buyer hoặc seller (lưu trực tiếp). */
 function assertMember(conversation: ConversationWithRelations, userId: string) {
   const isMember =
-    conversation.buyerId === userId || conversation.listing.sellerId === userId;
+    conversation.buyerId === userId || conversation.sellerId === userId;
   if (!isMember) {
     throw new ApiError(403, "FORBIDDEN", "このチャットに参加していません。");
   }
@@ -20,16 +20,26 @@ function toConversationDto(
   },
   viewerId: string
 ): ConversationDto {
+  // Hội thoại từ listing hoặc từ tin gom (buyOrder). Thẻ + đối phương lấy từ
+  // nguồn tương ứng; seller lưu trực tiếp trên conversation.
   const otherParty =
-    conversation.buyerId === viewerId
-      ? conversation.listing.seller
-      : conversation.buyer;
+    conversation.buyerId === viewerId ? conversation.seller : conversation.buyer;
   const last = conversation.messages?.[0] ?? null;
+  const card = conversation.listing?.card ?? conversation.buyOrder?.card;
   return {
     id: conversation.id,
-    listing: toListingDto(conversation.listing),
+    kind: conversation.buyOrderId ? "buy_order" : "listing",
+    card: card ? toCardDto(card) : null!,
+    listing: conversation.listing ? toListingDto(conversation.listing) : null,
+    buyOrder: conversation.buyOrder
+      ? {
+          id: conversation.buyOrder.id,
+          quantity: conversation.buyOrder.quantity,
+          maxUnitPriceJpy: conversation.buyOrder.maxUnitPriceJpy,
+        }
+      : null,
     buyerId: conversation.buyerId,
-    otherPartyName: otherParty.displayName,
+    otherPartyName: otherParty?.displayName ?? "",
     lastMessage: last ? toMessageDto(last) : null,
     activeTradeId: conversation.trades?.[0]?.id ?? null,
     updatedAt: conversation.updatedAt.toISOString(),

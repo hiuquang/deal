@@ -154,7 +154,7 @@ export function TradePanel({ conversation, myUserId, onTradeChange }: Props) {
           <p className="text-xs text-emerald-700">
             {t("trade.thanks")}{" "}
             <Link
-              href={`/prices/${conversation.listing.card.id}`}
+              href={`/prices/${conversation.card.id}`}
               className="font-medium underline"
             >
               {t("trade.viewPrices")}
