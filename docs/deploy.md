@@ -18,6 +18,7 @@ dùng provider `postgresql`, DB dev/local trỏ thẳng Supabase project `deal`
 | Upload ảnh tự chuyển Supabase Storage khi có env | `src/app/api/uploads/route.ts` — cần bucket **public** tên `uploads` |
 | `prisma generate` khi build trên Vercel | script `postinstall` trong package.json |
 | Xóa sạch dữ liệu giao dịch (giữ users + catalog) | `npm run db:reset-test` |
+| Region serverless function = `syd1` (sát DB Sydney) | `vercel.json` — mặc định Vercel là US, mỗi request tốn nhiều vòng US↔Sydney; đổi region DB thì sửa cả đây |
 
 Từ giờ **KHÔNG chạy `prisma migrate dev`** nữa (Supabase pooler không tạo được
 shadow database) — đổi schema thì `npx prisma migrate diff` sinh SQL rồi

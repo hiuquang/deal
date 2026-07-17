@@ -3,7 +3,7 @@
 // Bộ lọc dùng chung cho các trang "bảng tin" (trang chủ, まとめ買い):
 // tìm kiếm debounce + lọc game/category, trạng thái đồng bộ lên URL.
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import type { Category, Game } from "@/lib/types";
 import { useI18n } from "@/lib/i18n";
 
@@ -13,7 +13,6 @@ import { useI18n } from "@/lib/i18n";
  * (không thêm history entry) → back giữ nguyên kết quả, link chia sẻ được.
  */
 export function useBoardFilters(basePath: string) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [game, setGame] = useState<Game | "">((searchParams.get("game") as Game) || "");
   const [category, setCategory] = useState<Category | "">(
@@ -33,8 +32,11 @@ export function useBoardFilters(basePath: string) {
     if (game) params.set("game", game);
     if (category) params.set("category", category);
     const qs = params.toString();
-    router.replace(qs ? `${basePath}?${qs}` : basePath, { scroll: false });
-  }, [debouncedQuery, game, category, router, basePath]);
+    // replaceState thay vì router.replace: chỉ cần URL chia sẻ được — router.replace
+    // còn kéo theo một vòng RSC (trang chủ giờ dynamic → chạy lại query DB thừa
+    // mỗi lần đổi bộ lọc). Next ≥14.1 đồng bộ useSearchParams với History API.
+    window.history.replaceState(null, "", qs ? `${basePath}?${qs}` : basePath);
+  }, [debouncedQuery, game, category, basePath]);
 
   return { query, setQuery, debouncedQuery, game, setGame, category, setCategory };
 }

@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [0.9.3] — 2026-07-17 — Trang chủ server-render lượt đầu + function về region Sydney
+
+### Hiệu năng
+- **Trang chủ SSR dữ liệu lượt tải đầu**: `page.tsx` thành server component gọi thẳng `listingService.list` (validate zod như API route), truyền `initial` xuống `HomeBoard` (client) — mở trang thấy tin ngay, hết spinner 読み込み中. Client skip fetch đầu khi bộ lọc khớp key SSR; SSR lỗi (pooler nguội) → fallback client-fetch như cũ, trang không chết. SSR tôn trọng `?q/game/category` trên URL (link chia sẻ ra đúng kết quả ngay từ HTML).
+- **`useBoardFilters` sync URL bằng `history.replaceState`** thay `router.replace` — router.replace trên trang dynamic kéo theo một vòng RSC chạy lại query DB thừa MỖI lần đổi bộ lọc/gõ tìm kiếm. Đã verify: đổi filter = đúng 1 call `/api/listings`, 0 call RSC (áp dụng cả まとめ買い).
+- **`vercel.json` ghim function về `syd1`** — mặc định Vercel chạy US trong khi DB Supabase ở Sydney; mỗi request Prisma tốn nhiều vòng US↔Sydney. Đổi region DB thì nhớ sửa cả đây.
+
+### Kiểm thử
+- 122 test pass, build sạch (`/` chuyển ○ static → ƒ dynamic — chủ đích). Verify browser: SSR HTML chứa listing + đếm đúng, reload tại `?game=onepiece` ra 0件 không spinner không refetch, filter 2 bảng tin hoạt động, console sạch.
+
 ## [0.9.2] — 2026-07-17 — Sửa tràn thanh nav trên điện thoại
 
 ### Sửa lỗi
