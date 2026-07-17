@@ -21,9 +21,10 @@ Web P2P trade thẻ TCG (Pokémon / One Piece) cho thị trường Nhật, **zer
 
 ## Lệnh nhanh
 
-- `npm run dev` → http://localhost:3000 — demo login: `demo@example.com` / `password123` (taro/hanako/kenji/yuki@example.com tương tự).
+- `npm run dev` → http://localhost:3000 — **nối thẳng Supabase Postgres dùng chung với production** (không còn SQLite riêng cho dev).
+- ⚠️ **Tài khoản demo (`demo@example.com`…) KHÔNG còn trong DB** — đã xóa khi mở test production (2026-07-17), login sẽ 401. Cần trạng thái đã đăng nhập: tự đăng ký, hoặc `npm run db:seed` (idempotent) — nhưng seed **ghi vào DB thật**, hỏi user trước khi chạy.
 - `npm test` (Vitest, unit tầng service) · `npm run build` (**không chạy khi dev server đang bật** — cả hai cùng ghi `.next`).
-- `npx prisma migrate dev` (tạo db + seed) · `npm run db:seed` (idempotent).
+- **KHÔNG chạy `prisma migrate dev`** (Supabase pooler không tạo được shadow DB) — đổi schema: `prisma migrate diff` sinh SQL → `prisma migrate deploy`. Chi tiết: [docs/deploy.md](docs/deploy.md).
 
 ## Cảnh báo cứng (đọc trước khi sửa bất cứ gì)
 
