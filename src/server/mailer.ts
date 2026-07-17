@@ -3,11 +3,16 @@ import { prisma } from "@/server/db";
 
 /**
  * Gửi email theo chuỗi dự phòng (đọc env tại thời điểm gọi để test được):
- * 1. Có BREVO_API_KEY → thử Brevo trước (HTTP API, free 300 mail/ngày).
+ * 1. Có SMTP_HOST/USER/PASS → Gmail SMTP trước. Gmail giới hạn ~500 người
+ *    nhận/ngày, vượt là bị chặn gửi 24-72h — nhưng là đường DUY NHẤT chắc chắn
+ *    tới hộp thư khi sender còn là địa chỉ @gmail.com (mail tự xác thực).
+ * 2. SMTP lỗi hoặc chưa cấu hình → Brevo HTTP API (free 300 mail/ngày).
  *    Sender là BREVO_FROM — PHẢI verify trước trên dashboard Brevo.
- * 2. Brevo lỗi hoặc chưa cấu hình → Gmail SMTP (SMTP_HOST/USER/PASS).
- *    Gmail giới hạn ~500 người nhận/ngày, vượt là bị chặn gửi 24-72h —
- *    nên khi đã có Brevo thì Gmail chỉ là đường dự phòng.
+ *    ⚠️ Brevo KHÔNG được làm đường chính chừng nào BREVO_FROM còn là freemail
+ *    (@gmail.com...): Brevo nhận mail (2xx) nhưng Gmail từ chối thẳng ở cửa
+ *    SMTP vì mail mạo danh gmail.com không có DKIM — không vào nổi cả thư mục
+ *    spam, thành hố đen im lặng. Chỉ đảo lại thứ tự sau khi có domain riêng
+ *    đã authenticate (SPF/DKIM) trên Brevo.
  * 3. Cả hai chưa cấu hình → DEV MODE: lưu bảng email_outbox, xem /dev/mailbox.
  */
 
@@ -66,20 +71,20 @@ async function sendViaSmtp(to: string, subject: string, body: string): Promise<v
 }
 
 export async function sendMail(to: string, subject: string, body: string): Promise<void> {
-  if (brevoConfigured()) {
+  if (smtpConfigured()) {
     try {
-      await sendViaBrevo(to, subject, body);
-      console.log(`[mail][brevo] sent to ${to}: ${subject}`);
+      await sendViaSmtp(to, subject, body);
+      console.log(`[mail][smtp] sent to ${to}: ${subject}`);
       return;
     } catch (e) {
-      // Không có đường lui → ném tiếp cho caller; có SMTP → ghi log rồi fallback.
-      if (!smtpConfigured()) throw e;
-      console.error(`[mail][brevo] failed, falling back to SMTP:`, e);
+      // Không có đường lui → ném tiếp cho caller; có Brevo → ghi log rồi fallback.
+      if (!brevoConfigured()) throw e;
+      console.error(`[mail][smtp] failed, falling back to Brevo:`, e);
     }
   }
-  if (smtpConfigured()) {
-    await sendViaSmtp(to, subject, body);
-    console.log(`[mail][smtp] sent to ${to}: ${subject}`);
+  if (brevoConfigured()) {
+    await sendViaBrevo(to, subject, body);
+    console.log(`[mail][brevo] sent to ${to}: ${subject}`);
     return;
   }
   await prisma.emailOutbox.create({ data: { toEmail: to, subject, body } });

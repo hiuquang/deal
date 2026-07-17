@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.11.2] — 2026-07-18 — Fix mail hố đen: đảo chuỗi gửi thành Gmail SMTP → Brevo
+
+### Sửa lỗi
+- **Mail production không tới hộp thư** (verify/resend/reset sau ~14:18Z 17/7): Brevo với sender freemail (`@gmail.com`) → API nhận (2xx, log `[mail][brevo] sent`) nhưng Gmail từ chối thẳng ở cửa SMTP (mail đứng tên gmail.com không có DKIM của Google) — không vào nổi cả spam, và vì code thấy "thành công" nên không bao giờ fallback sang Gmail SMTP. Chẩn đoán bằng: log Vercel có `[mail][brevo] sent` + hộp Gmail (kể cả spam/trash) 0 mail từ Brevo; mọi mail từng tới nơi đều mang label SENT (= đi đường Gmail SMTP).
+- **Đảo thứ tự `sendMail`**: Gmail SMTP trước (tự xác thực → chắc chắn tới nơi), Brevo thành đường dự phòng. Chỉ đảo lại như cũ sau khi có domain riêng authenticate SPF/DKIM trên Brevo — ghi rõ ở [docs/email.md](docs/email.md).
+
+### Kiểm thử
+- 172 test pass (`tests/mailer.test.ts` viết lại theo thứ tự mới: SMTP chính, fallback khi SMTP lỗi, ném lỗi khi hết đường, thiếu `SMTP_PASS` coi như chưa cấu hình). `tsc --noEmit` sạch. Verify trên production: log `[mail][smtp] sent` + mail về hộp thư thật.
+
 ## [0.11.1] — 2026-07-17 — Email dự phòng: chuỗi Brevo → Gmail SMTP
 
 ### Hạ tầng

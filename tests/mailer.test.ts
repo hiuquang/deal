@@ -1,6 +1,8 @@
 /**
- * Test mailer — chuỗi dự phòng Brevo → Gmail SMTP → dev outbox:
- * chọn đúng đường theo env, fallback khi Brevo lỗi, ném lỗi khi hết đường.
+ * Test mailer — chuỗi dự phòng Gmail SMTP → Brevo → dev outbox:
+ * chọn đúng đường theo env, fallback khi SMTP lỗi, ném lỗi khi hết đường.
+ * (SMTP đứng trước có chủ đích — xem chú thích đầu src/server/mailer.ts:
+ * Brevo + sender freemail bị Gmail nuốt im lặng, không được làm đường chính.)
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -39,9 +41,19 @@ afterEach(() => {
 });
 
 describe("sendMail — chuỗi dự phòng", () => {
-  it("Brevo cấu hình + OK → gửi qua Brevo, KHÔNG đụng SMTP", async () => {
+  it("SMTP cấu hình + OK → gửi qua SMTP, KHÔNG đụng Brevo", async () => {
     stubBrevo(true);
     stubSmtp(true);
+    await sendMail("to@example.com", "件名", "本文");
+    expect(smtpSendMail).toHaveBeenCalledOnce();
+    expect(smtpSendMail.mock.calls[0][0]).toMatchObject({ to: "to@example.com" });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("SMTP lỗi + có Brevo → fallback sang Brevo", async () => {
+    stubBrevo(true);
+    stubSmtp(true);
+    smtpSendMail.mockRejectedValue(new Error("Invalid login"));
     await sendMail("to@example.com", "件名", "本文");
     expect(fetchMock).toHaveBeenCalledOnce();
     const [url, init] = fetchMock.mock.calls[0];
@@ -49,23 +61,26 @@ describe("sendMail — chuỗi dự phòng", () => {
     const payload = JSON.parse((init as RequestInit).body as string);
     expect(payload.to).toEqual([{ email: "to@example.com" }]);
     expect(payload.sender.email).toBe("from@example.com");
-    expect(smtpSendMail).not.toHaveBeenCalled();
   });
 
-  it("Brevo lỗi + có SMTP → fallback sang SMTP", async () => {
-    stubBrevo(true);
+  it("SMTP lỗi + KHÔNG có Brevo → ném lỗi cho caller", async () => {
+    stubBrevo(false);
     stubSmtp(true);
-    fetchMock.mockResolvedValue({
-      ok: false,
-      status: 429,
-      text: async () => "daily limit reached",
-    } as never);
-    await sendMail("to@example.com", "件名", "本文");
-    expect(smtpSendMail).toHaveBeenCalledOnce();
-    expect(smtpSendMail.mock.calls[0][0]).toMatchObject({ to: "to@example.com" });
+    smtpSendMail.mockRejectedValue(new Error("Invalid login"));
+    await expect(sendMail("to@example.com", "件名", "本文")).rejects.toThrow("Invalid login");
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(prisma.emailOutbox.create).not.toHaveBeenCalled();
   });
 
-  it("Brevo lỗi + KHÔNG có SMTP → ném lỗi cho caller", async () => {
+  it("không SMTP + có Brevo → gửi thẳng Brevo", async () => {
+    stubBrevo(true);
+    stubSmtp(false);
+    await sendMail("to@example.com", "件名", "本文");
+    expect(smtpSendMail).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it("không SMTP + Brevo lỗi → ném lỗi cho caller", async () => {
     stubBrevo(true);
     stubSmtp(false);
     fetchMock.mockResolvedValue({
@@ -78,14 +93,6 @@ describe("sendMail — chuỗi dự phòng", () => {
     expect(prisma.emailOutbox.create).not.toHaveBeenCalled();
   });
 
-  it("không Brevo + có SMTP → gửi thẳng SMTP (hành vi cũ)", async () => {
-    stubBrevo(false);
-    stubSmtp(true);
-    await sendMail("to@example.com", "件名", "本文");
-    expect(fetchMock).not.toHaveBeenCalled();
-    expect(smtpSendMail).toHaveBeenCalledOnce();
-  });
-
   it("không đường nào → ghi dev outbox", async () => {
     stubBrevo(false);
     stubSmtp(false);
@@ -95,13 +102,14 @@ describe("sendMail — chuỗi dự phòng", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("thiếu BREVO_FROM → coi như Brevo chưa cấu hình (không gửi mù)", async () => {
-    vi.stubEnv("BREVO_API_KEY", "xkeysib-test");
-    vi.stubEnv("BREVO_FROM", "");
-    stubSmtp(true);
+  it("thiếu SMTP_PASS → coi như SMTP chưa cấu hình (không gửi mù)", async () => {
+    vi.stubEnv("SMTP_HOST", "smtp.example.com");
+    vi.stubEnv("SMTP_USER", "user@example.com");
+    vi.stubEnv("SMTP_PASS", "");
+    stubBrevo(true);
     await sendMail("to@example.com", "件名", "本文");
-    expect(fetchMock).not.toHaveBeenCalled();
-    expect(smtpSendMail).toHaveBeenCalledOnce();
+    expect(smtpSendMail).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledOnce();
   });
 });
 

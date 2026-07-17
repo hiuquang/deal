@@ -1,22 +1,30 @@
-# Hạ tầng email (P4, chuỗi dự phòng từ 0.11.1)
+# Hạ tầng email (P4, chuỗi dự phòng từ 0.11.1; đảo SMTP lên trước từ 0.11.2)
 
 ## Cơ chế (`src/server/mailer.ts`)
 
 Gửi mail theo **chuỗi dự phòng**, đọc env tại thời điểm gọi:
 
-1. Có `BREVO_API_KEY` + `BREVO_FROM` → gửi qua **Brevo HTTP API** (đường chính,
-   free 300 mail/ngày). Timeout 10s để serverless không treo.
-2. Brevo lỗi (hoặc chưa cấu hình) → **Gmail SMTP** qua nodemailer
-   (`SMTP_HOST/PORT/USER/PASS`). Gmail giới hạn ~500 người nhận/ngày — vượt là
-   Google chặn gửi 24–72h, nên khi đã có Brevo thì Gmail chỉ là đường lui.
+1. Có `SMTP_HOST/USER/PASS` → **Gmail SMTP** qua nodemailer trước. Gmail giới
+   hạn ~500 người nhận/ngày — vượt là Google chặn gửi 24–72h — nhưng là đường
+   DUY NHẤT chắc chắn tới hộp thư chừng nào sender còn là địa chỉ `@gmail.com`.
+2. SMTP lỗi (hoặc chưa cấu hình) → **Brevo HTTP API** (`BREVO_API_KEY` +
+   `BREVO_FROM`, free 300 mail/ngày). Timeout 10s để serverless không treo.
 3. Cả hai chưa cấu hình → **dev mode**: mail lưu vào bảng `email_outbox`, xem
    tại `/dev/mailbox` (chỉ khi `NODE_ENV !== production`; tự vô hiệu khi có
    bất kỳ đường gửi thật nào — check `isMailConfigured()`).
 
-Brevo lỗi mà không có SMTP dự phòng → `sendMail` ném lỗi cho caller (đúng hành
+SMTP lỗi mà không có Brevo dự phòng → `sendMail` ném lỗi cho caller (đúng hành
 vi cũ của SMTP-only).
 
-## Cấu hình Brevo (đường chính)
+⚠️ **Vì sao Brevo KHÔNG được làm đường chính** (bài học production 2026-07-18):
+gửi từ sender freemail (`@gmail.com`) qua server Brevo → Brevo nhận mail (API
+trả 2xx, log `[mail][brevo] sent`) nhưng Gmail **từ chối thẳng ở cửa SMTP** vì
+mail đứng tên gmail.com mà không có DKIM của Google — mail không vào nổi cả
+thư mục spam, thành **hố đen im lặng**: code thấy "thành công" nên không bao
+giờ fallback. Chỉ đưa Brevo lên làm đường chính sau khi có **domain riêng đã
+authenticate (SPF/DKIM)** trên Brevo.
+
+## Cấu hình Brevo (đường dự phòng)
 
 1. Tạo tài khoản free tại https://app.brevo.com (300 mail/ngày, không cần thẻ).
 2. **Verify sender**: Settings → Senders, Domains & Dedicated IPs → Add sender
@@ -30,8 +38,8 @@ vi cũ của SMTP-only).
 
 ## Trạng thái hiện tại
 
-- SMTP Gmail thật đã cấu hình trong `.env` local (Gmail App Password) → là
-  đường dự phòng khi thêm Brevo, hoặc đường chính khi chưa có key Brevo.
+- Production (Vercel): đủ cả `SMTP_*` lẫn `BREVO_*` → SMTP chính, Brevo lui.
+- `.env` local hiện KHÔNG có SMTP/Brevo → dev dùng outbox `/dev/mailbox`.
 - ⚠️ **KHÔNG đọc/ghi `SMTP_PASS`/`BREVO_API_KEY`** trong `.env`; `.env` đã
   gitignore, không bao giờ commit.
 - Đổi tài khoản Gmail gửi: bật 2FA → tạo App Password tại
