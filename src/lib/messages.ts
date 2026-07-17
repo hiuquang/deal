@@ -530,6 +530,11 @@ export const MESSAGES = {
 
   // ---- Hồ sơ công khai & hệ tin cậy (P10) ----
   "seller.viewProfile": { ja: "プロフィールを見る", vi: "Xem hồ sơ", en: "View profile" },
+  "me.viewPublicProfile": {
+    ja: "公開プロフィールを見る",
+    vi: "Xem hồ sơ công khai của tôi",
+    en: "View my public profile",
+  },
   "profile.memberSince": { ja: "{date}から利用", vi: "Tham gia từ {date}", en: "Member since {date}" },
   "profile.level": { ja: "Lv.{n}", vi: "Lv.{n}", en: "Lv.{n}" },
   "profile.xpBar": { ja: "XP {cur} / {next}", vi: "XP {cur} / {next}", en: "XP {cur} / {next}" },

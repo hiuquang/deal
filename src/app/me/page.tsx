@@ -76,6 +76,12 @@ export default function MePage() {
               )}
             </p>
           )}
+          <Link
+            href={`/users/${me.id}`}
+            className="mt-1 inline-block rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 hover:bg-indigo-100"
+          >
+            {t("me.viewPublicProfile")}
+          </Link>
         </div>
         <div className="ml-auto text-right">
           <p className="text-xs text-slate-500">{t("me.contribution")}</p>
