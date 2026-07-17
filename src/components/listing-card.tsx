@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { ListingDto } from "@/lib/types";
-import { formatJpy } from "@/lib/labels";
+import { cardSpec, formatJpy } from "@/lib/labels";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 
 export function ListingCard({ listing }: { listing: ListingDto }) {
@@ -42,10 +42,9 @@ export function ListingCard({ listing }: { listing: ListingDto }) {
         <p className="line-clamp-1 text-sm font-semibold group-hover:text-indigo-600">
           {listing.card.nameJa}
         </p>
-        <p className="text-xs text-slate-500">
-          {listing.card.setCode} {listing.card.cardNumber}・{listing.card.rarity}・
-          {listing.card.language}
-        </p>
+        {cardSpec(listing.card) && (
+          <p className="text-xs text-slate-500">{cardSpec(listing.card)}</p>
+        )}
         <p className="text-xs text-slate-500">
           {t(`cond.${listing.condition}` as MessageKey)}
         </p>

@@ -95,7 +95,11 @@ export default function NewListingPage() {
 
         <div>
           <span className="mb-1 block text-sm font-medium">
-            {category === "box" ? t("sell.selectBox") : t("sell.selectCard")}
+            {game === "other"
+              ? t("sell.selectOther")
+              : category === "box"
+                ? t("sell.selectBox")
+                : t("sell.selectCard")}
           </span>
           <CardAutocomplete game={game} category={category} onSelect={setCard} />
         </div>

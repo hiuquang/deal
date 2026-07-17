@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## [0.11.0] — 2026-07-17 — Mục その他/Khác: bán sản phẩm ngoài Pokémon & One Piece
+
+### Tính năng
+- **Game thứ 3 `other`** bên cạnh pokemon/onepiece: tab その他 ở bảng tin (trang chủ + まとめ買い), pill trong form đăng bán & đăng tin gom. Không cần migration — cột `game` là String.
+- **`POST /api/cards`** (verified user): mục other không có catalog → user tự đặt tên sản phẩm (find-or-create theo tên + category, idempotent; race chặn bằng unique constraint sẵn có của `cards`, bắt P2002). Ngoại lệ có chủ đích của business-rules #13 — Pokémon/One Piece vẫn chỉ chọn từ catalog.
+- **CardAutocomplete** với `game=other`: gõ tên → search sản phẩm other đã có; chưa có tên trùng khớp → nút "＋「…」を新しい商品として登録" tạo và chọn luôn. Dùng chung cho cả form đăng bán lẫn tin gom.
+- Quy ước lưu: `setCode="OTHER"/"OTHER-BOX"`, `cardNumber` = tên sản phẩm, `rarity="-"`, `language="JP"`. UI ẩn dòng set/số thẻ/rarity với card other (helper `cardSpec` mới trong `src/lib/labels.ts`, `cardTitle` nhận thêm `game`).
+
+### Thiết kế (đọc trước khi sửa)
+- Dữ liệu giá của `other` KHÔNG thuộc dataset lõi cho AI — dataset lõi vẫn là 2 game có catalog chuẩn hóa; vì vậy cho phép tên tự do ở mục này không phá mục tiêu chất lượng giá.
+- i18n đủ 3 thứ tiếng cho toàn bộ chuỗi mới (`game.other`, `home.tabOther`, `sell.selectOther/searchOther/createOther`, `bon.selectOther`).
+
+### Kiểm thử
+- 164 test pass (+4 test mới `tests/card-service.test.ts`: tái sử dụng entry trùng tên, tạo mới, nhánh race P2002, lỗi khác ném tiếp). `tsc --noEmit` sạch.
+
 ## [0.10.0] — 2026-07-17 — Hồ sơ công khai & hệ tin cậy (P10, phần lõi spec Profile/Trust v2)
 
 ### Tính năng

@@ -26,7 +26,7 @@
 
 12c. **Trade từ tin gom (P9)** — `finalPriceJpy` là **ĐƠN GIÁ** (giá/1 bản), price_record ghi đơn giá (so sánh được giữa giao dịch 1 bản và 20 bản). Bên khởi tạo khai condition (khớp category → `400 CONDITION_MISMATCH`) + số lượng; bên xác nhận phải nhập lại **đúng cả đơn giá lẫn số lượng** (`PRICE_MISMATCH`/`QUANTITY_MISMATCH`) — mở rộng cơ chế chống khai láo. 1 hội thoại chỉ có 1 trade còn sống (partial unique index `trades_one_active_per_conversation` — mở rộng quy tắc 9). Tin gom KHÔNG tự đóng khi trade chốt (nhiều người bán cùng gom); card_id/condition/quantity denormalize trên `trades` (nguồn duy nhất cho price_record, hết phụ thuộc listing).
 
-13. **Catalog chuẩn hóa** — user chỉ chọn thẻ qua autocomplete từ bảng `cards`, không gõ tên tự do; `condition` bắt buộc và phải khớp `category` (`400 CONDITION_MISMATCH`).
+13. **Catalog chuẩn hóa** — user chỉ chọn thẻ qua autocomplete từ bảng `cards`, không gõ tên tự do; `condition` bắt buộc và phải khớp `category` (`400 CONDITION_MISMATCH`). **Ngoại lệ có chủ đích: mục その他 (`game=other`)** — sản phẩm ngoài Pokémon/One Piece không có catalog nên user tự đặt tên qua `POST /api/cards` (find-or-create theo tên + category, dedupe ở DB). Dữ liệu giá của `other` KHÔNG thuộc dataset lõi cho AI (dataset lõi vẫn là 2 game có catalog chuẩn); Pokémon/One Piece tuyệt đối không đi qua đường này.
 14. **Không tự report mình** (`409 SELF_REPORT`); reason 10–500 ký tự.
 
 ## Gate hành động ghi (2 tầng, kiểm tại `requireVerifiedUser`)

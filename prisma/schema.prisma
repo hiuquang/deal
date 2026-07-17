@@ -89,10 +89,10 @@ model Session {
 
 model Card {
   id         String   @id @default(cuid())
-  game       String // pokemon | onepiece
+  game       String // pokemon | onepiece | other (sản phẩm ngoài 2 game, user tự đặt tên)
   category   String   @default("single") // single | box (sealed booster box)
-  setCode    String   @map("set_code")
-  cardNumber String   @map("card_number") // box dùng "BOX"
+  setCode    String   @map("set_code") // other dùng "OTHER" / "OTHER-BOX"
+  cardNumber String   @map("card_number") // box dùng "BOX"; other dùng chính tên sản phẩm (dedupe qua unique)
   language   String // JP | EN
   nameJa     String   @map("name_ja")
   nameEn     String   @map("name_en")

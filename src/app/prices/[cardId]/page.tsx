@@ -4,7 +4,7 @@ import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { api, ApiClientError } from "@/lib/api-client";
 import type { CardDto, Condition, PriceRecordDto, PriceStatsDto } from "@/lib/types";
-import { CONDITION_KEYS, formatDate, formatJpy } from "@/lib/labels";
+import { cardSpec, CONDITION_KEYS, formatDate, formatJpy } from "@/lib/labels";
 import { useAuth } from "@/components/auth-context";
 import { PriceChart } from "@/components/price-chart";
 import { ErrorBox, Loading, ReliabilityBadge } from "@/components/ui";
@@ -87,9 +87,9 @@ export default function PricesPage({ params }: { params: Promise<{ cardId: strin
           <p className="text-xs text-slate-500">{t(`game.${card.game}` as MessageKey)}</p>
           <h1 className="text-xl font-bold">
             {card.nameJa}{" "}
-            <span className="text-sm font-normal text-slate-500">
-              {card.setCode} {card.cardNumber}・{card.rarity}・{card.language}
-            </span>
+            {cardSpec(card) && (
+              <span className="text-sm font-normal text-slate-500">{cardSpec(card)}</span>
+            )}
           </h1>
         </div>
       )}

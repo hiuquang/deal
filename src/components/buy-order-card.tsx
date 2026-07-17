@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { BuyOrderDto } from "@/lib/types";
-import { formatJpy } from "@/lib/labels";
+import { cardSpec, formatJpy } from "@/lib/labels";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 
 export function BuyOrderCard({ order }: { order: BuyOrderDto }) {
@@ -23,9 +23,9 @@ export function BuyOrderCard({ order }: { order: BuyOrderDto }) {
       <p className="line-clamp-1 text-sm font-semibold group-hover:text-indigo-600">
         {order.card.nameJa}
       </p>
-      <p className="text-xs text-slate-500">
-        {order.card.setCode} {order.card.cardNumber}・{order.card.rarity}・{order.card.language}
-      </p>
+      {cardSpec(order.card) && (
+        <p className="text-xs text-slate-500">{cardSpec(order.card)}</p>
+      )}
       <div className="mt-auto flex items-center justify-between pt-1">
         <span className="text-sm font-bold text-indigo-700">
           {order.maxUnitPriceJpy

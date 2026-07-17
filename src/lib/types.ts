@@ -1,7 +1,7 @@
 // DTO dùng chung giữa backend (serialize) và frontend (type response API).
 // Đây là hình dạng dữ liệu đúng theo API CONTRACT trong design.md mục 5.
 
-export type Game = "pokemon" | "onepiece";
+export type Game = "pokemon" | "onepiece" | "other";
 export type Category = "single" | "box";
 export type Condition =
   | "PSA10"

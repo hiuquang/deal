@@ -32,7 +32,7 @@ export function GameCategoryPicker({
       <div>
         <span className="mb-1 block text-sm font-medium">{gameLabel}</span>
         <div className="flex gap-2">
-          {(["pokemon", "onepiece"] as const).map((g) => (
+          {(["pokemon", "onepiece", "other"] as const).map((g) => (
             <button
               key={g}
               type="button"
@@ -41,7 +41,11 @@ export function GameCategoryPicker({
                 game === g ? activeGameClass : "bg-slate-100 text-slate-600"
               }`}
             >
-              {t(`home.tab${g === "pokemon" ? "Pokemon" : "Onepiece"}` as MessageKey)}
+              {t(
+                `home.tab${
+                  g === "pokemon" ? "Pokemon" : g === "onepiece" ? "Onepiece" : "Other"
+                }` as MessageKey
+              )}
             </button>
           ))}
         </div>

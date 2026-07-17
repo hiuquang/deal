@@ -4,7 +4,7 @@ import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { api, ApiClientError } from "@/lib/api-client";
 import type { ListingDto } from "@/lib/types";
-import { formatDate, formatJpy } from "@/lib/labels";
+import { cardSpec, formatDate, formatJpy } from "@/lib/labels";
 import { useAuth } from "@/components/auth-context";
 import { ErrorBox, Loading } from "@/components/ui";
 import { SellerSummary } from "@/components/seller-summary";
@@ -71,10 +71,11 @@ export default function ListingDetailPage({
               {t(`cat.${listing.card.category}` as MessageKey)}
             </p>
             <h1 className="text-2xl font-bold">{listing.card.nameJa}</h1>
-            <p className="text-sm text-slate-500">
-              {listing.card.nameEn}・{listing.card.setCode} {listing.card.cardNumber}・
-              {listing.card.rarity}・{listing.card.language}
-            </p>
+            {cardSpec(listing.card) && (
+              <p className="text-sm text-slate-500">
+                {listing.card.nameEn}・{cardSpec(listing.card)}
+              </p>
+            )}
           </div>
 
           <div className="flex items-baseline gap-3">

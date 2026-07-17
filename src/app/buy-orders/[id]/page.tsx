@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from "react";
 import { api, ApiClientError } from "@/lib/api-client";
 import type { BuyOrderDto } from "@/lib/types";
-import { formatDate, formatJpy } from "@/lib/labels";
+import { cardSpec, formatDate, formatJpy } from "@/lib/labels";
 import { useAuth } from "@/components/auth-context";
 import { ErrorBox, Loading } from "@/components/ui";
 import { SellerSummary } from "@/components/seller-summary";
@@ -63,10 +63,11 @@ export default function BuyOrderDetailPage({
             </p>
           </div>
           <h1 className="mt-1 text-2xl font-bold">{order.card.nameJa}</h1>
-          <p className="text-sm text-slate-500">
-            {order.card.nameEn}・{order.card.setCode} {order.card.cardNumber}・
-            {order.card.rarity}・{order.card.language}
-          </p>
+          {cardSpec(order.card) && (
+            <p className="text-sm text-slate-500">
+              {order.card.nameEn}・{cardSpec(order.card)}
+            </p>
+          )}
         </div>
 
         <dl className="space-y-2 rounded-xl border border-slate-200 bg-white p-4 text-sm">

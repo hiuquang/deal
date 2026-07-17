@@ -1,6 +1,6 @@
 # DEAL — bản đồ dự án (đọc file này trước, KHÔNG đọc toàn bộ docs/)
 
-Web P2P trade thẻ TCG (Pokémon / One Piece) cho thị trường Nhật, **zero-fee**. Mục tiêu cốt lõi: thu thập **giá đóng (closing price)** đáng tin cậy làm nền cho AI dự đoán giá. Dự án portfolio cá nhân. UI tiếng Nhật, có switcher ja/vi/en.
+Web P2P trade thẻ TCG (Pokémon / One Piece / mục その他 cho sản phẩm khác) cho thị trường Nhật, **zero-fee**. Mục tiêu cốt lõi: thu thập **giá đóng (closing price)** đáng tin cậy làm nền cho AI dự đoán giá. Dự án portfolio cá nhân. UI tiếng Nhật, có switcher ja/vi/en.
 
 ## Làm gì → đọc file nào
 

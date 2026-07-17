@@ -73,7 +73,11 @@ export default function NewBuyOrderPage() {
 
         <div>
           <span className="mb-1 block text-sm font-medium">
-            {category === "box" ? t("bon.selectBox") : t("bon.selectCard")}
+            {game === "other"
+              ? t("bon.selectOther")
+              : category === "box"
+                ? t("bon.selectBox")
+                : t("bon.selectCard")}
           </span>
           <CardAutocomplete game={game} category={category} onSelect={setCard} />
         </div>

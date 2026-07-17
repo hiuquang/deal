@@ -10,7 +10,7 @@ users             id, email(unique), password_hash, display_name,
 
 sessions          id, token(unique), user_id→users, expires_at, created_at, updated_at
 
-cards             id, game(pokemon|onepiece), category(single|box) (P3),
+cards             id, game(pokemon|onepiece|other), category(single|box) (P3),
                   set_code, card_number, language(JP|EN),
                   name_ja, name_en, rarity, created_at, updated_at
                   unique(game, set_code, card_number, language)

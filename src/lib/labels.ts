@@ -27,6 +27,25 @@ export function formatDateTime(iso: string): string {
   ).padStart(2, "0")}`;
 }
 
-export function cardTitle(card: { nameJa: string; setCode: string; cardNumber: string }): string {
+export function cardTitle(card: {
+  game: string;
+  nameJa: string;
+  setCode: string;
+  cardNumber: string;
+}): string {
+  // Sản phẩm mục "other" không có set/số thẻ thật (cardNumber = tên) — chỉ hiện tên.
+  if (card.game === "other") return card.nameJa;
   return `${card.nameJa}（${card.setCode} ${card.cardNumber}）`;
+}
+
+/** Dòng thông số "set số・rarity・ngôn ngữ" — null với sản phẩm mục "other". */
+export function cardSpec(card: {
+  game: string;
+  setCode: string;
+  cardNumber: string;
+  rarity: string;
+  language: string;
+}): string | null {
+  if (card.game === "other") return null;
+  return `${card.setCode} ${card.cardNumber}・${card.rarity}・${card.language}`;
 }

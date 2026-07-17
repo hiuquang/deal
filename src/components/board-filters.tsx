@@ -65,6 +65,7 @@ export function FilterTabs({
     { value: "", label: t("home.tabAll") },
     { value: "pokemon", label: t("home.tabPokemon") },
     { value: "onepiece", label: t("home.tabOnepiece") },
+    { value: "other", label: t("home.tabOther") },
   ];
   const categoryTabs: { value: Category | ""; label: string }[] = [
     { value: "", label: t("home.tabAll") },

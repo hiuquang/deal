@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ApiError } from "@/server/errors";
 
 // SQLite không có enum → đây là nguồn chân lý duy nhất cho các giá trị "enum".
-export const GAMES = ["pokemon", "onepiece"] as const;
+export const GAMES = ["pokemon", "onepiece", "other"] as const;
 export const CATEGORIES = ["single", "box"] as const;
 // Condition cho thẻ lẻ
 export const SINGLE_CONDITIONS = [
@@ -78,6 +78,17 @@ export const cardSearchSchema = z.object({
   q: z.string().trim().max(100).optional(),
   game: z.enum(GAMES).optional(),
   category: z.enum(CATEGORIES).optional(),
+});
+
+// Chỉ cho mục "その他/Khác": user tự đặt tên sản phẩm (find-or-create).
+// Pokémon / One Piece vẫn bắt buộc chọn từ catalog (business-rules #13).
+export const createOtherProductSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "商品名を入力してください")
+    .max(100, "商品名は100文字までです"),
+  category: z.enum(CATEGORIES),
 });
 
 // Ảnh phải do chính /api/uploads sinh ra: đường dẫn local (dev) hoặc bucket
