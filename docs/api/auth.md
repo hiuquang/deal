@@ -2,6 +2,38 @@
 
 Quy ước chung (format lỗi, cookie): [README.md](README.md).
 
+## Rate limit (429 RATE_LIMITED)
+
+Chỉ nhóm `/api/auth/*` bị chặn. Cửa sổ cố định, bộ đếm nằm ở bảng `rate_limits`
+(Postgres) — **không phải RAM**: Vercel serverless nhiều instance + cold start
+nên đếm trong RAM là vô nghĩa. Ngưỡng khai báo ở `LIMITS`
+(`src/server/services/rate-limit-service.ts`), sửa số ở đó là đủ.
+
+| Endpoint | Chặn theo | Ngưỡng |
+|---|---|---|
+| `/api/auth/login` | IP | 20 / 10 phút |
+| `/api/auth/login` | email | 8 / 10 phút |
+| `/api/auth/register` | IP | 5 / giờ |
+| `/api/auth/forgot` | IP | 6 / giờ |
+| `/api/auth/forgot` | email | **3 / giờ** |
+| `/api/auth/reset` | IP | 10 / giờ |
+| `/api/auth/resend-verification` | user id | 3 / giờ |
+
+Vì sao thế:
+
+- **Login chặn 2 chiều** — theo IP cản 1 máy dò nhiều tài khoản, theo email cản
+  nhiều IP cùng dò 1 tài khoản (đổi IP KHÔNG lách được). Bộ đếm chạy trước khi
+  so mật khẩu; đăng nhập thành công thì xóa bộ đếm để người thật gõ sai vài lần
+  không bị phạt tiếp.
+- **Nhóm gửi mail siết nhất** — mỗi request là 1 mail thật qua Gmail SMTP: tốn
+  quota và có nguy cơ bị Google khóa App Password nếu bị lợi dụng spam.
+- **`forgot` vẫn không lộ email nào tồn tại** — bộ đếm chạy trước và độc lập với
+  việc email có trong DB hay không, nên 429 đến cùng thời điểm với email không
+  tồn tại. Đánh đổi đã biết: kẻ xấu có thể đốt 3 lượt/giờ của nạn nhân.
+- **FAIL-OPEN** — bộ đếm lỗi (pooler Supabase nguội) thì cho request đi tiếp,
+  không khóa cả app. Không mất an ninh: mọi hành động ở đây đều cần DB mới làm
+  được việc, DB chết thì kẻ tấn công cũng không dò được gì.
+
 ## POST /api/auth/register
 
 ```json
@@ -11,11 +43,11 @@ Quy ước chung (format lỗi, cookie): [README.md](README.md).
 { "user": { "id": "cm...", "email": "taro@example.com", "displayName": "Taro" } }
 ```
 
-Lỗi: `400 VALIDATION` (password < 8 ký tự, thiếu agreeTerms...), `409 EMAIL_TAKEN`. Đăng ký xong tự gửi mail verify (xem dưới).
+Lỗi: `400 VALIDATION` (password < 8 ký tự, thiếu agreeTerms...), `409 EMAIL_TAKEN`, `429 RATE_LIMITED`. Đăng ký xong tự gửi mail verify (xem dưới).
 
 ## POST /api/auth/login
 
-`{email, password}` → `200 {user}` + cookie. Lỗi: `401 INVALID_CREDENTIALS`.
+`{email, password}` → `200 {user}` + cookie. Lỗi: `401 INVALID_CREDENTIALS`, `429 RATE_LIMITED`.
 
 ## POST /api/auth/logout → `{ok: true}`
 
@@ -39,9 +71,9 @@ Lỗi: `400 VALIDATION` (password < 8 ký tự, thiếu agreeTerms...), `409 EMA
 | Method | Path | Request | Response | Lỗi |
 |---|---|---|---|---|
 | POST | `/api/auth/verify` | `{token}` | `{ok:true}` | 400 `INVALID_TOKEN` (sai/hết hạn/đã dùng) |
-| POST | `/api/auth/resend-verification` | — (cần đăng nhập) | `{ok:true}` | 409 `ALREADY_VERIFIED` |
-| POST | `/api/auth/forgot` | `{email}` | `{ok:true}` — **LUÔN LUÔN** (không lộ email tồn tại) | 400 |
-| POST | `/api/auth/reset` | `{token, password ≥8 ký tự}` | `{ok:true}` — đổi mật khẩu + **đăng xuất mọi thiết bị** | 400 `INVALID_TOKEN` |
+| POST | `/api/auth/resend-verification` | — (cần đăng nhập) | `{ok:true}` | 409 `ALREADY_VERIFIED`, 429 |
+| POST | `/api/auth/forgot` | `{email}` | `{ok:true}` — **LUÔN LUÔN** (không lộ email tồn tại) | 400, 429 |
+| POST | `/api/auth/reset` | `{token, password ≥8 ký tự}` | `{ok:true}` — đổi mật khẩu + **đăng xuất mọi thiết bị** | 400 `INVALID_TOKEN`, 429 |
 | GET | `/api/dev/mailbox` | — | `{emails:[...]}` — DEV ONLY (404 ở production/khi có SMTP) | — |
 
 Luồng reset: `/forgot-password` nhập email → mail link `/reset-password?token=...` (hạn 1h) → nhập mật khẩu mới → xóa toàn bộ session cũ.

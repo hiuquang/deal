@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [0.9.4] — 2026-07-17 — Rate limit nhóm /api/auth/* (429 RATE_LIMITED)
+
+### Bảo mật
+- **Chặn dò mật khẩu + spam mail** trước khi mở test rộng. Bảng mới `rate_limits` (migration `20260717120000_rate_limits`, thuần `CREATE TABLE`). Ngưỡng khai báo tập trung ở `LIMITS` (`src/server/services/rate-limit-service.ts`) — bảng đầy đủ + lý do từng con số ở [docs/api/auth.md](docs/api/auth.md).
+- **Login chặn 2 chiều** (IP 20/10ph + email 8/10ph): đổi IP KHÔNG lách được giới hạn theo email. Đếm TRƯỚC khi so mật khẩu (chỉ đếm lần sai thì vẫn thử được vô hạn tới lúc đoán trúng); đăng nhập thành công thì xóa bộ đếm để người thật gõ sai vài lần không bị phạt tiếp.
+- **Nhóm gửi mail siết nhất** (`forgot` 3/giờ mỗi email, `register` 5/giờ mỗi IP, `resend-verification` 3/giờ mỗi user) — mỗi request là 1 mail thật qua Gmail SMTP: tốn quota và có nguy cơ bị Google khóa App Password nếu bị lợi dụng spam.
+- `forgot` **vẫn không lộ email nào tồn tại**: bộ đếm chạy trước và độc lập với việc email có trong DB → 429 đến cùng thời điểm dù email thật hay không.
+- **Bộ đếm ở Postgres chứ không phải RAM** — Vercel serverless nhiều instance + cold start nên đếm trong RAM vô nghĩa. Tăng bằng MỘT câu `INSERT … ON CONFLICT` atomic: đọc-rồi-ghi ở tầng app sẽ đếm thiếu khi request chạy song song.
+- **FAIL-OPEN có chủ đích**: bộ đếm lỗi (pooler nguội) → cho request đi tiếp thay vì khóa cả app. Không mất an ninh vì mọi hành động ở đây đều cần DB mới làm được việc.
+- IP lấy từ `x-vercel-forwarded-for` (edge Vercel ghi đè, client không giả mạo được), `x-forwarded-for` chỉ là dự phòng.
+
+### Kiểm thử
+- 132 test pass (+10 test mới cho rate-limit-service: biên ngưỡng, chuẩn hóa key, fail-open). Verify thật trên dev server: lần 9 đăng nhập sai → 429; đổi 3 IP vẫn 429 (không lách được); email khác không bị vạ lây; `forgot` chặn ở lần 4; **20 request song song đếm đúng 20** (không lost update). Dọn sạch hàng test khỏi DB sau khi xong.
+
 ## [0.9.3] — 2026-07-17 — Trang chủ server-render lượt đầu + function về region Sydney
 
 ### Hiệu năng

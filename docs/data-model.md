@@ -1,6 +1,6 @@
 # Data model (hợp nhất mọi phase)
 
-16 bảng. Schema thật: `prisma/schema.prisma`. Ghi chú `(P2)`/`(P3)`... = phase bổ sung.
+17 bảng. Schema thật: `prisma/schema.prisma`. Ghi chú `(P2)`/`(P3)`... = phase bổ sung.
 
 ```
 users             id, email(unique), password_hash, display_name,
@@ -92,6 +92,13 @@ email_tokens (P4) id, user_id→users, token(unique), type(verify|reset),
                   expires_at (verify 24h / reset 1h), used_at? (dùng 1 lần)
 
 email_outbox (P4) hộp thư dev — chỉ dùng khi chưa cấu hình SMTP (xem email.md)
+
+rate_limits       key (PK, dạng "action:loại:định danh"), count, window_end
+                  ── KHÔNG có FK tới users: key là chuỗi tự do nên chặn được cả
+                     người chưa đăng nhập (theo IP/email). Tăng bằng 1 câu
+                     INSERT…ON CONFLICT atomic — nhiều instance Vercel chạy
+                     song song, đọc-rồi-ghi ở tầng app sẽ đếm thiếu.
+                     Dọn lazy (không cần cron). Xem docs/api/auth.md.
 ```
 
 ## Giá trị enum quan trọng

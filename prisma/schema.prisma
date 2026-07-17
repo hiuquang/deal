@@ -368,3 +368,17 @@ model PriceRecord {
   @@index([cardId, condition, tradedAt])
   @@map("price_records")
 }
+
+// Bộ đếm rate limit (fixed window). Không có FK tới User — key là chuỗi tự do
+// ("login:ip:1.2.3.4", "forgot:email:a@b.c") nên chặn được cả người chưa đăng
+// nhập. Phải nằm ở DB chứ không phải RAM: Vercel serverless nhiều instance +
+// cold start liên tục → đếm trong RAM vô nghĩa.
+model RateLimit {
+  key       String   @id
+  count     Int      @default(1)
+  windowEnd DateTime @map("window_end")
+
+  // Phục vụ dọn rác lazy (xóa cửa sổ đã hết hạn).
+  @@index([windowEnd])
+  @@map("rate_limits")
+}

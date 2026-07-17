@@ -13,6 +13,7 @@ Base URL: `http://localhost:3000`. Auth qua session cookie `deal_session` (httpO
 - Endpoint cần đăng nhập mà thiếu session → `401 UNAUTHORIZED`.
 - Hành động ghi khi email chưa xác nhận → `403 EMAIL_NOT_VERIFIED`; khi chưa đồng ý điều khoản bản hiện hành → `403 TERMS_NOT_ACCEPTED` (xem [business-rules.md](../business-rules.md) mục gate).
 - Validation fail → `400 VALIDATION`.
+- Vượt rate limit → `429 RATE_LIMITED` (chỉ nhóm `/api/auth/*` — ngưỡng cụ thể ở [auth.md](auth.md)).
 
 ## Map endpoint → file
 
