@@ -12,7 +12,36 @@ const ALLOWED: Record<string, string> = {
   "image/webp": ".webp",
 };
 
-// MVP: lưu local vào public/uploads. V2 khi deploy → cloud storage (S3/R2).
+// Có SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY → Supabase Storage (bucket
+// public "uploads", REST API — không cần SDK). Không có → lưu local
+// public/uploads (dev). Vercel không có đĩa ghi được nên production BẮT BUỘC
+// cấu hình Supabase.
+async function store(name: string, buf: Buffer, contentType: string): Promise<string> {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (supabaseUrl && serviceKey) {
+    const res = await fetch(`${supabaseUrl}/storage/v1/object/uploads/${name}`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${serviceKey}`,
+        "content-type": contentType,
+        "cache-control": "public, max-age=31536000, immutable",
+      },
+      body: new Uint8Array(buf),
+    });
+    if (!res.ok) {
+      console.error("Supabase Storage upload failed:", res.status, await res.text());
+      throw new ApiError(500, "INTERNAL", "画像のアップロードに失敗しました。");
+    }
+    return `${supabaseUrl}/storage/v1/object/public/uploads/${name}`;
+  }
+
+  const dir = path.join(process.cwd(), "public", "uploads");
+  await mkdir(dir, { recursive: true });
+  await writeFile(path.join(dir, name), buf);
+  return `/uploads/${name}`;
+}
+
 export const POST = withErrorHandling(async (req: NextRequest) => {
   await requireVerifiedUser();
 
@@ -30,9 +59,7 @@ export const POST = withErrorHandling(async (req: NextRequest) => {
   }
 
   const name = `${randomUUID()}${ext}`;
-  const dir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(dir, { recursive: true });
-  await writeFile(path.join(dir, name), Buffer.from(await file.arrayBuffer()));
+  const url = await store(name, Buffer.from(await file.arrayBuffer()), file.type);
 
-  return NextResponse.json({ url: `/uploads/${name}` }, { status: 201 });
+  return NextResponse.json({ url }, { status: 201 });
 });

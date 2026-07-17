@@ -8,7 +8,10 @@
     "start": "next start",
     "test": "vitest run",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "db:seed-prod": "tsx prisma/seed-prod.ts",
+    "db:reset-test": "tsx prisma/reset-test-data.ts",
+    "postinstall": "prisma generate"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -13,6 +13,7 @@ Web P2P trade thẻ TCG (Pokémon / One Piece) cho thị trường Nhật, **zer
 | Thêm/sửa chuỗi UI, ngôn ngữ, font | [docs/i18n.md](docs/i18n.md) |
 | Email xác nhận / reset mật khẩu / SMTP | [docs/email.md](docs/email.md) |
 | Chạy dev, biến env, lỗi 500 lạ | [docs/environment.md](docs/environment.md) |
+| Deploy production (Vercel + Supabase) | [docs/deploy.md](docs/deploy.md) |
 | Tính năng tương lai / việc chưa làm | [docs/roadmap.md](docs/roadmap.md) |
 | Lịch sử từng version | [CHANGELOG.md](CHANGELOG.md) |
 

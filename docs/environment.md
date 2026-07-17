@@ -27,9 +27,11 @@ npm run db:seed # chạy lại seed (idempotent)
 
 | Biến | Mặc định | Ghi chú |
 |---|---|---|
-| `DATABASE_URL` | `file:./dev.db` | SQLite dev; Postgres khi deploy |
+| `DATABASE_URL` | `file:./dev.db` | SQLite dev; Supabase Postgres khi deploy — xem [deploy.md](deploy.md) |
+| `DIRECT_URL` | (trống) | Chỉ production (Postgres) — kết nối trực tiếp cho migrate |
 | `APP_URL` | `http://localhost:3000` | URL gốc dùng trong link email |
 | `SMTP_*` | (trống) | Xem [email.md](email.md) — ⚠️ KHÔNG đọc/ghi `SMTP_PASS` |
+| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | (trống) | Có cả 2 → ảnh upload lên Supabase Storage; trống → lưu `public/uploads` |
 
 Xem `.env.example`. `.env` đã gitignore.
 

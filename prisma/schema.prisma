@@ -1,12 +1,13 @@
-// SQLite không hỗ trợ enum trong Prisma → các cột "enum" dùng String,
-// giá trị hợp lệ được ép ở tầng zod (src/server/validation.ts).
+// Postgres hỗ trợ enum thật, nhưng giữ String để tương thích với zod ép kiểu
+// hiện có (src/server/validation.ts) — đổi enum là việc khác, không phải cutover.
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
