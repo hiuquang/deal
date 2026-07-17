@@ -80,12 +80,23 @@ export const cardSearchSchema = z.object({
   category: z.enum(CATEGORIES).optional(),
 });
 
+// Ảnh phải do chính /api/uploads sinh ra: đường dẫn local (dev) hoặc bucket
+// public trên Supabase Storage (production). Chặn nhét URL ngoài vào listing.
+const LOCAL_IMAGE = /^\/uploads\/[\w.-]+$/;
+const IMAGE_FILE = /^[\w.-]+$/;
+
+export function isOwnImageUrl(value: string): boolean {
+  if (LOCAL_IMAGE.test(value)) return true;
+  const supabaseUrl = process.env.SUPABASE_URL;
+  if (!supabaseUrl) return false;
+  const prefix = `${supabaseUrl}/storage/v1/object/public/uploads/`;
+  return value.startsWith(prefix) && IMAGE_FILE.test(value.slice(prefix.length));
+}
+
 export const createListingSchema = z.object({
   cardId: z.string().min(1),
   condition: z.enum(CONDITIONS),
-  imageUrl: z
-    .string()
-    .regex(/^\/uploads\/[\w.-]+$/, "画像をアップロードしてください"),
+  imageUrl: z.string().refine(isOwnImageUrl, "画像をアップロードしてください"),
   askingPriceJpy: priceJpy.optional().nullable(),
   quantity: z.coerce
     .number()

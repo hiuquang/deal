@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   confirmTradeSchema,
   createListingSchema,
@@ -51,6 +51,49 @@ describe("createListingSchema", () => {
     expect(() =>
       createListingSchema.parse({ ...base, imageUrl: "https://evil.com/x.jpg" })
     ).toThrow();
+  });
+
+  describe("ảnh trên Supabase Storage (production)", () => {
+    const SUPABASE = "https://proj.supabase.co";
+    const ok = `${SUPABASE}/storage/v1/object/public/uploads/abc-123.png`;
+
+    beforeEach(() => {
+      vi.stubEnv("SUPABASE_URL", SUPABASE);
+    });
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    it("chấp nhận URL bucket public của chính mình", () => {
+      expect(() => createListingSchema.parse({ ...base, imageUrl: ok })).not.toThrow();
+    });
+
+    it("từ chối bucket khác / đường dẫn lạ trên cùng host", () => {
+      expect(() =>
+        createListingSchema.parse({
+          ...base,
+          imageUrl: `${SUPABASE}/storage/v1/object/public/other/x.png`,
+        })
+      ).toThrow();
+    });
+
+    it("từ chối host Supabase của project khác", () => {
+      expect(() =>
+        createListingSchema.parse({
+          ...base,
+          imageUrl: "https://evil.supabase.co/storage/v1/object/public/uploads/x.png",
+        })
+      ).toThrow();
+    });
+
+    it("từ chối path traversal trong tên file", () => {
+      expect(() =>
+        createListingSchema.parse({
+          ...base,
+          imageUrl: `${SUPABASE}/storage/v1/object/public/uploads/../../../secret.png`,
+        })
+      ).toThrow();
+    });
   });
 
   it("quantity mặc định 1 khi không nhập", () => {
