@@ -139,7 +139,12 @@ function ChatContent() {
                   {cardTitle(selected.card)}
                 </Link>
                 <p className="text-xs text-slate-500">
-                  {t("chat.partner", { name: selected.otherPartyName })}
+                  <Link
+                    href={`/users/${selected.otherPartyId}`}
+                    className="hover:text-indigo-600 hover:underline"
+                  >
+                    {t("chat.partner", { name: selected.otherPartyName })}
+                  </Link>
                 </p>
               </div>
             </div>

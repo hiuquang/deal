@@ -142,6 +142,8 @@ interface ConversationBase {
   /** thẻ liên quan — luôn có (từ listing hoặc buy-order) */
   card: CardDto;
   buyerId: string;
+  /** id đối phương — link hồ sơ + tra cứu cảnh báo an toàn trước khi chốt */
+  otherPartyId: string;
   otherPartyName: string;
   lastMessage: MessageDto | null;
   activeTradeId: string | null;
@@ -222,6 +224,77 @@ export interface UserSummaryDto {
   ratingCount: number;
   contributionCount: number;
   memberSince: string;
+}
+
+// ---- Hồ sơ công khai & hệ tin cậy (P10) ----
+
+export type TrainerTier =
+  | "bronze"
+  | "silver"
+  | "gold"
+  | "platinum"
+  | "master"
+  | "legendary";
+
+export type BadgeKey =
+  | "trades10"
+  | "trades100"
+  | "trades500"
+  | "topSeller"
+  | "trustedTrader"
+  | "perfectRating"
+  | "noReport"
+  | "oneYear";
+
+/** 🟢 không có gì · 🟡 có report đang xem xét · 🔴 có vi phạm ĐÃ xác minh */
+export type SafetyLevel = "green" | "yellow" | "red";
+
+export interface ProfileSafetyDto {
+  level: SafetyLevel;
+  /** số report đã xác minh vi phạm */
+  verifiedCount: number;
+  /** số người KHÁC NHAU đang có report chờ xử lý (chống 1 người spam report) */
+  pendingReporters: number;
+  lastVerifiedAt: string | null;
+}
+
+export interface ProfileStatsDto {
+  /** giao dịch đã chốt (confirmed + self_reported) */
+  closedTrades: number;
+  /** số đối tác khác nhau đã giao dịch xong */
+  distinctPartners: number;
+  cancelledTrades: number;
+  /** closed/(closed+cancelled); null nếu chưa có giao dịch nào */
+  completionRate: number | null;
+}
+
+export interface ProfileReviewDto {
+  score: number;
+  comment: string | null;
+  raterDisplayName: string;
+  createdAt: string;
+}
+
+export interface UserProfileDto {
+  id: string;
+  displayName: string;
+  memberSince: string;
+  ratingAvg: number | null;
+  ratingCount: number;
+  /** XP derived từ lịch sử (không lưu cột) — xem profile-service */
+  xp: number;
+  level: number;
+  tier: TrainerTier;
+  /** tiến độ trong level hiện tại (0..xpPerLevel) để vẽ thanh XP */
+  xpIntoLevel: number;
+  xpPerLevel: number;
+  /** 0–100 — chỉ số uy tín chính; level/XP chỉ để gắn kết */
+  trustScore: number;
+  badges: BadgeKey[];
+  stats: ProfileStatsDto;
+  safety: ProfileSafetyDto;
+  recentReviews: ProfileReviewDto[];
+  activeListings: ListingDto[];
 }
 
 export interface PriceStatsDto {

@@ -330,13 +330,18 @@ model Rating {
 }
 
 model Report {
-  id             String   @id @default(cuid())
-  reporterId     String   @map("reporter_id")
-  reportedUserId String   @map("reported_user_id")
-  listingId      String?  @map("listing_id")
+  id             String    @id @default(cuid())
+  reporterId     String    @map("reporter_id")
+  reportedUserId String    @map("reported_user_id")
+  listingId      String?   @map("listing_id")
   reason         String
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  // pending (mặc định) | verified | dismissed. Hồ sơ công khai CHỈ hiện vi
+  // phạm đã verified — report lẻ chưa duyệt không được làm xấu mặt ai (chống
+  // report bẩn). Chưa có admin UI: duyệt tạm bằng tay ở DB.
+  status         String    @default("pending")
+  resolvedAt     DateTime? @map("resolved_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
 
   reporter User @relation("ReportsMade", fields: [reporterId], references: [id])
   reported User @relation("ReportsReceived", fields: [reportedUserId], references: [id])

@@ -20,6 +20,7 @@ import type {
   TradeDto,
   TradeRatingStateDto,
   UserDto,
+  UserProfileDto,
   UserSummaryDto,
 } from "@/lib/types";
 
@@ -255,6 +256,8 @@ export const api = {
   // ---- users ----
   getUserSummary: (userId: string) =>
     request<{ user: UserSummaryDto }>(`/api/users/${userId}/summary`),
+  getUserProfile: (userId: string) =>
+    request<{ profile: UserProfileDto }>(`/api/users/${userId}/profile`),
 
   // ---- reports ----
   reportUser: (data: { reportedUserId: string; listingId?: string | null; reason: string }) =>

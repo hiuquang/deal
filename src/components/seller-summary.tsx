@@ -2,6 +2,7 @@
 
 // Badge uy tín người bán (★ từ rating đã reveal + số giao dịch) + nút 通報.
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { api, ApiClientError } from "@/lib/api-client";
 import type { UserSummaryDto } from "@/lib/types";
 import { useAuth } from "@/components/auth-context";
@@ -48,7 +49,11 @@ export function SellerSummary({ sellerId, listingId }: Props) {
     <div className="space-y-2 rounded-xl border border-slate-200 bg-white p-4 text-sm">
       <div className="flex items-center justify-between">
         <div>
-          <p className="font-medium">{summary.displayName}</p>
+          <p className="font-medium">
+            <Link href={`/users/${sellerId}`} className="hover:text-indigo-700 hover:underline">
+              {summary.displayName}
+            </Link>
+          </p>
           <p className="text-xs text-slate-500">
             {summary.ratingAvg !== null ? (
               <>
@@ -58,7 +63,10 @@ export function SellerSummary({ sellerId, listingId }: Props) {
             ) : (
               t("seller.noRating")
             )}
-            ・{t("seller.trades", { n: summary.contributionCount })}
+            ・{t("seller.trades", { n: summary.contributionCount })}・
+            <Link href={`/users/${sellerId}`} className="text-indigo-600 hover:underline">
+              {t("seller.viewProfile")}
+            </Link>
           </p>
         </div>
         {me && me.id !== sellerId && !done && (

@@ -135,3 +135,43 @@ export function listExpiredPendingTrades(now: Date) {
     include: tradeInclude,
   });
 }
+
+const CLOSED = { in: ["confirmed", "self_reported"] };
+
+/**
+ * Thống kê giao dịch cho hồ sơ công khai: số trade đã chốt, số trade đã hủy,
+ * số ĐỐI TÁC KHÁC NHAU (distinct — chống bơm chỉ số bằng cách trade lặp với
+ * 1 đồng bọn), số trade đã chốt trong vai người bán (badge Top Seller).
+ */
+export async function getTradeStatsForUser(userId: string): Promise<{
+  closedTrades: number;
+  cancelledTrades: number;
+  distinctPartners: number;
+  closedAsSeller: number;
+}> {
+  const [closedTrades, cancelledTrades, closedAsSeller, asBuyer, asSeller] =
+    await Promise.all([
+      prisma.trade.count({
+        where: { status: CLOSED, OR: [{ buyerId: userId }, { sellerId: userId }] },
+      }),
+      prisma.trade.count({
+        where: { status: "cancelled", OR: [{ buyerId: userId }, { sellerId: userId }] },
+      }),
+      prisma.trade.count({ where: { status: CLOSED, sellerId: userId } }),
+      prisma.trade.findMany({
+        where: { status: CLOSED, buyerId: userId },
+        select: { sellerId: true },
+        distinct: ["sellerId"],
+      }),
+      prisma.trade.findMany({
+        where: { status: CLOSED, sellerId: userId },
+        select: { buyerId: true },
+        distinct: ["buyerId"],
+      }),
+    ]);
+  const partners = new Set<string>([
+    ...asBuyer.map((t) => t.sellerId),
+    ...asSeller.map((t) => t.buyerId),
+  ]);
+  return { closedTrades, cancelledTrades, distinctPartners: partners.size, closedAsSeller };
+}

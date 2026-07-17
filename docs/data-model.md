@@ -79,7 +79,12 @@ ratings (P2)      id, trade_id→trades, rater_id→users, ratee_id→users,
                   "revealed" = trade đủ 2 rating (derived, không lưu)
 
 reports (P2)      id, reporter_id→users, reported_user_id→users,
-                  listing_id?→listings, reason(10–500 ký tự), created_at, updated_at
+                  listing_id?→listings, reason(10–500 ký tự),
+                  status(pending|verified|dismissed, default pending) (P10),
+                  resolved_at? (P10), created_at, updated_at
+                  ── Hồ sơ công khai CHỈ hiện vi phạm status=verified; 🟡 cần
+                     ≥2 NGƯỜI KHÁC NHAU đang pending (chống report bẩn).
+                     Chưa có admin UI — duyệt tạm bằng tay ở DB.
 
 comments (P3)     id, listing_id→listings, user_id→users, body(1–500 ký tự),
                   created_at, updated_at
@@ -112,6 +117,7 @@ rate_limits       key (PK, dạng "action:loại:định danh"), count, window_e
 - `contributionCount` của user = COUNT(trades WHERE status IN (confirmed, self_reported) AND user là buyer/seller).
 - `revealed` của rating = trade có đủ 2 rating.
 - `ratingAvg` của user = trung bình score các rating **đã reveal** nhận được; null nếu chưa có.
+- **XP / level / tier / trustScore / badge / safety (P10)** — toàn bộ derived từ lịch sử tại thời điểm xem, không có bảng sự kiện XP (không farm được bằng hành động lặp). Công thức: `src/server/services/profile-service.ts`; ngữ nghĩa: [api/ratings-reports-users.md](api/ratings-reports-users.md).
 
 ## Seed (`prisma/seed.ts`)
 

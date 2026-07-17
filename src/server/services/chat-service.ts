@@ -26,6 +26,7 @@ function toConversationDto(
   const base = {
     id: conversation.id,
     buyerId: conversation.buyerId,
+    otherPartyId: otherParty.id,
     otherPartyName: otherParty.displayName,
     lastMessage: last ? toMessageDto(last) : null,
     activeTradeId: conversation.trades?.[0]?.id ?? null,

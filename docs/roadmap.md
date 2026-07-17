@@ -17,11 +17,24 @@
 - Deploy Vercel + Supabase Postgres.
 - Chuyển sang Gmail riêng của dự án khi bật được 2FA (xem [email.md](email.md)).
 
+## Profile & Trust System — phần hoãn từ spec v2 (0.10.0 đã làm phần lõi)
+
+Đã có (0.10.0): trang hồ sơ công khai `/users/:id`, Trust Score, XP/Level/Tier,
+badge, thống kê, Trust & Safety 🟢🟡🔴 + cảnh báo trước khi chốt trade.
+Còn lại của spec, hoãn vì cần hạ tầng chưa có:
+
+- **Admin dashboard duyệt report** (đang duyệt tay ở DB) — điều kiện để 🔴 vận hành thật.
+- Online status (cần presence/heartbeat), Follow (social graph + notification).
+- Avatar upload (mở surface moderation ảnh hồ sơ — cân nhắc sau khi có admin).
+- Badge Fast Reply / Fast Trade + "thời gian phản hồi" (cần đo timing tin nhắn).
+- XP đăng nhập liên tục / XP đăng tin (cần bảng sự kiện + chống farm; nguồn XP hiện tại cố ý chỉ từ giao dịch thật).
+- Animation lên hạng, khung avatar, vật phẩm trang trí, VIP member.
+- Bộ sưu tập nổi bật (cần tính năng collection riêng, khác listing đang bán).
+
 ## Ý tưởng (chưa cam kết)
 
 - AI dự đoán giá (cần đủ dữ liệu thật trước).
 - Seed giá tham khảo từ TCGplayer / Yahoo Auction cho giai đoạn cold start.
 - Lọc listing theo ga/tuyến tàu (đã có cột `station` từ 0.6.1).
 - WebSocket/Pusher thay polling chat.
-- Admin dashboard cho reports.
 - App native.

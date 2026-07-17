@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { api, ApiClientError } from "@/lib/api-client";
-import type { Condition, ConversationDto, TradeDto } from "@/lib/types";
+import type { Condition, ConversationDto, TradeDto, UserProfileDto } from "@/lib/types";
 import { BOX_CONDITION_KEYS, SINGLE_CONDITION_KEYS, formatDate, formatJpy } from "@/lib/labels";
 import { ErrorBox, SafetyNote, TradeStatusBadge } from "@/components/ui";
 import { RatingSection } from "@/components/rating-section";
@@ -33,6 +33,21 @@ export function TradePanel({ conversation, myUserId, onTradeChange }: Props) {
   );
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // An toàn đối phương (P10) — cảnh báo TRƯỚC khi chốt nếu 🟡/🔴.
+  const [counterpart, setCounterpart] = useState<UserProfileDto | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .getUserProfile(conversation.otherPartyId)
+      .then(({ profile }) => !cancelled && setCounterpart(profile))
+      .catch(() => {
+        // không tải được hồ sơ thì thôi — cảnh báo là lớp phụ, không chặn trade
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [conversation.otherPartyId]);
 
   const load = useCallback(async () => {
     if (!conversation.activeTradeId) {
@@ -97,9 +112,28 @@ export function TradePanel({ conversation, myUserId, onTradeChange }: Props) {
 
   const canSubmit = isBuyOrder ? !!price && !!qty : !!price;
 
+  // Cảnh báo hiện ở mọi giai đoạn trước khi trade chốt (khai + xác nhận) —
+  // theo spec Trust & Safety: 🔴 vi phạm đã xác minh, 🟡 đang xem xét.
+  const safetyWarning =
+    counterpart && (!trade || trade.status === "pending") ? (
+      counterpart.safety.level === "red" ? (
+        <p className="rounded-lg border border-red-200 bg-red-50 p-2 text-xs text-red-700">
+          {t("trade.safetyWarnRed", {
+            n: counterpart.safety.verifiedCount,
+            score: counterpart.trustScore,
+          })}
+        </p>
+      ) : counterpart.safety.level === "yellow" ? (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs text-amber-700">
+          {t("trade.safetyWarnYellow")}
+        </p>
+      ) : null
+    ) : null;
+
   return (
     <div className="space-y-3 border-t border-slate-200 bg-slate-50 p-3">
       {error && <ErrorBox message={error} />}
+      {safetyWarning}
 
       {!trade && (
         <div className="space-y-2">

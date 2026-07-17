@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## [0.10.0] — 2026-07-17 — Hồ sơ công khai & hệ tin cậy (P10, phần lõi spec Profile/Trust v2)
+
+### Tính năng
+- **Trang hồ sơ công khai `/users/:id`** + `GET /api/users/:id/profile`: avatar chữ cái, tier + level + thanh XP, **Trust Score 0–100** (chỉ số uy tín chính), badge, thống kê giao dịch (đã chốt / số đối tác khác nhau / tỷ lệ hoàn thành / hủy), review đã reveal gần nhất, tin đang bán, nút 通報. Link vào hồ sơ từ SellerSummary (listing + tin gom) và tên đối phương trong chat.
+- **Trust & Safety 🟢🟡🔴** (migration `20260717150000_report_status`: cột `reports.status` + `resolved_at`): 🔴 chỉ khi vi phạm **đã xác minh** (hiện số lần + ngày gần nhất); 🟡 cần **≥2 người khác nhau** đang report pending — 1 report lẻ không đổi hiển thị công khai (chống report bẩn, đúng mục tiêu spec); report pending KHÔNG trừ Trust Score. Chưa có admin UI — duyệt tạm ở DB.
+- **Cảnh báo trước khi chốt trade** trong chat (TradePanel): đối phương 🟡/🔴 → banner cảnh báo kèm số vi phạm + trust score, hiện ở cả bước khai lẫn bước xác nhận. Fail-silent nếu không tải được hồ sơ (cảnh báo là lớp phụ, không chặn trade).
+- `ConversationDto` thêm `otherPartyId`.
+
+### Thiết kế (đọc trước khi sửa)
+- **Mọi chỉ số derived tại thời điểm xem, KHÔNG lưu cột** (cùng triết lý contributionCount/ratingAvg) → không có bảng sự kiện XP, không farm được. XP: 30/trade + 10/5★ + 100/30 ngày sạch; **cố ý bỏ XP đăng nhập/đăng tin của spec** (nguồn XP phải là việc thật trên chợ). Trust Score thưởng **distinct partners** để chống bơm điểm bằng trade lặp với 1 đồng bọn.
+- Phần spec hoãn (online status, follow, avatar, fast-reply badge, admin dashboard…) ghi ở [docs/roadmap.md](docs/roadmap.md).
+
+### Kiểm thử
+- 160 test pass (+28: biên tier, clamp trust score, ngưỡng badge, safety level). Verify browser: hồ sơ tài khoản thật render đúng (Lv.1 Bronze, trust 50, 🟢, tin đang bán), mobile 375px không tràn, link từ listing detail đúng. Nhánh cần đăng nhập (cảnh báo TradePanel) phủ bằng tsc + unit test.
+
 ## [0.9.4] — 2026-07-17 — Rate limit nhóm /api/auth/* (429 RATE_LIMITED)
 
 ### Bảo mật

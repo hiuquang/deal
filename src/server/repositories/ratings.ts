@@ -37,6 +37,25 @@ export async function listRevealedRatingsForUsers(rateeIds: string[]) {
   return ratings.filter((r) => r.trade._count.ratings >= 2);
 }
 
+/**
+ * Review mới nhất cho hồ sơ công khai — kèm tên người đánh giá (khác
+ * listRevealedRatingsForUser: hàm đó phục vụ tính ★ nên không join rater).
+ * Vẫn chỉ lấy rating đã reveal (đủ 2 chiều) — blind-mutual không đổi.
+ */
+export async function listRecentRevealedReviews(rateeId: string, limit: number) {
+  const ratings = await prisma.rating.findMany({
+    where: { rateeId },
+    include: {
+      rater: { select: { displayName: true } },
+      trade: { select: { _count: { select: { ratings: true } } } },
+    },
+    orderBy: { createdAt: "desc" },
+    // lấy dư rồi lọc revealed — trade thiếu rating chiều kia sẽ bị loại
+    take: limit * 3,
+  });
+  return ratings.filter((r) => r.trade._count.ratings >= 2).slice(0, limit);
+}
+
 export function findUserById(id: string) {
   return prisma.user.findFirst({ where: { id, deletedAt: null } });
 }
