@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [0.11.1] — 2026-07-17 — Email dự phòng: chuỗi Brevo → Gmail SMTP
+
+### Hạ tầng
+- **`sendMail` thành chuỗi dự phòng** (`src/server/mailer.ts`): có `BREVO_API_KEY`+`BREVO_FROM` → gửi qua Brevo HTTP API trước (free 300 mail/ngày, timeout 10s); lỗi → fallback Gmail SMTP; cả hai trống → dev outbox như cũ. Lý do: Gmail giới hạn ~500 người nhận/ngày, vượt là bị chặn gửi 24–72h — một đường duy nhất là điểm chết khi có traffic thật.
+- Chưa set env Brevo thì hành vi y hệt cũ (Gmail chính) — deploy an toàn, thêm key lúc nào cũng được.
+- `isSmtpConfigured` → `isMailConfigured` (Brevo HOẶC SMTP): `/dev/mailbox` tự tắt khi có bất kỳ đường gửi thật nào.
+- Env đọc tại thời điểm gọi (không phải lúc import) — test được bằng `vi.stubEnv`, và thêm key trên Vercel chỉ cần redeploy.
+- Setup Brevo (verify sender, lấy API key) ghi ở [docs/email.md](docs/email.md).
+
+### Kiểm thử
+- 171 test pass (+7 `tests/mailer.test.ts`: chọn đúng đường theo env, fallback khi Brevo lỗi, ném lỗi khi hết đường, thiếu `BREVO_FROM` coi như chưa cấu hình).
+
 ## [0.11.0] — 2026-07-17 — Mục その他/Khác: bán sản phẩm ngoài Pokémon & One Piece
 
 ### Tính năng
