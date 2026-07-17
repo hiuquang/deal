@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [0.9.2] — 2026-07-17 — Sửa tràn thanh nav trên điện thoại
+
+### Sửa lỗi
+- **Nav gom vào menu hamburger dưới breakpoint `sm`**: trên iPhone (375px) tổng bề rộng logo + 5 mục + nút ngôn ngữ vượt màn hình; chữ Nhật không có dấu cách nên trình duyệt được ngắt dòng giữa từng ký tự → 出品する/まとめ買い/ログアウト xếp dọc và bị cắt. Nay mobile chỉ còn logo + cờ ngôn ngữ + nút menu; mọi mục nằm trong panel xổ xuống (tự đóng khi đổi route). Desktop (`sm`+) giữ nguyên hàng ngang, thêm `whitespace-nowrap` chặn tái phát.
+- Huy hiệu tin chưa đọc: menu đóng thì hiện **chấm đỏ** trên nút hamburger (số đầy đủ nằm trong panel) → không mất tín hiệu thông báo trên mobile.
+- Tên hiển thị dài không còn đẩy tràn nav (`truncate`, giới hạn `8rem` ở desktop).
+- Chuỗi mới `nav.menu` (ja/vi/en) cho aria-label nút hamburger.
+
 ## [0.9.1] — 2026-07-16 — Dọn code sau 2 giai đoạn tin gom (review 4 góc: tái dùng / đơn giản / hiệu năng / độ sâu)
 
 ### Hiệu năng
