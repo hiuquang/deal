@@ -265,6 +265,7 @@ export const MESSAGES = {
   },
   "chat.placeholder": { ja: "メッセージを入力…", vi: "Nhập tin nhắn…", en: "Type a message…" },
   "chat.send": { ja: "送信", vi: "Gửi", en: "Send" },
+  "chat.sendFail": { ja: "送信に失敗しました。もう一度お試しください。", vi: "Gửi tin nhắn thất bại. Vui lòng thử lại.", en: "Failed to send. Please try again." },
 
   // ---- Trade panel ----
   "trade.explain": {

@@ -5,10 +5,11 @@
 // nhiều người treo tab); quay lại tab là poll bù ngay. MVP dùng polling thay
 // WebSocket (design.md).
 import { useCallback, useEffect, useRef, useState } from "react";
-import { api } from "@/lib/api-client";
+import { api, ApiClientError } from "@/lib/api-client";
 import type { MessageDto } from "@/lib/types";
 import { formatDateTime } from "@/lib/labels";
 import { useI18n } from "@/lib/i18n";
+import { ErrorBox } from "@/components/ui";
 
 const POLL_MS = 6000;
 
@@ -26,6 +27,7 @@ export function ChatPanel({
   const [messages, setMessages] = useState<MessageDto[]>([]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const lastIdRef = useRef<string | undefined>(undefined);
 
@@ -52,6 +54,7 @@ export function ChatPanel({
 
   useEffect(() => {
     setMessages([]);
+    setError(null);
     lastIdRef.current = undefined;
     void poll();
     const timer = setInterval(() => {
@@ -79,7 +82,11 @@ export function ChatPanel({
     try {
       await api.sendMessage(conversationId, body);
       setDraft("");
+      setError(null);
       await poll();
+    } catch (err) {
+      // Giữ nguyên draft để user bấm gửi lại
+      setError(err instanceof ApiClientError ? err.message : t("chat.sendFail"));
     } finally {
       setBusy(false);
     }
@@ -110,7 +117,12 @@ export function ChatPanel({
         })}
         <div ref={bottomRef} />
       </div>
-      <form onSubmit={handleSend} className="flex gap-2 border-t border-slate-200 p-3">
+      {error && (
+        <div className="border-t border-slate-200 px-3 pt-3">
+          <ErrorBox message={error} />
+        </div>
+      )}
+      <form onSubmit={handleSend} className={`flex gap-2 p-3 ${error ? "" : "border-t border-slate-200"}`}>
         <input
           type="text"
           value={draft}

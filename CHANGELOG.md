@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [0.11.3] — 2026-07-19 — Fix chat: hiện lỗi khi gửi tin nhắn thất bại
+
+### Sửa lỗi
+- **Gửi tin chat thất bại im lặng**: `handleSend` trong `src/components/chat-panel.tsx` chỉ có `try/finally` không `catch` — mạng lỗi/server từ chối thì tin không đi nhưng UI không báo gì. Thêm `catch` theo mẫu sẵn có của dự án (`comments-section.tsx`): lỗi `ApiClientError` hiện đúng thông điệp server, lỗi khác hiện khóa i18n mới `chat.sendFail` (ja/vi/en). `ErrorBox` hiện ngay trên ô nhập; draft giữ nguyên để bấm gửi lại; lỗi tự xóa khi gửi thành công hoặc chuyển hội thoại.
+
+### Kiểm thử
+- 172 test pass, `tsc --noEmit` sạch, `next build` thành công (35 trang). Trang /chat biên dịch & render sạch trên dev server.
+
 ## [0.11.2] — 2026-07-18 — Fix mail hố đen: đảo chuỗi gửi thành Gmail SMTP → Brevo
 
 ### Sửa lỗi
