@@ -5,8 +5,8 @@ import type { Prisma } from "@prisma/client";
 // denormalize trên trades từ P9; listingId (cột) đủ cho khóa/mở listing.
 export const tradeInclude = {
   card: true,
-  buyer: { select: { id: true, displayName: true } },
-  seller: { select: { id: true, displayName: true } },
+  buyer: { select: { id: true, displayName: true, isVip: true } },
+  seller: { select: { id: true, displayName: true, isVip: true } },
 } satisfies Prisma.TradeInclude;
 
 export type TradeWithRelations = Prisma.TradeGetPayload<{

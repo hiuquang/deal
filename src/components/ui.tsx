@@ -44,6 +44,41 @@ export function Empty({ message }: { message: string }) {
   );
 }
 
+/** Huy hiệu VIP: vương miện 👑 + nhãn VIP. Chỉ chủ web chỉ định (cột is_vip). */
+export function VipBadge() {
+  const { t } = useI18n();
+  return (
+    <span
+      className="ml-1 inline-flex items-center gap-0.5 align-middle"
+      title={t("vip.label")}
+      aria-label={t("vip.label")}
+    >
+      <span aria-hidden="true">👑</span>
+      <span className="rounded bg-gradient-to-r from-amber-400 to-yellow-500 px-1 text-[10px] font-bold leading-tight text-white">
+        VIP
+      </span>
+    </span>
+  );
+}
+
+/** Tên người dùng, tự gắn huy hiệu VIP phía sau khi isVip. Dùng ở mọi chỗ hiện tên. */
+export function VipName({
+  name,
+  isVip,
+  className,
+}: {
+  name: string;
+  isVip?: boolean;
+  className?: string;
+}) {
+  return (
+    <span className={className}>
+      {name}
+      {isVip && <VipBadge />}
+    </span>
+  );
+}
+
 export function ReliabilityBadge({ reliability }: { reliability: Reliability }) {
   const { t } = useI18n();
   const style =

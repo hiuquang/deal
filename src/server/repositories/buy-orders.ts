@@ -3,7 +3,7 @@ import type { Prisma } from "@prisma/client";
 
 export const buyOrderInclude = {
   card: true,
-  buyer: { select: { id: true, displayName: true } },
+  buyer: { select: { id: true, displayName: true, isVip: true } },
   _count: { select: { offers: true } },
 } satisfies Prisma.BuyOrderInclude;
 

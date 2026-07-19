@@ -11,6 +11,7 @@ function toCommentDto(comment: CommentWithUser): CommentDto {
     listingId: comment.listingId,
     userId: comment.user.id,
     userDisplayName: comment.user.displayName,
+    userIsVip: comment.user.isVip,
     body: comment.body,
     createdAt: comment.createdAt.toISOString(),
   };

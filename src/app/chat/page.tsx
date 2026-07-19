@@ -9,7 +9,7 @@ import { cardTitle, formatJpy } from "@/lib/labels";
 import { useAuth } from "@/components/auth-context";
 import { ChatPanel } from "@/components/chat-panel";
 import { TradePanel } from "@/components/trade-panel";
-import { Empty, Loading, SafetyNote } from "@/components/ui";
+import { Empty, Loading, SafetyNote, VipBadge, VipName } from "@/components/ui";
 import { UNREAD_EVENT } from "@/components/nav-bar";
 import { useI18n } from "@/lib/i18n";
 
@@ -94,7 +94,10 @@ function ChatContent() {
                     {conversation.card.nameJa}
                   </p>
                   <p className="text-xs text-slate-500">
-                    {conversation.otherPartyName}・
+                    <VipName
+                      name={conversation.otherPartyName}
+                      isVip={conversation.otherPartyIsVip}
+                    />・
                     {conversation.kind === "buy_order"
                       ? t("chat.buyOrderQty", { n: conversation.buyOrder.quantity })
                       : formatJpy(conversation.listing.askingPriceJpy)}
@@ -144,6 +147,7 @@ function ChatContent() {
                     className="hover:text-indigo-600 hover:underline"
                   >
                     {t("chat.partner", { name: selected.otherPartyName })}
+                    {selected.otherPartyIsVip && <VipBadge />}
                   </Link>
                 </p>
               </div>

@@ -19,6 +19,9 @@ model User {
   // Phiên bản 利用規約 user đã đồng ý (null/khác bản hiện hành = phải đồng ý lại)
   termsAcceptedVersion String?   @map("terms_accepted_version")
   termsAcceptedAt      DateTime? @map("terms_accepted_at")
+  // Chỉ chủ web bật thủ công (Supabase → cột is_vip). Hiển thị vương miện + nhãn
+  // VIP ở mọi nơi kèm tên; nâng level sàn lên 10 (xem profile-service).
+  isVip           Boolean   @default(false) @map("is_vip")
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
   deletedAt       DateTime? @map("deleted_at")

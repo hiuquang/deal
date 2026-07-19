@@ -46,7 +46,7 @@ export async function listRecentRevealedReviews(rateeId: string, limit: number) 
   const ratings = await prisma.rating.findMany({
     where: { rateeId },
     include: {
-      rater: { select: { displayName: true } },
+      rater: { select: { displayName: true, isVip: true } },
       trade: { select: { _count: { select: { ratings: true } } } },
     },
     orderBy: { createdAt: "desc" },

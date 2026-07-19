@@ -23,6 +23,8 @@ export interface UserDto {
   id: string;
   email: string;
   displayName: string;
+  /** true = VIP do chủ web chỉ định → hiện vương miện + nhãn VIP kèm tên */
+  isVip: boolean;
 }
 
 export interface MeDto extends UserDto {
@@ -50,6 +52,7 @@ export interface CommentDto {
   listingId: string;
   userId: string;
   userDisplayName: string;
+  userIsVip: boolean;
   body: string;
   createdAt: string;
 }
@@ -61,6 +64,7 @@ export interface PurchaseRequestDto {
   listingId: string;
   buyerId: string;
   buyerDisplayName: string;
+  buyerIsVip: boolean;
   /** ★ trung bình của buyer (từ rating đã reveal) — giúp seller chọn đối tác */
   buyerRatingAvg: number | null;
   buyerRatingCount: number;
@@ -79,6 +83,7 @@ export interface BuyOrderDto {
   card: CardDto;
   buyerId: string;
   buyerDisplayName: string;
+  buyerIsVip: boolean;
   quantity: number;
   /** đơn giá tối đa mong muốn (JPY) — null nếu không khai */
   maxUnitPriceJpy: number | null;
@@ -96,6 +101,7 @@ export interface BuyOrderOfferDto {
   buyOrderId: string;
   sellerId: string;
   sellerDisplayName: string;
+  sellerIsVip: boolean;
   /** ★ trung bình của người bán (rating đã reveal) — giúp người mua chọn */
   sellerRatingAvg: number | null;
   sellerRatingCount: number;
@@ -113,6 +119,7 @@ export interface ListingDto {
   card: CardDto;
   sellerId: string;
   sellerDisplayName: string;
+  sellerIsVip: boolean;
   condition: Condition;
   imageUrl: string;
   askingPriceJpy: number | null;
@@ -131,6 +138,7 @@ export interface MessageDto {
   conversationId: string;
   senderId: string;
   senderDisplayName: string;
+  senderIsVip: boolean;
   body: string;
   createdAt: string;
 }
@@ -145,6 +153,7 @@ interface ConversationBase {
   /** id đối phương — link hồ sơ + tra cứu cảnh báo an toàn trước khi chốt */
   otherPartyId: string;
   otherPartyName: string;
+  otherPartyIsVip: boolean;
   lastMessage: MessageDto | null;
   activeTradeId: string | null;
   updatedAt: string;
@@ -178,6 +187,7 @@ export interface TradeDto {
   sellerId: string;
   initiatorId: string;
   counterpartName: string;
+  counterpartIsVip: boolean;
   /**
    * ĐƠN GIÁ (giá/1 bản) với trade buy-order; giá thẻ với trade listing.
    * null khi trade còn pending và viewer là bên chưa xác nhận (chống lộ giá trước khi tự nhập)
@@ -219,6 +229,7 @@ export interface TradeRatingStateDto {
 export interface UserSummaryDto {
   id: string;
   displayName: string;
+  isVip: boolean;
   /** trung bình score từ các rating đã reveal; null nếu chưa có */
   ratingAvg: number | null;
   ratingCount: number;
@@ -272,12 +283,14 @@ export interface ProfileReviewDto {
   score: number;
   comment: string | null;
   raterDisplayName: string;
+  raterIsVip: boolean;
   createdAt: string;
 }
 
 export interface UserProfileDto {
   id: string;
   displayName: string;
+  isVip: boolean;
   memberSince: string;
   ratingAvg: number | null;
   ratingCount: number;

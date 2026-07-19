@@ -13,6 +13,7 @@ import {
   computeBadges,
   computeTrustScore,
   computeXp,
+  displayLevel,
   levelFromXp,
   safetyLevel,
   tierFromLevel,
@@ -33,6 +34,23 @@ describe("computeXp / levelFromXp", () => {
   it("đúng ngưỡng XP thì lên level (không sớm 1 XP)", () => {
     expect(levelFromXp(XP_PER_LEVEL - 1)).toBe(1);
     expect(levelFromXp(XP_PER_LEVEL)).toBe(2);
+  });
+});
+
+describe("displayLevel — VIP có sàn level 10", () => {
+  it("không VIP → giữ nguyên level thật", () => {
+    expect(displayLevel(0, false)).toBe(1);
+    expect(displayLevel(5 * XP_PER_LEVEL, false)).toBe(6);
+  });
+
+  it("VIP mới (level thật thấp) → nâng lên đúng 10", () => {
+    expect(displayLevel(0, true)).toBe(10);
+    expect(displayLevel(3 * XP_PER_LEVEL, true)).toBe(10); // thật là 4 < 10
+  });
+
+  it("VIP đã tự đạt cao hơn 10 → giữ mức cao hơn, không kéo tụt", () => {
+    // 17 * XP_PER_LEVEL → level 18
+    expect(displayLevel(17 * XP_PER_LEVEL, true)).toBe(18);
   });
 });
 

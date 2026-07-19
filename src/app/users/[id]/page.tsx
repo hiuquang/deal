@@ -8,7 +8,7 @@ import type { UserProfileDto } from "@/lib/types";
 import { formatDate } from "@/lib/labels";
 import { useAuth } from "@/components/auth-context";
 import { ListingCard } from "@/components/listing-card";
-import { ErrorBox, Loading } from "@/components/ui";
+import { ErrorBox, Loading, VipBadge, VipName } from "@/components/ui";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 
 /** Màu theo mức uy tín: xanh ≥80, vàng ≥50, đỏ <50 — khớp ngưỡng badge 🛡. */
@@ -75,7 +75,9 @@ export default function UserProfilePage({
             {profile.displayName.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-xl font-bold">{profile.displayName}</h1>
+            <h1 className="truncate text-xl font-bold">
+              <VipName name={profile.displayName} isVip={profile.isVip} />
+            </h1>
             <p className="text-sm font-medium text-indigo-700">
               {t(`profile.tier.${profile.tier}` as MessageKey)}{" "}
               {t("profile.level", { n: profile.level })}
@@ -199,7 +201,8 @@ export default function UserProfilePage({
                     <span className="text-slate-200">{"★".repeat(5 - review.score)}</span>
                   </span>
                   <span className="text-xs text-slate-400">
-                    {review.raterDisplayName}・{formatDate(review.createdAt)}
+                    <VipName name={review.raterDisplayName} isVip={review.raterIsVip} />・
+                    {formatDate(review.createdAt)}
                   </span>
                 </div>
                 {review.comment && <p className="mt-1 text-slate-600">{review.comment}</p>}

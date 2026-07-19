@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { api } from "@/lib/api-client";
 import { useAuth } from "@/components/auth-context";
+import { VipBadge } from "@/components/ui";
 import { LOCALE_OPTIONS, useI18n } from "@/lib/i18n";
 
 const UNREAD_POLL_MS = 15000;
@@ -153,9 +154,10 @@ export function NavBar() {
             <>
               <Link
                 href="/me"
-                className="max-w-[8rem] truncate rounded-md px-3 py-1.5 font-medium text-indigo-700 hover:bg-indigo-50"
+                className="flex max-w-[10rem] items-center rounded-md px-3 py-1.5 font-medium text-indigo-700 hover:bg-indigo-50"
               >
-                {me.displayName}
+                <span className="truncate">{me.displayName}</span>
+                {me.isVip && <VipBadge />}
               </Link>
               <button
                 onClick={handleLogout}
@@ -241,9 +243,10 @@ export function NavBar() {
             <>
               <Link
                 href="/me"
-                className="block truncate rounded-md px-2 py-2.5 font-medium text-indigo-700 hover:bg-indigo-50"
+                className="flex items-center rounded-md px-2 py-2.5 font-medium text-indigo-700 hover:bg-indigo-50"
               >
-                {me.displayName}
+                <span className="truncate">{me.displayName}</span>
+                {me.isVip && <VipBadge />}
               </Link>
               <button
                 onClick={handleLogout}

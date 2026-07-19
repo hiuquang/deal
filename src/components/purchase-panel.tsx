@@ -10,7 +10,7 @@ import { api, ApiClientError } from "@/lib/api-client";
 import type { ListingDto, PurchaseRequestDto } from "@/lib/types";
 import { formatDateTime } from "@/lib/labels";
 import { useAuth } from "@/components/auth-context";
-import { ErrorBox } from "@/components/ui";
+import { ErrorBox, VipName } from "@/components/ui";
 import { useI18n } from "@/lib/i18n";
 
 export function PurchasePanel({ listing }: { listing: ListingDto }) {
@@ -114,7 +114,9 @@ export function PurchasePanel({ listing }: { listing: ListingDto }) {
           {requests.map((request) => (
             <li key={request.id} className="flex items-center gap-3 py-2">
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium">{request.buyerDisplayName}</p>
+                <p className="text-sm font-medium">
+                  <VipName name={request.buyerDisplayName} isVip={request.buyerIsVip} />
+                </p>
                 <p className="text-xs text-slate-500">
                   {request.buyerRatingAvg !== null ? (
                     <>

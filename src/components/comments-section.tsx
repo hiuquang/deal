@@ -7,7 +7,7 @@ import { api, ApiClientError } from "@/lib/api-client";
 import type { CommentDto } from "@/lib/types";
 import { formatDateTime } from "@/lib/labels";
 import { useAuth } from "@/components/auth-context";
-import { ErrorBox } from "@/components/ui";
+import { ErrorBox, VipName } from "@/components/ui";
 import { useI18n } from "@/lib/i18n";
 
 export function CommentsSection({ listingId }: { listingId: string }) {
@@ -61,7 +61,7 @@ export function CommentsSection({ listingId }: { listingId: string }) {
             <li key={comment.id} className="rounded-lg bg-slate-50 px-3 py-2">
               <div className="flex items-baseline justify-between gap-2">
                 <span className="text-xs font-semibold text-indigo-700">
-                  {comment.userDisplayName}
+                  <VipName name={comment.userDisplayName} isVip={comment.userIsVip} />
                 </span>
                 <span className="text-[10px] text-slate-400">
                   {formatDateTime(comment.createdAt)}

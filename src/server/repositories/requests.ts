@@ -2,7 +2,7 @@ import { prisma } from "@/server/db";
 import type { Prisma } from "@prisma/client";
 
 export const requestInclude = {
-  buyer: { select: { id: true, displayName: true } },
+  buyer: { select: { id: true, displayName: true, isVip: true } },
   listing: { select: { id: true, sellerId: true, status: true } },
 } satisfies Prisma.PurchaseRequestInclude;
 

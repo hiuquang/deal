@@ -5,8 +5,8 @@ import { listingInclude } from "@/server/repositories/listings";
 export const conversationInclude = {
   listing: { include: listingInclude },
   buyOrder: { include: { card: true } },
-  buyer: { select: { id: true, displayName: true } },
-  seller: { select: { id: true, displayName: true } },
+  buyer: { select: { id: true, displayName: true, isVip: true } },
+  seller: { select: { id: true, displayName: true, isVip: true } },
 } satisfies Prisma.ConversationInclude;
 
 export type ConversationWithRelations = Prisma.ConversationGetPayload<{
@@ -118,7 +118,7 @@ export function listConversationsForUser(userId: string) {
       messages: {
         orderBy: { createdAt: "desc" },
         take: 1,
-        include: { sender: { select: { id: true, displayName: true } } },
+        include: { sender: { select: { id: true, displayName: true, isVip: true } } },
       },
       trades: {
         where: { status: { not: "cancelled" } },
@@ -136,7 +136,7 @@ export function listMessages(conversationId: string, afterCreatedAt?: Date) {
       conversationId,
       ...(afterCreatedAt ? { createdAt: { gt: afterCreatedAt } } : {}),
     },
-    include: { sender: { select: { id: true, displayName: true } } },
+    include: { sender: { select: { id: true, displayName: true, isVip: true } } },
     orderBy: { createdAt: "asc" },
     take: 200,
   });
@@ -149,7 +149,7 @@ export function findMessageById(id: string) {
 export async function createMessage(conversationId: string, senderId: string, body: string) {
   const message = await prisma.message.create({
     data: { conversationId, senderId, body },
-    include: { sender: { select: { id: true, displayName: true } } },
+    include: { sender: { select: { id: true, displayName: true, isVip: true } } },
   });
   // Đẩy conversation lên đầu danh sách chat
   await prisma.conversation.update({

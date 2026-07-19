@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [0.12.0] — 2026-07-20 — Tính năng VIP (chủ web chỉ định)
+
+### Tính năng
+- **VIP do chủ web chỉ định**: cột `users.is_vip` (default false) — chỉ chủ web bật thủ công trong Supabase (không self-service, giống cách duyệt report). Migration `20260719000000_user_vip` (additive, đã `migrate deploy` lên production).
+- **Huy hiệu VIP hiển thị ở MỌI nơi kèm tên**: vương miện 👑 + nhãn VIP (component `VipName`/`VipBadge` trong `ui.tsx`). Đã gắn: hồ sơ công khai `/users/:id`, danh sách + header chat, tên mình ở nav + `/me`, bình luận, badge người bán (`SellerSummary`), chào bán tin gom (`OfferPanel`), yêu cầu mua (`PurchasePanel`), đối tác giao dịch (`/me`), người đánh giá trong review. Thread cờ `isVip` qua toàn bộ DTO mang tên (UserDto, MessageDto, ListingDto, ConversationDto, TradeDto, CommentDto, BuyOrder/Offer/Request, UserSummary, UserProfile, ProfileReview) + 14 select repository + serializers.
+- **VIP nâng level sàn 10**: `displayLevel(xp, isVip)` = `max(10, level_thật)` — VIP luôn ≥ Lv.10, ai tự đạt cao hơn thì giữ mức cao hơn (không kéo tụt). Trust score / badge / XP vẫn derived thật, không đổi.
+
+### Cách chỉ định VIP (chủ web)
+- Supabase → Table `users` → sửa dòng người muốn cho VIP → tick `is_vip` = true. Hiệu lực ngay lần tải trang sau, không cần deploy.
+
+### Kiểm thử
+- Verify end-to-end trên dev (nối prod DB): tạm bật VIP cho 1 tài khoản → API `/users/:id/profile` trả `isVip:true, level:10`; trang hồ sơ hiện "admin 👑 VIP · Lv.10"; **đã trả tài khoản về non-VIP ngay** (prod sạch, 0 VIP). 179 test pass (+3 `displayLevel`), `tsc` sạch, `next build` OK.
+
 ## [0.11.5] — 2026-07-19 — Hash token phiên/email ở DB + Dependabot + CI
 
 ### Bảo mật

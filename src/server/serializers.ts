@@ -18,7 +18,7 @@ import type {
 } from "@/lib/types";
 
 export function toUserDto(user: User): UserDto {
-  return { id: user.id, email: user.email, displayName: user.displayName };
+  return { id: user.id, email: user.email, displayName: user.displayName, isVip: user.isVip };
 }
 
 export function toCardDto(card: Card): CardDto {
@@ -41,6 +41,7 @@ export function toListingDto(listing: ListingWithRelations): ListingDto {
     card: toCardDto(listing.card),
     sellerId: listing.seller.id,
     sellerDisplayName: listing.seller.displayName,
+    sellerIsVip: listing.seller.isVip,
     condition: listing.condition as Condition,
     imageUrl: listing.imageUrl,
     askingPriceJpy: listing.askingPriceJpy,
@@ -59,6 +60,7 @@ export function toBuyOrderDto(order: BuyOrderWithRelations): BuyOrderDto {
     card: toCardDto(order.card),
     buyerId: order.buyer.id,
     buyerDisplayName: order.buyer.displayName,
+    buyerIsVip: order.buyer.isVip,
     quantity: order.quantity,
     maxUnitPriceJpy: order.maxUnitPriceJpy,
     status: order.status as BuyOrderStatus,
@@ -72,7 +74,7 @@ type MessageWithSender = {
   conversationId: string;
   body: string;
   createdAt: Date;
-  sender: { id: string; displayName: string };
+  sender: { id: string; displayName: string; isVip: boolean };
 };
 
 export function toMessageDto(message: MessageWithSender): MessageDto {
@@ -81,6 +83,7 @@ export function toMessageDto(message: MessageWithSender): MessageDto {
     conversationId: message.conversationId,
     senderId: message.sender.id,
     senderDisplayName: message.sender.displayName,
+    senderIsVip: message.sender.isVip,
     body: message.body,
     createdAt: message.createdAt.toISOString(),
   };
@@ -103,6 +106,7 @@ export function toTradeDto(trade: TradeWithRelations, viewerId: string): TradeDt
     sellerId: trade.sellerId,
     initiatorId: trade.initiatorId,
     counterpartName: counterpart.displayName,
+    counterpartIsVip: counterpart.isVip,
     finalPriceJpy: priceVisible ? trade.finalPriceJpy : null,
     status: trade.status as TradeStatus,
     autoCloseAt: trade.autoCloseAt.toISOString(),

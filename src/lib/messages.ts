@@ -249,6 +249,7 @@ export const MESSAGES = {
   "cmt.loginPrefix": { ja: "コメントするには", vi: "Để bình luận, hãy", en: "To comment, please" },
 
   // ---- Chat ----
+  "vip.label": { ja: "VIP会員", vi: "Thành viên VIP", en: "VIP member" },
   "chat.loginPrompt": { ja: "チャットにはログインが必要です。", vi: "Cần đăng nhập để dùng chat.", en: "Log in to use chat." },
   "chat.none": {
     ja: "チャットはまだありません。気になる出品からチャットを始めましょう。",

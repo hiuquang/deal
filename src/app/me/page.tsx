@@ -6,7 +6,7 @@ import { api, ApiClientError } from "@/lib/api-client";
 import type { ListingDto, TradeDto, UserSummaryDto } from "@/lib/types";
 import { formatDate, formatJpy } from "@/lib/labels";
 import { useAuth } from "@/components/auth-context";
-import { Empty, Loading, TradeStatusBadge } from "@/components/ui";
+import { Empty, Loading, TradeStatusBadge, VipBadge, VipName } from "@/components/ui";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 
 export default function MePage() {
@@ -62,7 +62,9 @@ export default function MePage() {
           {me.displayName.charAt(0)}
         </div>
         <div>
-          <h1 className="text-lg font-bold">{me.displayName}</h1>
+          <h1 className="text-lg font-bold">
+            <VipName name={me.displayName} isVip={me.isVip} />
+          </h1>
           <p className="text-xs text-slate-500">{me.email}</p>
           {summary && (
             <p className="text-xs text-slate-500">
@@ -114,6 +116,7 @@ export default function MePage() {
                   </Link>
                   <p className="text-xs text-slate-500">
                     {t("me.with", { name: trade.counterpartName })}
+                    {trade.counterpartIsVip && <VipBadge />}{" "}
                     {formatDate(trade.createdAt)}・{formatJpy(trade.finalPriceJpy)}
                   </p>
                 </div>

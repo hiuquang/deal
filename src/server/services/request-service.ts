@@ -22,6 +22,7 @@ async function toRequestDto(request: RequestWithRelations): Promise<PurchaseRequ
     listingId: request.listingId,
     buyerId: request.buyer.id,
     buyerDisplayName: request.buyer.displayName,
+    buyerIsVip: request.buyer.isVip,
     buyerRatingAvg: summary.ratingAvg,
     buyerRatingCount: summary.ratingCount,
     buyerContributionCount: summary.contributionCount,

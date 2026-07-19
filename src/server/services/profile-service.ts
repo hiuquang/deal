@@ -42,6 +42,15 @@ export function levelFromXp(xp: number): number {
   return 1 + Math.floor(Math.max(0, xp) / XP_PER_LEVEL);
 }
 
+/**
+ * Level hiển thị. VIP (do chủ web chỉ định) có SÀN level 10 — nếu tự đạt cao
+ * hơn thì giữ mức cao hơn, không bao giờ bị kéo tụt xuống.
+ */
+export function displayLevel(xp: number, isVip: boolean): number {
+  const level = levelFromXp(xp);
+  return isVip ? Math.max(10, level) : level;
+}
+
 /** Bậc theo spec: Bronze 1–10, Silver 11–25, Gold 26–50, Platinum 51–80, Master 81–100, Legendary 100+ */
 export function tierFromLevel(level: number): TrainerTier {
   if (level > 100) return "legendary";
@@ -156,7 +165,7 @@ export async function getProfile(userId: string): Promise<UserProfileDto> {
     fiveStarCount: revealed.filter((r) => r.score === 5).length,
     cleanDays: Math.floor((now - cleanSince.getTime()) / DAY_MS),
   });
-  const level = levelFromXp(xp);
+  const level = displayLevel(xp, user.isVip);
   const trustScore = computeTrustScore({
     closedTrades: tradeStats.closedTrades,
     distinctPartners: tradeStats.distinctPartners,
@@ -176,6 +185,7 @@ export async function getProfile(userId: string): Promise<UserProfileDto> {
   return {
     id: user.id,
     displayName: user.displayName,
+    isVip: user.isVip,
     memberSince: user.createdAt.toISOString(),
     ratingAvg,
     ratingCount: revealed.length,
@@ -208,6 +218,7 @@ export async function getProfile(userId: string): Promise<UserProfileDto> {
       score: r.score,
       comment: r.comment,
       raterDisplayName: r.rater.displayName,
+      raterIsVip: r.rater.isVip,
       createdAt: r.createdAt.toISOString(),
     })),
     activeListings: listings.listings,

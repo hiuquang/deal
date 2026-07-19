@@ -6,7 +6,7 @@ import Link from "next/link";
 import { api, ApiClientError } from "@/lib/api-client";
 import type { UserSummaryDto } from "@/lib/types";
 import { useAuth } from "@/components/auth-context";
-import { ErrorBox } from "@/components/ui";
+import { ErrorBox, VipName } from "@/components/ui";
 import { useI18n } from "@/lib/i18n";
 
 interface Props {
@@ -51,7 +51,7 @@ export function SellerSummary({ sellerId, listingId }: Props) {
         <div>
           <p className="font-medium">
             <Link href={`/users/${sellerId}`} className="hover:text-indigo-700 hover:underline">
-              {summary.displayName}
+              <VipName name={summary.displayName} isVip={summary.isVip} />
             </Link>
           </p>
           <p className="text-xs text-slate-500">

@@ -8,7 +8,7 @@ import { api, ApiClientError } from "@/lib/api-client";
 import type { BuyOrderDto, BuyOrderOfferDto } from "@/lib/types";
 import { formatDateTime } from "@/lib/labels";
 import { useAuth } from "@/components/auth-context";
-import { ErrorBox } from "@/components/ui";
+import { ErrorBox, VipBadge } from "@/components/ui";
 import { useI18n } from "@/lib/i18n";
 
 export function OfferPanel({ order }: { order: BuyOrderDto }) {
@@ -126,6 +126,7 @@ export function OfferPanel({ order }: { order: BuyOrderDto }) {
               <div className="flex items-baseline justify-between gap-2">
                 <span className="text-xs font-semibold text-indigo-700">
                   {offer.sellerDisplayName}
+                  {offer.sellerIsVip && <VipBadge />}
                   {offer.sellerRatingAvg !== null && (
                     <span className="ml-1 text-amber-500">
                       ★ {offer.sellerRatingAvg.toFixed(1)}

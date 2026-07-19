@@ -3,7 +3,7 @@ import type { Prisma } from "@prisma/client";
 
 export const listingInclude = {
   card: true,
-  seller: { select: { id: true, displayName: true } },
+  seller: { select: { id: true, displayName: true, isVip: true } },
 } satisfies Prisma.ListingInclude;
 
 export type ListingWithRelations = Prisma.ListingGetPayload<{

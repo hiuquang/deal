@@ -21,6 +21,7 @@ function buildOfferDto(
     buyOrderId: offer.buyOrderId,
     sellerId: offer.seller.id,
     sellerDisplayName: offer.seller.displayName,
+    sellerIsVip: offer.seller.isVip,
     sellerRatingAvg: summary?.ratingAvg ?? null,
     sellerRatingCount: summary?.ratingCount ?? 0,
     sellerContributionCount: summary?.contributionCount ?? 0,

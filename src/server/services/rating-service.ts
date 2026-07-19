@@ -78,7 +78,7 @@ export async function getState(
 }
 
 function summarize(
-  user: { id: string; displayName: string; createdAt: Date },
+  user: { id: string; displayName: string; isVip: boolean; createdAt: Date },
   revealed: { score: number }[],
   contributionCount: number
 ): UserSummaryDto {
@@ -91,6 +91,7 @@ function summarize(
   return {
     id: user.id,
     displayName: user.displayName,
+    isVip: user.isVip,
     ratingAvg,
     ratingCount: revealed.length,
     contributionCount,

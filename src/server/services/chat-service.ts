@@ -28,6 +28,7 @@ function toConversationDto(
     buyerId: conversation.buyerId,
     otherPartyId: otherParty.id,
     otherPartyName: otherParty.displayName,
+    otherPartyIsVip: otherParty.isVip,
     lastMessage: last ? toMessageDto(last) : null,
     activeTradeId: conversation.trades?.[0]?.id ?? null,
     updatedAt: conversation.updatedAt.toISOString(),
