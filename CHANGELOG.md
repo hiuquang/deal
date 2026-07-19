@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [0.12.2] — 2026-07-20 — Tối ưu tốc độ: CDN cache cho GET công khai
+
+### Hiệu năng
+- **Chẩn đoán**: user ở Nhật, edge Vercel Tokyo rất gần (connect ~0.09s) nhưng function + DB ghim Sydney → mỗi request công khai vòng Tokyo→Sydney, TTFB đo thực tế 0.3–0.97s.
+- **CDN cache ở edge cho GET công khai** (`src/server/cache.ts`): `/api/listings` + `/api/buy-orders` (bản công khai; 15s + swr 60s), `/api/listings/:id` (15s), `/api/cards` (catalog gần tĩnh; 60s + swr 300s). Lượt sau phục vụ từ PoP Tokyo ~50ms thay vì ~400ms. Bản cá nhân `mine=1` trả `private, no-store` — CDN không bao giờ đụng; response lỗi không có s-maxage nên không bị cache.
+- Đánh đổi chấp nhận: bảng tin/chi tiết cũ tối đa 15s; mọi hành động ghi vẫn validate server nên không mất an toàn.
+- **Chưa xử lý gốc rễ** (ghi lại để quyết sau): chuyển Supabase + Vercel function sang Tokyo (`ap-northeast-1` + `hnd1`) — SSR trang chủ và mọi API động sẽ nhanh thêm ~200–300ms, nhưng cần tạo project Supabase mới + migrate dữ liệu (downtime ngắn).
+
 ## [0.12.1] — 2026-07-20 — Tự thêm thẻ mới khi đăng bán (mọi game) + tin VIP lên đầu bảng
 
 ### Tính năng

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withErrorHandling } from "@/server/errors";
 import { cardSearchSchema, createUserProductSchema } from "@/server/validation";
+import { PUBLIC_CATALOG_CACHE } from "@/server/cache";
 import { requireVerifiedUser } from "@/server/session";
 import * as cards from "@/server/repositories/cards";
 import * as cardService from "@/server/services/card-service";
@@ -14,7 +15,8 @@ export const GET = withErrorHandling(async (req: NextRequest) => {
     category: params.get("category") ?? undefined,
   });
   const rows = await cards.searchCards(input.q, input.game, input.category);
-  return NextResponse.json({ cards: rows.map(toCardDto) });
+  // Catalog công khai, gần như tĩnh → cache ở edge (giảm độ trễ autocomplete).
+  return NextResponse.json({ cards: rows.map(toCardDto) }, { headers: PUBLIC_CATALOG_CACHE });
 });
 
 // User tự thêm sản phẩm/thẻ khi catalog thiếu (find-or-create theo game + tên

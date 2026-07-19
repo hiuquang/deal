@@ -3,6 +3,7 @@ import { withErrorHandling } from "@/server/errors";
 import { createBuyOrderSchema, listBuyOrdersSchema } from "@/server/validation";
 import { requireUser, requireVerifiedUser } from "@/server/session";
 import * as buyOrderService from "@/server/services/buy-order-service";
+import { PRIVATE_NO_STORE, PUBLIC_LIST_CACHE } from "@/server/cache";
 
 export const GET = withErrorHandling(async (req: NextRequest) => {
   const params = req.nextUrl.searchParams;
@@ -22,7 +23,10 @@ export const GET = withErrorHandling(async (req: NextRequest) => {
     buyerId,
     status: input.status ?? (mine ? undefined : "active"),
   });
-  return NextResponse.json(result);
+  // Bản công khai cache được ở edge; mine=1 là dữ liệu cá nhân → no-store.
+  return NextResponse.json(result, {
+    headers: mine ? PRIVATE_NO_STORE : PUBLIC_LIST_CACHE,
+  });
 });
 
 export const POST = withErrorHandling(async (req: NextRequest) => {
