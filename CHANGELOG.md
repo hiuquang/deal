@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [0.11.4] — 2026-07-19 — Gia cố bảo mật: security headers + CSP, middleware chống CSRF, rate-limit upload
+
+### Bảo mật
+- **Security headers toàn site** (`next.config.ts`): Content-Security-Policy (chặn XSS tải script lạ; `frame-ancestors 'none'` + `X-Frame-Options: DENY` chặn clickjacking; `form-action 'self'` chặn form bắn dữ liệu ra ngoài; ảnh chỉ cho phép self + Supabase Storage), HSTS 2 năm kèm subdomain, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, Permissions-Policy tắt camera/mic/GPS/payment. CSP dev nới thêm `'unsafe-eval'` + `ws:` cho HMR; production thêm `upgrade-insecure-requests`.
+- **Middleware chống CSRF lớp 2** (`src/middleware.ts`, matcher `/api/*`): request ghi (non-GET) có header Origin không khớp host → 403. Lớp 1 sẵn có là cookie `sameSite=lax`. Request không có Origin (curl/API client) cho qua — không mang cookie nạn nhân nên không phải CSRF.
+- **Rate-limit upload ảnh** (`upload:user`, 30 ảnh/10 phút): trước đó upload không giới hạn — có thể spam đầy bucket Supabase (mỗi ảnh tới 5MB).
+
+### Ghi chú audit
+- Đã rà và xác nhận tốt sẵn: bcrypt cost 10, rate-limit đủ các đường auth (login/register/forgot/reset/resend), session cookie httpOnly+secure+sameSite, upload validate MIME/size, lỗi API không leak stack trace, `clientIp` ưu tiên header không giả mạo được của Vercel, mọi service đều check quyền thành viên.
+- `npm audit`: 2 moderate là `postcss` transitive trong Next (XSS khi stringify CSS không tin cậy — app không làm việc này, bản Next mới nhất cũng chưa thoát range). Theo dõi chờ Next vá.
+
+### Kiểm thử
+- Verify trên dev server: 6 header đủ trên mọi response; CSRF test 3 kịch bản (Origin lạ → 403, same-origin → qua, không Origin → qua); trang render sạch không lỗi CSP console. 172 test pass, `tsc --noEmit` sạch, `next build` thành công (middleware 34.3 kB).
+
 ## [0.11.3] — 2026-07-19 — Fix chat: hiện lỗi khi gửi tin nhắn thất bại
 
 ### Sửa lỗi

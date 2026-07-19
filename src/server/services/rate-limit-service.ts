@@ -18,6 +18,9 @@ export const LIMITS = {
   "forgot:email": { limit: 3, windowMs: 60 * 60 * 1000 },
   "reset:ip": { limit: 10, windowMs: 60 * 60 * 1000 },
   "resend:user": { limit: 3, windowMs: 60 * 60 * 1000 },
+  // Mỗi ảnh tới 5MB vào Supabase Storage — chặn spam đầy bucket. Người thật
+  // đăng tin nhiều ảnh vẫn dư (30 ảnh/10 phút).
+  "upload:user": { limit: 30, windowMs: 10 * 60 * 1000 },
 } as const;
 
 export type LimitAction = keyof typeof LIMITS;

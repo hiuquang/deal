@@ -4,6 +4,7 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { ApiError, withErrorHandling } from "@/server/errors";
 import { requireVerifiedUser } from "@/server/session";
+import * as rateLimit from "@/server/services/rate-limit-service";
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED: Record<string, string> = {
@@ -43,7 +44,8 @@ async function store(name: string, buf: Buffer, contentType: string): Promise<st
 }
 
 export const POST = withErrorHandling(async (req: NextRequest) => {
-  await requireVerifiedUser();
+  const user = await requireVerifiedUser();
+  await rateLimit.enforce("upload:user", user.id);
 
   const form = await req.formData();
   const file = form.get("file");
