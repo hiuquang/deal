@@ -12,14 +12,14 @@ const VERIFY_TTL = 24 * 60 * 60 * 1000; // 24h
 const RESET_TTL = 60 * 60 * 1000; // 1h
 
 async function sendVerificationMail(user: User): Promise<void> {
-  const token = await tokens.issueToken(user.id, "verify", VERIFY_TTL);
+  const rawToken = await tokens.issueToken(user.id, "verify", VERIFY_TTL);
   await sendMail(
     user.email,
     "【DEAL】メールアドレスの確認",
     `${user.displayName} 様\n\n` +
       `DEALへのご登録ありがとうございます。\n` +
       `以下のリンクをクリックしてメールアドレスを確認してください（24時間有効）:\n\n` +
-      `${appUrl()}/verify?token=${token.token}\n\n` +
+      `${appUrl()}/verify?token=${rawToken}\n\n` +
       `心当たりがない場合はこのメールを無視してください。`
   );
 }
@@ -112,14 +112,14 @@ export async function requestPasswordReset(email: string): Promise<void> {
     console.log(`[auth] password reset requested for unknown email`);
     return;
   }
-  const token = await tokens.issueToken(user.id, "reset", RESET_TTL);
+  const rawToken = await tokens.issueToken(user.id, "reset", RESET_TTL);
   await sendMail(
     user.email,
     "【DEAL】パスワード再設定",
     `${user.displayName} 様\n\n` +
       `パスワード再設定のリクエストを受け付けました。\n` +
       `以下のリンクから新しいパスワードを設定してください（1時間有効）:\n\n` +
-      `${appUrl()}/reset-password?token=${token.token}\n\n` +
+      `${appUrl()}/reset-password?token=${rawToken}\n\n` +
       `心当たりがない場合はこのメールを無視してください。パスワードは変更されません。`
   );
 }

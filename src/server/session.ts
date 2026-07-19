@@ -4,17 +4,19 @@ import type { User } from "@prisma/client";
 import { prisma } from "@/server/db";
 import { ApiError, unauthorized } from "@/server/errors";
 import { TERMS_VERSION } from "@/lib/terms";
+import { hashToken } from "@/server/token-hash";
 
 const COOKIE_NAME = "deal_session";
 const SESSION_DAYS = 30;
 
 export async function createSession(userId: string): Promise<void> {
-  const token = randomBytes(32).toString("hex");
+  // Token thô đi vào cookie của user; DB chỉ lưu hash (không đảo ngược được).
+  const rawToken = randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000);
-  await prisma.session.create({ data: { token, userId, expiresAt } });
+  await prisma.session.create({ data: { token: hashToken(rawToken), userId, expiresAt } });
 
   const store = await cookies();
-  store.set(COOKIE_NAME, token, {
+  store.set(COOKIE_NAME, rawToken, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -25,9 +27,9 @@ export async function createSession(userId: string): Promise<void> {
 
 export async function destroySession(): Promise<void> {
   const store = await cookies();
-  const token = store.get(COOKIE_NAME)?.value;
-  if (token) {
-    await prisma.session.deleteMany({ where: { token } });
+  const rawToken = store.get(COOKIE_NAME)?.value;
+  if (rawToken) {
+    await prisma.session.deleteMany({ where: { token: hashToken(rawToken) } });
   }
   store.delete(COOKIE_NAME);
 }
@@ -35,11 +37,11 @@ export async function destroySession(): Promise<void> {
 /** User hiện tại theo cookie session, hoặc null nếu chưa đăng nhập/hết hạn. */
 export async function getSessionUser(): Promise<User | null> {
   const store = await cookies();
-  const token = store.get(COOKIE_NAME)?.value;
-  if (!token) return null;
+  const rawToken = store.get(COOKIE_NAME)?.value;
+  if (!rawToken) return null;
 
   const session = await prisma.session.findUnique({
-    where: { token },
+    where: { token: hashToken(rawToken) },
     include: { user: true },
   });
   if (!session || session.expiresAt < new Date() || session.user.deletedAt) {

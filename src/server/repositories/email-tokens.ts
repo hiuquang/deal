@@ -1,30 +1,36 @@
 import { randomBytes } from "crypto";
 import { prisma } from "@/server/db";
+import { hashToken } from "@/server/token-hash";
 
-/** Tạo token mới, đồng thời vô hiệu token cũ cùng loại của user. */
+/**
+ * Tạo token mới, đồng thời vô hiệu token cũ cùng loại của user. DB chỉ lưu hash;
+ * TRẢ VỀ token thô để nhét vào link email (chỉ tồn tại trong RAM lúc gửi mail).
+ */
 export async function issueToken(
   userId: string,
   type: "verify" | "reset",
   ttlMs: number
-) {
+): Promise<string> {
   await prisma.emailToken.updateMany({
     where: { userId, type, usedAt: null },
     data: { usedAt: new Date() },
   });
-  return prisma.emailToken.create({
+  const rawToken = randomBytes(32).toString("hex");
+  await prisma.emailToken.create({
     data: {
       userId,
       type,
-      token: randomBytes(32).toString("hex"),
+      token: hashToken(rawToken),
       expiresAt: new Date(Date.now() + ttlMs),
     },
   });
+  return rawToken;
 }
 
-/** Token hợp lệ = đúng loại, chưa dùng, chưa hết hạn. */
+/** Token hợp lệ = đúng loại, chưa dùng, chưa hết hạn. Tra theo hash của token thô. */
 export function findValidToken(token: string, type: "verify" | "reset") {
   return prisma.emailToken.findFirst({
-    where: { token, type, usedAt: null, expiresAt: { gt: new Date() } },
+    where: { token: hashToken(token), type, usedAt: null, expiresAt: { gt: new Date() } },
     include: { user: true },
   });
 }

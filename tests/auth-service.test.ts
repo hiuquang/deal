@@ -56,7 +56,7 @@ function makeUser(over: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(tokensRepo.issueToken).mockResolvedValue({ token: "tok123" } as never);
+  vi.mocked(tokensRepo.issueToken).mockResolvedValue("tok123");
 });
 
 describe("authService.register", () => {

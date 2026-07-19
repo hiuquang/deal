@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## [0.11.5] — 2026-07-19 — Hash token phiên/email ở DB + Dependabot + CI
+
+### Bảo mật
+- **Hash token khi lưu DB** (`src/server/token-hash.ts` mới, SHA-256): session token và email token (verify/reset) trước đây lưu THÔ — DB bị đọc trộm là mạo danh phiên/đổi mật khẩu được. Giờ token thô chỉ nằm ở cookie/link email; DB lưu SHA-256 (một chiều). Token thô 32 byte high-entropy nên SHA-256 đủ (không cần bcrypt/salt như mật khẩu low-entropy). Cùng độ dài 64 hex → **không cần migration schema**, chỉ đổi giá trị lưu.
+  - `session.ts`: create lưu hash, get/destroy tra theo hash (3 hàm đối xứng).
+  - `email-tokens.ts`: `issueToken` lưu hash + trả token thô cho email; `findValidToken` hash trước khi tra.
+  - Test mới `tests/token-hash.test.ts` (4 ca: xác định, phân biệt, đúng định dạng, một chiều).
+- **⚠️ Deploy này đăng xuất TOÀN BỘ user một lần** (token cũ dạng thô không khớp hash) — user chỉ cần đăng nhập lại. Link verify/reset đang treo (TTL 24h/1h) cũng vô hiệu, user request lại là xong.
+
+### Hạ tầng
+- **Dependabot** (`.github/dependabot.yml`): quét lỗ hổng + cập nhật npm & github-actions hằng tuần (thứ Hai 09:00 JST), gộp minor/patch vào 1 PR, major tách riêng.
+- **CI** (`.github/workflows/ci.yml`): mọi push main + mọi PR (gồm PR Dependabot) tự chạy `tsc --noEmit` + `npm test` trên Node 20 — không bản cập nhật nào merge được nếu làm hỏng typecheck/test.
+
+### Kiểm thử
+- 176 test pass (+4 token-hash), `tsc --noEmit` sạch, dev server khởi động sạch không lỗi. Xác minh tính đúng bằng test + đối xứng code (không đăng ký thử vì `.env` local trỏ DB production — tránh ghi dữ liệu rác).
+
 ## [0.11.4] — 2026-07-19 — Gia cố bảo mật: security headers + CSP, middleware chống CSRF, rate-limit upload
 
 ### Bảo mật
