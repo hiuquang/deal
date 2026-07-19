@@ -27,18 +27,26 @@ export function formatDateTime(iso: string): string {
   ).padStart(2, "0")}`;
 }
 
+/**
+ * Entry do user tự thêm (không có set/số thẻ/rarity thật, cardNumber = tên):
+ * mục "other" (OTHER/OTHER-BOX) hoặc thẻ tự thêm của pokemon/onepiece
+ * (CUSTOM/CUSTOM-BOX, từ 0.12.1) — chỉ hiện tên, ẩn dòng thông số.
+ */
+function isUserProduct(card: { game: string; setCode: string }): boolean {
+  return card.game === "other" || card.setCode === "CUSTOM" || card.setCode === "CUSTOM-BOX";
+}
+
 export function cardTitle(card: {
   game: string;
   nameJa: string;
   setCode: string;
   cardNumber: string;
 }): string {
-  // Sản phẩm mục "other" không có set/số thẻ thật (cardNumber = tên) — chỉ hiện tên.
-  if (card.game === "other") return card.nameJa;
+  if (isUserProduct(card)) return card.nameJa;
   return `${card.nameJa}（${card.setCode} ${card.cardNumber}）`;
 }
 
-/** Dòng thông số "set số・rarity・ngôn ngữ" — null với sản phẩm mục "other". */
+/** Dòng thông số "set số・rarity・ngôn ngữ" — null với entry user tự thêm. */
 export function cardSpec(card: {
   game: string;
   setCode: string;
@@ -46,6 +54,6 @@ export function cardSpec(card: {
   rarity: string;
   language: string;
 }): string | null {
-  if (card.game === "other") return null;
+  if (isUserProduct(card)) return null;
   return `${card.setCode} ${card.cardNumber}・${card.rarity}・${card.language}`;
 }

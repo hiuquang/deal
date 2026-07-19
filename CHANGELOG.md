@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [0.12.1] — 2026-07-20 — Tự thêm thẻ mới khi đăng bán (mọi game) + tin VIP lên đầu bảng
+
+### Tính năng
+- **Tự thêm thẻ/sản phẩm mới ở form đăng bán — MỌI game** (nới business-rules #13 theo quyết định chủ web; trước đó chỉ mục その他): gõ tên không khớp chính xác thẻ nào trong catalog → nút "＋「…」を新しい商品として登録" (CardAutocomplete, giờ áp dụng cả pokemon/onepiece). `POST /api/cards` nhận thêm `game` (optional, mặc định "other" — tương thích client cũ), find-or-create theo (game, tên, category). Entry tự thêm của pokemon/onepiece mang `setCode CUSTOM/CUSTOM-BOX` (`userProductSetCode`) — tách khỏi catalog chuẩn, lọc được khi làm sạch dataset giá. UI ẩn dòng thông số với mọi entry tự thêm (`isUserProduct` trong labels.ts). Đổi tên `createOtherProduct` → `createUserProduct` xuyên suốt.
+- **Tin của người bán VIP lên đầu bảng danh sách** (đặc quyền VIP): `listListings` orderBy `[{seller.isVip desc}, {createdAt desc}]` — trong mỗi nhóm vẫn mới nhất trước. Áp dụng mọi nơi dùng danh sách listing (trang chủ, tìm kiếm, hồ sơ).
+
+### Docs
+- `docs/business-rules.md` #13 viết lại (catalog ưu tiên, tự thêm khi thiếu + đánh đổi dataset), `docs/api/cards-uploads.md` (POST /api/cards mới), `docs/api/listings.md` (thứ tự VIP).
+
+### Kiểm thử
+- Verify trên dev (phiên tạm cho admin, đã xóa ngay sau đó; không ghi thẻ test vào DB): tab ポケモン gõ tên lạ → nút thêm mới hiện đúng; API listings trả `sellerIsVip:true` và VIP đứng đầu; POST /api/cards không auth → 401. 185 test pass (+6: pokemon tạo được, quy ước setCode), `tsc` sạch, build OK.
+
 ## [0.12.0] — 2026-07-20 — Tính năng VIP (chủ web chỉ định)
 
 ### Tính năng

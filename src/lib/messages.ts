@@ -114,8 +114,8 @@ export const MESSAGES = {
   "sell.title": { ja: "カードを出品する", vi: "Đăng bán thẻ", en: "Create a listing" },
   "sell.game": { ja: "ゲーム", vi: "Game", en: "Game" },
   "sell.category": { ja: "種類", vi: "Loại sản phẩm", en: "Product type" },
-  "sell.selectCard": { ja: "カード（カタログから選択）", vi: "Thẻ (chọn từ danh mục)", en: "Card (pick from catalog)" },
-  "sell.selectBox": { ja: "BOX（カタログから選択）", vi: "BOX (chọn từ danh mục)", en: "Box (pick from catalog)" },
+  "sell.selectCard": { ja: "カード（検索または新規登録）", vi: "Thẻ (tìm trong danh mục hoặc thêm mới)", en: "Card (search catalog or add new)" },
+  "sell.selectBox": { ja: "BOX（検索または新規登録）", vi: "BOX (tìm trong danh mục hoặc thêm mới)", en: "Box (search catalog or add new)" },
   "sell.selectOther": {
     ja: "商品名（検索または新規登録）",
     vi: "Tên sản phẩm (tìm hoặc tạo mới)",
@@ -157,7 +157,7 @@ export const MESSAGES = {
   },
   "sell.submit": { ja: "出品する（手数料ゼロ）", vi: "Đăng bán (phí 0%)", en: "List it (zero fee)" },
   "sell.submitting": { ja: "出品中…", vi: "Đang đăng…", en: "Listing…" },
-  "sell.errNoCard": { ja: "カードをカタログから選択してください。", vi: "Hãy chọn thẻ từ danh mục.", en: "Please pick a card from the catalog." },
+  "sell.errNoCard": { ja: "カードを選択または新規登録してください。", vi: "Hãy chọn thẻ hoặc thêm mới.", en: "Please pick or add a card." },
   "sell.errNoPhoto": { ja: "カードの実物写真をアップロードしてください。", vi: "Hãy tải lên ảnh thật của thẻ.", en: "Please upload a photo of the actual item." },
   "sell.errSubmit": { ja: "出品に失敗しました。", vi: "Đăng bán thất bại.", en: "Failed to create listing." },
   "sell.searchCard": {
@@ -171,9 +171,9 @@ export const MESSAGES = {
     en: "Search by box name / set code (e.g. 151, OP01)",
   },
   "sell.searchEmpty": {
-    ja: "見つかりません。カタログにあるカードのみ出品できます。",
-    vi: "Không tìm thấy. Chỉ đăng bán được sản phẩm có trong danh mục.",
-    en: "No results. Only items in the catalog can be listed.",
+    ja: "見つかりません。名前を入力して新規登録できます。",
+    vi: "Không tìm thấy. Bạn có thể nhập tên để thêm mới.",
+    en: "No results. Type a name to add it as new.",
   },
 
   // ---- Chi tiết listing ----

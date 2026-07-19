@@ -1,9 +1,10 @@
 "use client";
 
-// Autocomplete chọn thẻ từ catalog chuẩn hóa — user KHÔNG được gõ tên tự do
-// (design.md mục 3: chống noise dữ liệu). Ngoại lệ duy nhất: mục "その他"
-// (game="other") không có catalog → cho phép đăng ký tên sản phẩm mới
-// (find-or-create phía server, business-rules #13).
+// Autocomplete chọn thẻ từ catalog. Từ 0.12.1: MỌI game đều cho đăng ký tên
+// mới khi catalog thiếu (find-or-create phía server; entry tự thêm của
+// pokemon/onepiece mang setCode CUSTOM — nới business-rules #13 theo quyết
+// định chủ web). Nút "thêm mới" CHỈ hiện khi tên gõ vào không khớp chính xác
+// thẻ nào — ưu tiên chọn từ catalog để hạn chế noise dữ liệu giá.
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api-client";
 import type { CardDto, Category, Game } from "@/lib/types";
@@ -55,13 +56,14 @@ export function CardAutocomplete({ game, category, onSelect }: Props) {
     onSelect(null);
   }
 
-  // Mục その他: đăng ký query hiện tại thành sản phẩm mới rồi chọn luôn.
-  async function createOther() {
+  // Đăng ký query hiện tại thành sản phẩm/thẻ mới rồi chọn luôn (mọi game).
+  async function createNew() {
     const name = query.trim();
     if (!name || creating) return;
     setCreating(true);
     try {
-      const { card } = await api.createOtherProduct({
+      const { card } = await api.createUserProduct({
+        game: game ?? "other",
         name,
         category: category ?? "single",
       });
@@ -74,9 +76,9 @@ export function CardAutocomplete({ game, category, onSelect }: Props) {
   }
 
   const isOther = game === "other";
-  // Chỉ hiện nút tạo mới khi chưa có sản phẩm trùng tên chính xác.
+  // Chỉ hiện nút tạo mới khi chưa có sản phẩm trùng tên chính xác — ưu tiên
+  // chọn từ catalog, hạn chế entry trùng lặp.
   const canCreate =
-    isOther &&
     query.trim().length > 0 &&
     !selected &&
     !results.some((c) => c.nameJa === query.trim());
@@ -120,7 +122,7 @@ export function CardAutocomplete({ game, category, onSelect }: Props) {
             <li>
               <button
                 type="button"
-                onMouseDown={createOther}
+                onMouseDown={createNew}
                 disabled={creating}
                 className="flex w-full items-center gap-1 px-3 py-2 text-left text-sm font-medium text-indigo-600 hover:bg-indigo-50 disabled:opacity-50"
               >

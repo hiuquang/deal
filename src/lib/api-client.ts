@@ -101,8 +101,8 @@ export const api = {
       }`
     ),
   getCard: (id: string) => request<{ card: CardDto }>(`/api/cards/${id}`),
-  /** Mục その他: tự tạo sản phẩm theo tên (find-or-create phía server). */
-  createOtherProduct: (data: { name: string; category: Category }) =>
+  /** Tự thêm sản phẩm/thẻ khi catalog thiếu (find-or-create phía server, mọi game). */
+  createUserProduct: (data: { game: Game; name: string; category: Category }) =>
     request<{ card: CardDto }>("/api/cards", json(data)),
 
   // ---- uploads ----

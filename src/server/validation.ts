@@ -80,9 +80,12 @@ export const cardSearchSchema = z.object({
   category: z.enum(CATEGORIES).optional(),
 });
 
-// Chỉ cho mục "その他/Khác": user tự đặt tên sản phẩm (find-or-create).
-// Pokémon / One Piece vẫn bắt buộc chọn từ catalog (business-rules #13).
-export const createOtherProductSchema = z.object({
+// User tự thêm sản phẩm/thẻ mới khi catalog thiếu (find-or-create). Mở cho MỌI
+// game từ 0.12.1 (nới business-rules #13 theo quyết định chủ web); entry tự
+// thêm của pokemon/onepiece mang setCode CUSTOM để tách khỏi catalog chuẩn.
+// `game` optional (mặc định "other") — giữ tương thích client cũ.
+export const createUserProductSchema = z.object({
+  game: z.enum(GAMES).default("other"),
   name: z
     .string()
     .trim()

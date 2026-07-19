@@ -47,7 +47,9 @@ export async function listListings(filter: {
     prisma.listing.findMany({
       where,
       include: listingInclude,
-      orderBy: { createdAt: "desc" },
+      // Tin của người bán VIP nổi lên đầu bảng (đặc quyền VIP 0.12.1),
+      // trong mỗi nhóm vẫn mới nhất trước.
+      orderBy: [{ seller: { isVip: "desc" } }, { createdAt: "desc" }],
       skip: (filter.page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
     }),

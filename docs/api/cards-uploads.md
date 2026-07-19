@@ -20,20 +20,20 @@ BOX là entry catalog với `category: "box"`, `cardNumber: "BOX"`.
 
 ### POST /api/cards (cần đăng nhập + verified)
 
-Tạo sản phẩm mục **その他** (`game: "other"`) — ngoại lệ duy nhất của quy tắc "chỉ chọn từ catalog" (business-rules #13): sản phẩm ngoài Pokémon/One Piece không có catalog nên user tự đặt tên. **Find-or-create** theo `(name, category)` — gọi 2 lần cùng tên trả về cùng 1 card (race được unique constraint của `cards` chặn, server bắt P2002 và trả bản ghi thắng cuộc).
+User tự thêm sản phẩm/thẻ khi catalog thiếu — **từ 0.12.1 mở cho MỌI game** (trước đó chỉ mục その他; business-rules #13 đã nới theo quyết định chủ web). **Find-or-create** theo `(game, name, category)` — gọi 2 lần cùng tên trả về cùng 1 card (race được unique constraint của `cards` chặn, server bắt P2002 và trả bản ghi thắng cuộc). `game` optional, mặc định `"other"` (tương thích client cũ).
 
 ```json
 // request
-{ "name": "プレイマット", "category": "single" }
+{ "game": "pokemon", "name": "ピカチュウAR", "category": "single" }
 // 201 (cả khi đã tồn tại — idempotent)
-{ "card": { "id": "...", "game": "other", "category": "single", "setCode": "OTHER",
-  "cardNumber": "プレイマット", "language": "JP", "nameJa": "プレイマット",
-  "nameEn": "プレイマット", "rarity": "-" } }
+{ "card": { "id": "...", "game": "pokemon", "category": "single", "setCode": "CUSTOM",
+  "cardNumber": "ピカチュウAR", "language": "JP", "nameJa": "ピカチュウAR",
+  "nameEn": "ピカチュウAR", "rarity": "-" } }
 ```
 
-Quy ước lưu: `setCode = "OTHER"` (single) / `"OTHER-BOX"` (box), `cardNumber` = tên sản phẩm (để unique `(game, setCode, cardNumber, language)` dedupe ở DB). UI ẩn setCode/cardNumber/rarity với card `game=other` (helper `cardSpec` trong `src/lib/labels.ts`).
+Quy ước lưu (`userProductSetCode` trong `src/server/repositories/cards.ts`): mục その他 giữ `setCode = "OTHER"` / `"OTHER-BOX"`; pokemon/onepiece dùng `"CUSTOM"` / `"CUSTOM-BOX"` — tách hẳn khỏi catalog chuẩn để lọc/dọn được. `cardNumber` = tên sản phẩm (unique `(game, setCode, cardNumber, language)` dedupe ở DB). UI ẩn setCode/cardNumber/rarity với mọi entry user tự thêm (helper `cardSpec`/`isUserProduct` trong `src/lib/labels.ts`). UI chỉ hiện nút "thêm mới" khi tên gõ vào không khớp chính xác thẻ nào trong kết quả tìm — ưu tiên catalog, hạn chế entry trùng.
 
-Lỗi: `400 VALIDATION` (tên rỗng / quá 100 ký tự), `403 EMAIL_NOT_VERIFIED`, `403 TERMS_NOT_ACCEPTED`.
+Lỗi: `400 VALIDATION` (tên rỗng / quá 100 ký tự / game sai), `403 EMAIL_NOT_VERIFIED`, `403 TERMS_NOT_ACCEPTED`.
 
 ## Uploads
 

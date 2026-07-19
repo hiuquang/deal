@@ -4,23 +4,25 @@ import { toCardDto } from "@/server/serializers";
 import type { CardDto } from "@/lib/types";
 
 /**
- * Mục "その他/Khác": user tự đặt tên sản phẩm — ngoại lệ có chủ đích của
- * business-rules #13 (catalog chuẩn hóa chỉ áp cho Pokémon / One Piece).
- * Find-or-create theo (tên, category) để cùng một sản phẩm không sinh
- * nhiều entry; race check-then-insert được unique constraint của bảng
- * cards chặn ở DB → bắt P2002 và trả về bản ghi đã tồn tại.
+ * User tự thêm sản phẩm/thẻ khi catalog thiếu — mở cho MỌI game từ 0.12.1
+ * (nới business-rules #13 theo quyết định chủ web; trước đó chỉ mục その他).
+ * Entry tự thêm của pokemon/onepiece mang setCode CUSTOM/CUSTOM-BOX, tách khỏi
+ * catalog chuẩn. Find-or-create theo (game, tên, category) để cùng một sản phẩm
+ * không sinh nhiều entry; race check-then-insert được unique constraint của
+ * bảng cards chặn ở DB → bắt P2002 và trả về bản ghi đã tồn tại.
  */
-export async function createOtherProduct(
+export async function createUserProduct(
+  game: string,
   name: string,
   category: string
 ): Promise<CardDto> {
-  const existing = await cardsRepo.findOtherProduct(name, category);
+  const existing = await cardsRepo.findUserProduct(game, name, category);
   if (existing) return toCardDto(existing);
   try {
-    return toCardDto(await cardsRepo.createOtherProduct(name, category));
+    return toCardDto(await cardsRepo.createUserProduct(game, name, category));
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
-      const raced = await cardsRepo.findOtherProduct(name, category);
+      const raced = await cardsRepo.findUserProduct(game, name, category);
       if (raced) return toCardDto(raced);
     }
     throw e;
