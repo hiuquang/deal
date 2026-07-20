@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [0.12.3] — 2026-07-20 — Migrate DB + region sang Tokyo (cắt vòng Sydney)
+
+### Hiệu năng (gốc rễ độ trễ)
+- **Chuyển toàn bộ hạ tầng từ Sydney sang Tokyo**: user ở Nhật, trước đó Vercel function + Supabase DB đều ở Sydney → mỗi request động vòng Tokyo→Sydney→Tokyo (~+250–400ms). Giờ cùng vùng Tokyo, cắt hẳn vòng này.
+  - Supabase project mới `ofwrdcwrqtmhxgogmqlf` region Northeast Asia (Tokyo), pooler `aws-0-ap-northeast-1`.
+  - Vercel function region `syd1` → `hnd1` (`vercel.json`).
+  - Env production + preview cập nhật: DATABASE_URL, DIRECT_URL, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
+- **Kết quả đo** (endpoint động, không cache): `/api/listings?mine=1` từ 0.3–0.9s (Sydney) → **~0.25s ổn định** (Tokyo); SSR trang chủ (warm) ~0.19–0.39s.
+
+### Migration
+- Schema qua `prisma migrate deploy` (4 migration). Dữ liệu: 2 user, 47 thẻ, 1 listing, 5 session, 10 email token, 10 rate limit — dump JSON rồi `createMany`. Ảnh listing (1 file) chuyển sang bucket public `uploads` mới + cập nhật `imageUrl` trong DB. VIP của admin, hash mật khẩu, session giữ nguyên (user đang đăng nhập không bị đá ra).
+- Verify production: web đọc DB Tokyo OK, listing "Thịt bò" render kèm ảnh Tokyo, VIP=true, console sạch.
+- Project Supabase Sydney cũ **chưa xóa** — giữ làm rollback; xóa sau vài ngày khi chắc chắn ổn (`.env.sydney-backup` + `deal-migration-dump.json` ở máy local cũng là bản lưu).
+
 ## [0.12.2] — 2026-07-20 — Tối ưu tốc độ: CDN cache cho GET công khai
 
 ### Hiệu năng
