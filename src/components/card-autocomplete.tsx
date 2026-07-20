@@ -6,7 +6,7 @@
 // định chủ web). Nút "thêm mới" CHỈ hiện khi tên gõ vào không khớp chính xác
 // thẻ nào — ưu tiên chọn từ catalog để hạn chế noise dữ liệu giá.
 import { useEffect, useRef, useState } from "react";
-import { api } from "@/lib/api-client";
+import { api, ApiClientError } from "@/lib/api-client";
 import type { CardDto, Category, Game } from "@/lib/types";
 import { cardTitle, cardSpec } from "@/lib/labels";
 import { useI18n, type MessageKey } from "@/lib/i18n";
@@ -24,6 +24,7 @@ export function CardAutocomplete({ game, category, onSelect }: Props) {
   const [selected, setSelected] = useState<CardDto | null>(null);
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -53,6 +54,7 @@ export function CardAutocomplete({ game, category, onSelect }: Props) {
   function reset(value: string) {
     setSelected(null);
     setQuery(value);
+    setCreateError(null);
     onSelect(null);
   }
 
@@ -61,6 +63,7 @@ export function CardAutocomplete({ game, category, onSelect }: Props) {
     const name = query.trim();
     if (!name || creating) return;
     setCreating(true);
+    setCreateError(null);
     try {
       const { card } = await api.createUserProduct({
         game: game ?? "other",
@@ -68,8 +71,10 @@ export function CardAutocomplete({ game, category, onSelect }: Props) {
         category: category ?? "single",
       });
       choose(card);
-    } catch {
-      // lỗi (chưa verify email…) → giữ dropdown, user thấy không chọn được
+    } catch (e) {
+      // Nói rõ vì sao không thêm được (chưa verify email…) — fail im lặng
+      // làm user tưởng nút hỏng.
+      setCreateError(e instanceof ApiClientError ? e.message : t("sell.createFail"));
     } finally {
       setCreating(false);
     }
@@ -132,6 +137,7 @@ export function CardAutocomplete({ game, category, onSelect }: Props) {
           )}
         </ul>
       )}
+      {createError && <p className="mt-1 text-xs text-red-600">{createError}</p>}
       {open && query.trim() && results.length === 0 && !selected && !canCreate && (
         <div className="absolute z-10 mt-1 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-500 shadow-lg">
           {t("sell.searchEmpty")}

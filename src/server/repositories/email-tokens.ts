@@ -35,6 +35,18 @@ export function findValidToken(token: string, type: "verify" | "reset") {
   });
 }
 
+/**
+ * Tra token kèm user BẤT KỂ đã dùng/hết hạn — để verifyEmail idempotent:
+ * link bấm lần 2 (hoặc mail scanner prefetch đốt token trước) vẫn nhận ra
+ * "user này đã verify rồi" thay vì báo lỗi.
+ */
+export function findTokenWithUser(token: string, type: "verify" | "reset") {
+  return prisma.emailToken.findFirst({
+    where: { token: hashToken(token), type },
+    include: { user: true },
+  });
+}
+
 export function markTokenUsed(id: string) {
   return prisma.emailToken.update({ where: { id }, data: { usedAt: new Date() } });
 }

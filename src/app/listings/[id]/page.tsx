@@ -21,7 +21,10 @@ export default function ListingDetailPage({
   const { me } = useAuth();
   const { t } = useI18n();
   const [listing, setListing] = useState<ListingDto | null>(null);
+  // error = lỗi TẢI trang (thay cả trang); actionError = lỗi hành động phụ
+  // (hủy tin, sửa giá) hiện inline — không được làm bay nội dung đang xem.
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [editingPrice, setEditingPrice] = useState(false);
   const [priceInput, setPriceInput] = useState("");
@@ -44,11 +47,12 @@ export default function ListingDetailPage({
 
   async function handleCancel() {
     setBusy(true);
+    setActionError(null);
     try {
       const { listing: updated } = await api.cancelListing(id);
       setListing(updated);
     } catch (e) {
-      setError(e instanceof ApiClientError ? e.message : t("common.error"));
+      setActionError(e instanceof ApiClientError ? e.message : t("common.error"));
     } finally {
       setBusy(false);
     }
@@ -56,7 +60,7 @@ export default function ListingDetailPage({
 
   function startEditPrice() {
     setPriceInput(listing?.askingPriceJpy ? String(listing.askingPriceJpy) : "");
-    setError(null);
+    setActionError(null);
     setEditingPrice(true);
   }
 
@@ -65,13 +69,13 @@ export default function ListingDetailPage({
     const trimmed = priceInput.trim();
     const value = trimmed === "" ? null : Number(trimmed);
     setBusy(true);
-    setError(null);
+    setActionError(null);
     try {
       const { listing: updated } = await api.updateListingPrice(id, value);
       setListing(updated);
       setEditingPrice(false);
     } catch (e) {
-      setError(e instanceof ApiClientError ? e.message : t("common.error"));
+      setActionError(e instanceof ApiClientError ? e.message : t("common.error"));
     } finally {
       setBusy(false);
     }
@@ -104,7 +108,8 @@ export default function ListingDetailPage({
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-baseline gap-3">
+            {actionError && <ErrorBox message={actionError} />}
+            <div className="flex flex-wrap items-baseline gap-3">
               <span className="text-3xl font-black text-indigo-700">
                 {listing.askingPriceJpy ? formatJpy(listing.askingPriceJpy) : t("common.negotiable")}
               </span>

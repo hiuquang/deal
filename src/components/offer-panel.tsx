@@ -83,7 +83,8 @@ export function OfferPanel({ order }: { order: BuyOrderDto }) {
       {canOffer && (
         <form onSubmit={handleOffer} className="space-y-2 rounded-lg bg-amber-50 p-3">
           <p className="text-xs font-semibold text-amber-800">{t("bod.offerFormTitle")}</p>
-          <div className="flex gap-2">
+          {/* Mobile xếp dọc: 3 ô chung 1 hàng làm ô lời nhắn chỉ còn vài chục px */}
+          <div className="flex flex-col gap-2 sm:flex-row">
             <input
               type="number"
               min={1}
@@ -92,7 +93,7 @@ export function OfferPanel({ order }: { order: BuyOrderDto }) {
               onChange={(e) => setQuantity(e.target.value)}
               placeholder={t("bod.offerQuantity")}
               aria-label={t("bod.offerQuantity")}
-              className="w-36 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none sm:w-36"
             />
             <input
               type="text"
@@ -106,7 +107,7 @@ export function OfferPanel({ order }: { order: BuyOrderDto }) {
             <button
               type="submit"
               disabled={busy || !quantity}
-              className="shrink-0 rounded-lg bg-amber-600 px-4 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-50"
+              className="shrink-0 rounded-lg bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700 disabled:opacity-50"
             >
               {busy ? t("bod.offerSubmitting") : t("bod.offerSubmit")}
             </button>

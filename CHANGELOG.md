@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## [0.13.0] — 2026-07-21 — Đợt rà soát UX: sửa 10 lỗi/chỗ chưa logic toàn site
+
+### Sửa lỗi
+- **iOS auto-zoom trên MỌI ô nhập** (không chỉ ô chat đã vá ở 0.12.7): rule toàn cục trong `globals.css` — dưới 640px mọi `input/select/textarea` tối thiểu 16px (rule ngoài `@layer` nên thắng utility `text-sm`). Hết cảnh focus ô giá trong TradePanel / ô tìm kiếm / form đăng tin là Safari phóng to vỡ layout.
+- **Lỗi hành động phụ "nuốt" cả trang chi tiết**: trang tin bán + tin gom dùng chung 1 state error cho cả lỗi tải lẫn lỗi nút (hủy tin, sửa giá) → request fail là nguyên trang bị thay bằng 1 ô đỏ, phải reload. Tách `actionError` hiện inline cạnh nút; lỗi tải mới thay trang.
+- **Link verify email bấm lần 2 báo "link hỏng" dù đã verify xong**: `verifyEmail` giờ idempotent — token đã đốt nhưng user của token ĐÃ verified → trả thành công (mail scanner Gmail/Outlook prefetch link cũng không còn gây lỗi ảo; StrictMode dev double-fire hết hiện lỗi sai). Repo thêm `findTokenWithUser`; +2 unit test; `docs/api/auth.md` cập nhật.
+- **Nút "＋ đăng ký thẻ mới" trong autocomplete fail im lặng** (vd. chưa verify email): giờ hiện message lỗi đỏ dưới ô (`sell.createFail` fallback).
+- **Nút gửi lại mail xác nhận fail im lặng** (vd. dính rate limit): banner giờ hiện lỗi (`banner.resendFail`).
+
+### UX / chưa logic
+- **Danh sách chat có huy hiệu chưa đọc từng dòng**: `ConversationDto` thêm `unreadCount` (cùng quy tắc đếm với tổng ở nav, gồm "tối thiểu 1 khi vừa match"); dòng có tin mới in đậm + badge đỏ, mở hội thoại là tắt badge ngay (không chờ refetch). `UnreadBadge` chuyển từ nav-bar sang `ui.tsx` dùng chung. `docs/api/chat.md` cập nhật.
+- **Luồng mua trên tin đã đóng/hủy**: buyer có request pending giờ thấy "tin đã ngừng nhận yêu cầu" (`buy.listingClosed`) thay vì box "chờ seller kết nối" treo vĩnh viễn; phía seller ẩn nút 連携 với người chưa kết nối (link chat đã kết nối giữ nguyên) + dòng ghi chú.
+- **Ô lý do report**: thêm hint "tối thiểu 10 ký tự" (`seller.reportHint`) — trước đây nút xám không rõ vì sao (2 chỗ: SellerSummary + trang hồ sơ).
+- **Responsive**: hàng giá trang chi tiết tin thêm `flex-wrap` (giá dài + 2 badge + nút sửa giá tràn ngang màn 375px); form chào bán tin gom xếp dọc dưới `sm` (trước đây ô lời nhắn bị bóp còn vài chục px).
+- SellerSummary catch lỗi tải summary (trước đây unhandled rejection).
+
+i18n mới đủ ja/vi/en: `sell.createFail`, `buy.listingClosed`, `seller.reportHint`, `banner.resendFail`.
+
 ## [0.12.8] — 2026-07-21 — Nhắc gặp mặt trước khi chốt giá
 
 ### Tính năng

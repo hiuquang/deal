@@ -133,6 +133,11 @@ export const MESSAGES = {
     vi: "Tạo sản phẩm mới: “{name}”",
     en: "Create new product “{name}”",
   },
+  "sell.createFail": {
+    ja: "商品の登録に失敗しました。時間をおいて再度お試しください。",
+    vi: "Tạo sản phẩm thất bại. Vui lòng thử lại sau.",
+    en: "Failed to create the product. Please try again later.",
+  },
   "sell.condition": { ja: "状態（必須）", vi: "Tình trạng (bắt buộc)", en: "Condition (required)" },
   "sell.photo": { ja: "実物写真（必須・5MBまで）", vi: "Ảnh thật (bắt buộc, tối đa 5MB)", en: "Photo of actual item (required, max 5MB)" },
   "sell.photoPreviewAlt": { ja: "アップロード画像のプレビュー", vi: "Xem trước ảnh tải lên", en: "Upload preview" },
@@ -215,6 +220,11 @@ export const MESSAGES = {
     vi: "Lý do báo cáo (từ 10 ký tự): nghi lừa đảo, vi phạm điều khoản...",
     en: "Reason (10+ chars): suspected fraud, terms violation...",
   },
+  "seller.reportHint": {
+    ja: "理由は10文字以上で入力してください。",
+    vi: "Lý do cần tối thiểu 10 ký tự.",
+    en: "Please enter at least 10 characters.",
+  },
   "seller.reportSend": { ja: "通報を送信", vi: "Gửi báo cáo", en: "Send report" },
   "seller.reportFail": { ja: "通報に失敗しました。", vi: "Gửi báo cáo thất bại.", en: "Failed to send report." },
 
@@ -235,6 +245,11 @@ export const MESSAGES = {
     ja: "まだ購入希望はありません。購入希望が届くとここに表示されます。",
     vi: "Chưa có yêu cầu mua nào. Khi có, danh sách sẽ hiện ở đây.",
     en: "No purchase requests yet. They will appear here.",
+  },
+  "buy.listingClosed": {
+    ja: "この出品は受付を終了しています。",
+    vi: "Tin đăng này đã ngừng nhận yêu cầu.",
+    en: "This listing is no longer accepting requests.",
   },
   "buy.connect": { ja: "連携する", vi: "Kết nối", en: "Connect" },
   "buy.toChat": { ja: "チャットへ", vi: "Vào chat", en: "Open chat" },
@@ -379,6 +394,11 @@ export const MESSAGES = {
   },
   "banner.resend": { ja: "確認メールを再送する", vi: "Gửi lại email xác nhận", en: "Resend verification email" },
   "banner.resent": { ja: "✓ 再送しました", vi: "✓ Đã gửi lại", en: "✓ Sent" },
+  "banner.resendFail": {
+    ja: "再送に失敗しました。時間をおいて再度お試しください。",
+    vi: "Gửi lại thất bại. Vui lòng thử lại sau.",
+    en: "Failed to resend. Please try again later.",
+  },
   "verify.working": { ja: "確認中…", vi: "Đang xác nhận…", en: "Verifying…" },
   "verify.okTitle": { ja: "メールアドレスを確認しました", vi: "Đã xác nhận email thành công", en: "Email verified" },
   "verify.okDesc": {

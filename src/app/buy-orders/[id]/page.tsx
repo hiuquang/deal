@@ -19,7 +19,10 @@ export default function BuyOrderDetailPage({
   const { me } = useAuth();
   const { t } = useI18n();
   const [order, setOrder] = useState<BuyOrderDto | null>(null);
+  // error = lỗi TẢI trang; actionError = lỗi nút hủy tin, hiện inline
+  // (không thay cả trang bằng 1 ô lỗi).
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -39,11 +42,12 @@ export default function BuyOrderDetailPage({
 
   async function handleCancel() {
     setBusy(true);
+    setActionError(null);
     try {
       const { buyOrder } = await api.cancelBuyOrder(id);
       setOrder(buyOrder);
     } catch (e) {
-      setError(e instanceof ApiClientError ? e.message : t("common.error"));
+      setActionError(e instanceof ApiClientError ? e.message : t("common.error"));
     } finally {
       setBusy(false);
     }
@@ -95,6 +99,7 @@ export default function BuyOrderDetailPage({
           </p>
         )}
 
+        {actionError && <ErrorBox message={actionError} />}
         {isOwner && order.status === "active" && (
           <button
             onClick={handleCancel}

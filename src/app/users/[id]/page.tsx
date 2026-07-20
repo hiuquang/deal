@@ -253,6 +253,7 @@ export default function UserProfilePage({
                 aria-label={t("seller.reportPlaceholder")}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-red-400 focus:outline-none"
               />
+              <p className="text-[11px] text-slate-400">{t("seller.reportHint")}</p>
               <button
                 disabled={busy || reason.trim().length < 10}
                 onClick={handleReport}

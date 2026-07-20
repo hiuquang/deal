@@ -155,6 +155,12 @@ interface ConversationBase {
   otherPartyName: string;
   otherPartyIsVip: boolean;
   lastMessage: MessageDto | null;
+  /**
+   * Số tin của đối phương gửi sau mốc "đã đọc" của viewer — huy hiệu từng dòng
+   * trong danh sách chat. Chưa mở lần nào (mốc null) tính tối thiểu 1 để báo
+   * "được match" (cùng quy tắc với tổng ở nav).
+   */
+  unreadCount: number;
   activeTradeId: string | null;
   updatedAt: string;
 }

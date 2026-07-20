@@ -79,6 +79,19 @@ export function VipName({
   );
 }
 
+/** Huy hiệu số tin chưa đọc (nav + từng dòng danh sách chat). Ẩn khi 0. */
+export function UnreadBadge({ count, label }: { count: number; label: string }) {
+  if (count <= 0) return null;
+  return (
+    <span
+      aria-label={label}
+      className="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-500 px-1 text-[11px] font-bold leading-none text-white"
+    >
+      {count > 99 ? "99+" : count}
+    </span>
+  );
+}
+
 export function ReliabilityBadge({ reliability }: { reliability: Reliability }) {
   const { t } = useI18n();
   const style =

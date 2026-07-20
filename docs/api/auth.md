@@ -70,7 +70,7 @@ Lỗi: `400 VALIDATION` (password < 8 ký tự, thiếu agreeTerms...), `409 EMA
 
 | Method | Path | Request | Response | Lỗi |
 |---|---|---|---|---|
-| POST | `/api/auth/verify` | `{token}` | `{ok:true}` | 400 `INVALID_TOKEN` (sai/hết hạn/đã dùng) |
+| POST | `/api/auth/verify` | `{token}` | `{ok:true}` | 400 `INVALID_TOKEN` (sai/hết hạn — riêng token đã dùng: nếu user của token ĐÃ verified thì vẫn trả `{ok:true}`, idempotent để link bấm lần 2 / mail scanner prefetch không báo lỗi ảo) |
 | POST | `/api/auth/resend-verification` | — (cần đăng nhập) | `{ok:true}` | 409 `ALREADY_VERIFIED`, 429 |
 | POST | `/api/auth/forgot` | `{email}` | `{ok:true}` — **LUÔN LUÔN** (không lộ email tồn tại) | 400, 429 |
 | POST | `/api/auth/reset` | `{token, password ≥8 ký tự}` | `{ok:true}` — đổi mật khẩu + **đăng xuất mọi thiết bị** | 400 `INVALID_TOKEN`, 429 |

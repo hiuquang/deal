@@ -82,9 +82,17 @@ export function PurchasePanel({ listing }: { listing: ListingDto }) {
             {t("buy.send")}
           </button>
         ) : myRequest.status === "pending" ? (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            {t("buy.sent")}
-          </div>
+          // Tin không còn active mà request vẫn pending → nói thẳng là tin đã
+          // đóng, đừng để buyer chờ một kết nối không bao giờ tới.
+          listing.status !== "active" ? (
+            <div className="rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-600">
+              {t("buy.listingClosed")}
+            </div>
+          ) : (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              {t("buy.sent")}
+            </div>
+          )
         ) : (
           <Link
             href={`/chat?c=${myRequest.conversationId}`}
@@ -107,6 +115,11 @@ export function PurchasePanel({ listing }: { listing: ListingDto }) {
         </span>
       </h2>
       {error && <ErrorBox message={error} />}
+      {/* Tin đã đóng/hủy: vẫn xem danh sách + mở chat đã kết nối, nhưng ẩn nút
+          連携 với người mới — kết nối thêm trên tin đã đóng là vô nghĩa. */}
+      {listing.status !== "active" && (
+        <p className="text-xs text-slate-500">{t("buy.listingClosed")}</p>
+      )}
       {!requests || requests.length === 0 ? (
         <p className="text-xs text-slate-400">{t("buy.none")}</p>
       ) : (
@@ -138,7 +151,7 @@ export function PurchasePanel({ listing }: { listing: ListingDto }) {
                 >
                   {t("buy.toChat")}
                 </Link>
-              ) : (
+              ) : listing.status !== "active" ? null : (
                 <button
                   disabled={busy}
                   onClick={() =>

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { api } from "@/lib/api-client";
 import { useAuth } from "@/components/auth-context";
-import { VipBadge } from "@/components/ui";
+import { UnreadBadge, VipBadge } from "@/components/ui";
 import { LOCALE_OPTIONS, useI18n } from "@/lib/i18n";
 
 const UNREAD_POLL_MS = 15000;
@@ -49,18 +49,6 @@ function LanguageSwitcher() {
         </ul>
       )}
     </div>
-  );
-}
-
-function UnreadBadge({ count, label }: { count: number; label: string }) {
-  if (count <= 0) return null;
-  return (
-    <span
-      aria-label={label}
-      className="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-500 px-1 text-[11px] font-bold leading-none text-white"
-    >
-      {count > 99 ? "99+" : count}
-    </span>
   );
 }
 

@@ -2,7 +2,7 @@
 
 // Banner nhắc xác nhận email — hiện toàn site khi user chưa verify.
 import { useState } from "react";
-import { api } from "@/lib/api-client";
+import { api, ApiClientError } from "@/lib/api-client";
 import { useAuth } from "@/components/auth-context";
 import { useI18n } from "@/lib/i18n";
 
@@ -10,15 +10,20 @@ export function VerifyBanner() {
   const { me } = useAuth();
   const { t } = useI18n();
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   if (!me || me.emailVerified) return null;
 
   async function handleResend() {
     setBusy(true);
+    setError(null);
     try {
       await api.resendVerification();
       setSent(true);
+    } catch (e) {
+      // fail im lặng (vd. dính rate limit 3 lần/giờ) làm user tưởng đã gửi
+      setError(e instanceof ApiClientError ? e.message : t("banner.resendFail"));
     } finally {
       setBusy(false);
     }
@@ -42,6 +47,7 @@ export function VerifyBanner() {
             {t("banner.resend")}
           </button>
         )}
+        {error && <span className="font-medium text-red-600">{error}</span>}
       </div>
     </div>
   );

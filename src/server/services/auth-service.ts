@@ -81,10 +81,19 @@ export async function acceptTerms(user: User): Promise<void> {
   console.log(`[auth] ${user.id} accepted terms ${TERMS_VERSION}`);
 }
 
-/** Xác nhận email bằng token trong link. */
+/**
+ * Xác nhận email bằng token trong link. Idempotent với token đã đốt: link bấm
+ * lần 2, hoặc mail scanner (Gmail/Outlook) prefetch link trước khi user bấm,
+ * vẫn trả thành công nếu user của token đã verify — không dọa "link hỏng".
+ */
 export async function verifyEmail(token: string): Promise<void> {
   const record = await tokens.findValidToken(token, "verify");
   if (!record) {
+    const spent = await tokens.findTokenWithUser(token, "verify");
+    if (spent?.user.emailVerifiedAt) {
+      console.log(`[auth] verify token reused for already-verified ${spent.userId}`);
+      return;
+    }
     throw new ApiError(
       400,
       "INVALID_TOKEN",

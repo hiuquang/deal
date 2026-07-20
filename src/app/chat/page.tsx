@@ -9,7 +9,7 @@ import { cardTitle, formatJpy } from "@/lib/labels";
 import { useAuth } from "@/components/auth-context";
 import { ChatPanel } from "@/components/chat-panel";
 import { TradePanel } from "@/components/trade-panel";
-import { Empty, Loading, SafetyNote, VipBadge, VipName } from "@/components/ui";
+import { Empty, Loading, SafetyNote, UnreadBadge, VipBadge, VipName } from "@/components/ui";
 import { UNREAD_EVENT } from "@/components/nav-bar";
 import { useI18n } from "@/lib/i18n";
 
@@ -35,11 +35,17 @@ function ChatContent() {
     if (me) void reload();
   }, [me, reload]);
 
-  // Mở 1 hội thoại = đã đọc → gọi API đánh dấu rồi báo nav cập nhật huy hiệu.
+  // Mở 1 hội thoại = đã đọc → gọi API đánh dấu, báo nav cập nhật huy hiệu,
+  // đồng thời tắt ngay huy hiệu của dòng đó trong danh sách (không chờ reload).
   const markRead = useCallback((conversationId: string) => {
     void api
       .markConversationRead(conversationId)
-      .then(() => window.dispatchEvent(new Event(UNREAD_EVENT)))
+      .then(() => {
+        window.dispatchEvent(new Event(UNREAD_EVENT));
+        setConversations((prev) =>
+          prev.map((c) => (c.id === conversationId ? { ...c, unreadCount: 0 } : c))
+        );
+      })
       .catch(() => {});
   }, []);
 
@@ -90,14 +96,24 @@ function ChatContent() {
                     conversation.id === selectedId ? "bg-indigo-50" : ""
                   }`}
                 >
-                  <p className="line-clamp-1 text-sm font-medium">
-                    {conversation.kind === "buy_order" && (
-                      <span className="mr-1 rounded bg-amber-100 px-1 text-[10px] font-semibold text-amber-700">
-                        {t("chat.buyOrderTag")}
-                      </span>
-                    )}
-                    {conversation.card.nameJa}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p
+                      className={`line-clamp-1 flex-1 text-sm ${
+                        conversation.unreadCount > 0 ? "font-bold" : "font-medium"
+                      }`}
+                    >
+                      {conversation.kind === "buy_order" && (
+                        <span className="mr-1 rounded bg-amber-100 px-1 text-[10px] font-semibold text-amber-700">
+                          {t("chat.buyOrderTag")}
+                        </span>
+                      )}
+                      {conversation.card.nameJa}
+                    </p>
+                    <UnreadBadge
+                      count={conversation.unreadCount}
+                      label={t("nav.unreadAria", { n: conversation.unreadCount })}
+                    />
+                  </div>
                   <p className="text-xs text-slate-500">
                     <VipName
                       name={conversation.otherPartyName}

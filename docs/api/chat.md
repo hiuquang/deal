@@ -8,7 +8,7 @@ Chat dùng **polling 6s**, incremental qua `?after=` (không WebSocket). Client 
 
 ### GET /api/conversations
 
-→ `{conversations: [...]}` — của tôi; mỗi phần tử kèm `listing`, `otherPartyName`, `lastMessage`, `activeTradeId`.
+→ `{conversations: [...]}` — của tôi; mỗi phần tử kèm `listing`, `otherPartyName`, `lastMessage`, `activeTradeId`, `unreadCount` (số tin chưa đọc của riêng hội thoại đó — cùng quy tắc đếm với `unread-count` bên dưới, kể cả "tối thiểu 1 khi chưa mở"; huy hiệu từng dòng trong danh sách chat).
 
 ### GET /api/conversations/:id/messages?after=<messageId>
 

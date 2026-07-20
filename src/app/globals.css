@@ -11,3 +11,13 @@ body {
   /* Noto Sans (có subset tiếng Việt) trước, chữ Nhật rơi về font JP hệ thống */
   font-family: var(--font-sans), "Hiragino Sans", "Yu Gothic UI", Meiryo, system-ui, sans-serif;
 }
+
+/* iOS Safari tự phóng to trang khi focus control có font < 16px → mọi ô nhập
+   trên màn nhỏ tối thiểu 16px. Rule ngoài @layer nên thắng utility text-sm. */
+@media (max-width: 639px) {
+  input,
+  select,
+  textarea {
+    font-size: 1rem;
+  }
+}

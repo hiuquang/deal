@@ -19,6 +19,7 @@ vi.mock("@/server/repositories/users", () => ({
 vi.mock("@/server/repositories/email-tokens", () => ({
   issueToken: vi.fn(),
   findValidToken: vi.fn(),
+  findTokenWithUser: vi.fn(),
   markTokenUsed: vi.fn(),
   markEmailVerified: vi.fn(),
   updatePassword: vi.fn(),
@@ -135,8 +136,30 @@ describe("authService.getMe — give-to-get gate", () => {
 describe("authService.verifyEmail", () => {
   it("400 INVALID_TOKEN khi token sai/hết hạn", async () => {
     vi.mocked(tokensRepo.findValidToken).mockResolvedValue(null);
+    vi.mocked(tokensRepo.findTokenWithUser).mockResolvedValue(null);
     await expectApiError(authService.verifyEmail("bad"), "INVALID_TOKEN");
     expect(tokensRepo.markEmailVerified).not.toHaveBeenCalled();
+  });
+
+  it("token đã đốt nhưng user ĐÃ verify → thành công im lặng (link bấm lần 2 / scanner prefetch)", async () => {
+    vi.mocked(tokensRepo.findValidToken).mockResolvedValue(null);
+    vi.mocked(tokensRepo.findTokenWithUser).mockResolvedValue({
+      id: "t1",
+      userId: "u1",
+      user: { emailVerifiedAt: new Date() },
+    } as never);
+    await authService.verifyEmail("reused");
+    expect(tokensRepo.markEmailVerified).not.toHaveBeenCalled();
+  });
+
+  it("token đã đốt và user CHƯA verify → vẫn 400 INVALID_TOKEN", async () => {
+    vi.mocked(tokensRepo.findValidToken).mockResolvedValue(null);
+    vi.mocked(tokensRepo.findTokenWithUser).mockResolvedValue({
+      id: "t1",
+      userId: "u1",
+      user: { emailVerifiedAt: null },
+    } as never);
+    await expectApiError(authService.verifyEmail("reused"), "INVALID_TOKEN");
   });
 
   it("token hợp lệ → đánh dấu used + verified", async () => {

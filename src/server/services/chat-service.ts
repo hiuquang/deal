@@ -18,7 +18,8 @@ function toConversationDto(
     messages?: Parameters<typeof toMessageDto>[0][];
     trades?: { id: string }[];
   },
-  viewerId: string
+  viewerId: string,
+  unreadCount: number
 ): ConversationDto {
   const otherParty =
     conversation.buyerId === viewerId ? conversation.seller : conversation.buyer;
@@ -30,6 +31,7 @@ function toConversationDto(
     otherPartyName: otherParty.displayName,
     otherPartyIsVip: otherParty.isVip,
     lastMessage: last ? toMessageDto(last) : null,
+    unreadCount,
     activeTradeId: conversation.trades?.[0]?.id ?? null,
     updatedAt: conversation.updatedAt.toISOString(),
   };
@@ -63,7 +65,15 @@ function toConversationDto(
 
 export async function listMine(userId: string): Promise<ConversationDto[]> {
   const rows = await conversations.listConversationsForUser(userId);
-  return rows.map((row) => toConversationDto(row, userId));
+  // Đếm chưa đọc từng hội thoại — cùng quy tắc với getUnreadCount (mốc null
+  // tính tối thiểu 1). Vòng lặp count/hội thoại: đủ cho MVP, số lượng nhỏ.
+  return Promise.all(
+    rows.map(async (row) => {
+      const myLastRead = row.buyerId === userId ? row.buyerLastReadAt : row.sellerLastReadAt;
+      const unread = await conversations.countUnreadMessages(row.id, userId, myLastRead);
+      return toConversationDto(row, userId, myLastRead === null ? Math.max(unread, 1) : unread);
+    })
+  );
 }
 
 /**
