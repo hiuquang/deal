@@ -28,7 +28,10 @@ export function ChatPanel({
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  // true = user đang ở (gần) đáy → tin mới tự cuộn xuống. Khi user cuộn lên
+  // đọc lịch sử thì KHÔNG giật xuống đáy mỗi lần poll có tin mới.
+  const stickToBottomRef = useRef(true);
   const lastIdRef = useRef<string | undefined>(undefined);
 
   const poll = useCallback(async () => {
@@ -39,6 +42,13 @@ export function ChatPanel({
       );
       if (incoming.length > 0) {
         lastIdRef.current = incoming[incoming.length - 1].id;
+        // Đo vị trí NGAY TRƯỚC khi thêm tin (DOM chưa đổi): user đang bám đáy
+        // thì tin mới tự cuộn xuống; đang cuộn lên đọc lịch sử thì giữ nguyên.
+        // Đo tại đây thay vì nghe sự kiện scroll — đáng tin hơn (scroll event
+        // không phát khi tab ẩn/scroll bằng JS).
+        const el = listRef.current;
+        stickToBottomRef.current =
+          !el || el.scrollHeight - el.scrollTop - el.clientHeight < 80;
         // Dedupe theo id: 2 poll chạy đồng thời có thể trả cùng tin nhắn mới
         setMessages((prev) => {
           const seen = new Set(prev.map((m) => m.id));
@@ -56,6 +66,7 @@ export function ChatPanel({
     setMessages([]);
     setError(null);
     lastIdRef.current = undefined;
+    stickToBottomRef.current = true;
     void poll();
     const timer = setInterval(() => {
       if (document.visibilityState === "visible") void poll();
@@ -70,8 +81,11 @@ export function ChatPanel({
     };
   }, [poll]);
 
+  // Cuộn TRONG container (không scrollIntoView — nó kéo cả trang, trên iPhone
+  // gây giật với thanh URL). Chỉ tự cuộn khi user đang bám đáy.
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = listRef.current;
+    if (el && stickToBottomRef.current) el.scrollTop = el.scrollHeight;
   }, [messages.length]);
 
   async function handleSend(e: React.FormEvent) {
@@ -84,6 +98,11 @@ export function ChatPanel({
       setDraft("");
       setError(null);
       await poll();
+      // Tự gửi tin thì luôn cuộn xuống đáy, kể cả đang xem lịch sử phía trên
+      // (đặt SAU poll — poll đo vị trí có thể tắt cờ bám đáy).
+      stickToBottomRef.current = true;
+      const el = listRef.current;
+      if (el) el.scrollTop = el.scrollHeight;
     } catch (err) {
       // Giữ nguyên draft để user bấm gửi lại
       setError(err instanceof ApiClientError ? err.message : t("chat.sendFail"));
@@ -93,8 +112,14 @@ export function ChatPanel({
   }
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex-1 space-y-2 overflow-y-auto p-3">
+    // min-h-0 (không phải h-full): cho phép khung co lại trong flex column —
+    // thiếu nó min-height:auto giữ khung cao bằng toàn bộ tin nhắn → tràn khỏi
+    // overflow-hidden bên ngoài, tin cũ bị cắt cụt không cuộn lên xem được.
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div
+        ref={listRef}
+        className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain p-3"
+      >
         {messages.length === 0 && (
           <p className="py-8 text-center text-xs text-slate-400">{t("chat.firstMsg")}</p>
         )}
@@ -115,14 +140,16 @@ export function ChatPanel({
             </div>
           );
         })}
-        <div ref={bottomRef} />
       </div>
       {error && (
-        <div className="border-t border-slate-200 px-3 pt-3">
+        <div className="shrink-0 border-t border-slate-200 px-3 pt-3">
           <ErrorBox message={error} />
         </div>
       )}
-      <form onSubmit={handleSend} className={`flex gap-2 p-3 ${error ? "" : "border-t border-slate-200"}`}>
+      <form
+        onSubmit={handleSend}
+        className={`flex shrink-0 gap-2 p-3 ${error ? "" : "border-t border-slate-200"}`}
+      >
         <input
           type="text"
           value={draft}
@@ -130,7 +157,9 @@ export function ChatPanel({
           maxLength={1000}
           placeholder={t("chat.placeholder")}
           aria-label={t("chat.placeholder")}
-          className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+          // text-base (16px) trên mobile: iOS Safari tự phóng to trang khi focus
+          // input có font < 16px — nguyên nhân vỡ layout chat trên iPhone.
+          className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-base focus:border-indigo-500 focus:outline-none sm:text-sm"
         />
         <button
           type="submit"

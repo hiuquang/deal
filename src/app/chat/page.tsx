@@ -67,9 +67,14 @@ function ChatContent() {
   const selected = conversations.find((c) => c.id === selectedId) ?? null;
 
   return (
-    <div className="grid h-[calc(100vh-10rem)] grid-cols-1 overflow-hidden rounded-xl border border-slate-200 bg-white md:grid-cols-[280px_1fr]">
+    // dvh thay vh: trên iOS Safari 100vh tính cả vùng URL bar → ô nhập bị đẩy
+    // khỏi màn hình; dvh bám theo viewport thật. grid-rows minmax(0,1fr): phần
+    // hiển thị (list hoặc khung chat — mobile chỉ 1 trong 2) luôn đúng bằng
+    // chiều cao khung, con bên trong mới cuộn được (min-height:auto của flex/grid
+    // là thủ phạm khiến tin nhắn cũ bị cắt không cuộn lên xem được).
+    <div className="grid h-[calc(100dvh-10rem)] grid-cols-1 grid-rows-[minmax(0,1fr)] overflow-hidden rounded-xl border border-slate-200 bg-white md:grid-cols-[280px_1fr]">
       <aside
-        className={`overflow-y-auto border-slate-200 md:border-r ${selected ? "hidden md:block" : ""}`}
+        className={`min-h-0 overflow-y-auto border-slate-200 md:border-r ${selected ? "hidden md:block" : ""}`}
       >
         {conversations.length === 0 ? (
           <div className="p-4">
@@ -114,10 +119,10 @@ function ChatContent() {
         )}
       </aside>
 
-      <section className={`flex flex-col ${selected ? "" : "hidden md:flex"}`}>
+      <section className={`flex min-h-0 flex-col ${selected ? "" : "hidden md:flex"}`}>
         {selected ? (
           <>
-            <div className="flex items-center gap-2 border-b border-slate-200 px-3 py-2">
+            <div className="flex shrink-0 items-center gap-2 border-b border-slate-200 px-3 py-2">
               <button
                 onClick={() => router.push("/chat")}
                 className="text-sm text-slate-400 md:hidden"
@@ -152,7 +157,7 @@ function ChatContent() {
                 </p>
               </div>
             </div>
-            <div className="border-b border-red-100 bg-red-50/50 px-3 py-1.5">
+            <div className="shrink-0 border-b border-red-100 bg-red-50/50 px-3 py-1.5">
               <SafetyNote messageKey="safety.chat" />
             </div>
             <ChatPanel

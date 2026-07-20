@@ -131,7 +131,9 @@ export function TradePanel({ conversation, myUserId, onTradeChange }: Props) {
     ) : null;
 
   return (
-    <div className="space-y-3 border-t border-slate-200 bg-slate-50 p-3">
+    // shrink-0 + max-h: panel trade không bị flex bóp mất nút, quá cao (màn
+    // iPhone) thì tự cuộn bên trong thay vì đè lên khung chat.
+    <div className="max-h-[50%] shrink-0 space-y-3 overflow-y-auto border-t border-slate-200 bg-slate-50 p-3">
       {error && <ErrorBox message={error} />}
       {safetyWarning}
 

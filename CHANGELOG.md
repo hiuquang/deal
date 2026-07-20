@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [0.12.7] — 2026-07-21 — Sửa chat: cuộn xem lịch sử + layout iPhone
+
+### Sửa lỗi
+- **Không cuộn lên xem tin nhắn cũ được**: `ChatPanel` dùng `h-full` trong flex column — `min-height:auto` giữ khung cao bằng toàn bộ tin → tràn khỏi `overflow-hidden`, tin cũ bị cắt cụt không có scrollbar. Sửa: chuỗi `min-h-0` + `flex-1` đúng chuẩn (chat/page.tsx grid `grid-rows-[minmax(0,1fr)]`, section/aside/ChatPanel/list đều min-h-0); danh sách hội thoại mobile cũng cuộn được nhờ đó.
+- **Autoscroll giật xuống đáy khi đang đọc lịch sử**: bỏ `scrollIntoView` (kéo cả trang — giật với URL bar iPhone), thay bằng cuộn trong container + cờ "bám đáy" đo NGAY TRƯỚC khi thêm tin mới (không dựa scroll event — không phát khi tab ẩn): đang ở đáy → tin mới tự cuộn xuống; đang đọc phía trên → giữ nguyên vị trí; tự gửi tin → luôn cuộn xuống.
+
+### iPhone
+- `100vh` → `100dvh`: iOS Safari tính vh gồm cả vùng URL bar → ô nhập chat bị đẩy khỏi màn hình; dvh bám viewport thật.
+- Input chat `text-base` (16px) trên mobile: chặn iOS Safari tự phóng to trang khi focus input <16px (nguyên nhân vỡ layout khi gõ).
+- Header/safety/form `shrink-0`; TradePanel `shrink-0 max-h-[50%] overflow-y-auto` — quá cao thì tự cuộn bên trong, không đè khung chat.
+- Verify (viewport 375×812, dev + prod DB, hội thoại test 26+ tin, đã xóa sạch): load tự cuộn xuống tin mới nhất; cuộn lên tới tin 1 OK; tin mới đến khi đang đọc lịch sử → không giật (scrollTop giữ nguyên); đang ở đáy → tự cuộn; desktop nguyên vẹn. 190 test pass.
+
 ## [0.12.6] — 2026-07-21 — Chủ tin sửa giá chào sau khi đăng
 
 ### Tính năng
