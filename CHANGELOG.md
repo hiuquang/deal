@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [0.12.5] — 2026-07-21 — Vá lỗ hổng postcss (override)
+
+### Bảo mật
+- **Vá postcss XSS ([GHSA-qx2v-qp2m-jg93](https://github.com/advisories/GHSA-qx2v-qp2m-jg93), moderate)**: Next 15.5.20 ghim `postcss@8.4.31` trong cây phụ thuộc riêng (`node_modules/next/node_modules/postcss`) — dính lỗ hổng "XSS via unescaped `</style>` in CSS Stringify Output" (postcss <8.5.10). Next 15.5.20 đã là bản 15.x mới nhất nên không có update Next để vá. Thêm `overrides.postcss: ^8.5.10` trong package.json → toàn cây (gồm bản nested của Next) lên `postcss@8.5.20`. `npm audit`: 2 moderate → **0 vulnerabilities**.
+- Verify: `npm run build` sạch (Tailwind/CSS pipeline vẫn xử lý đúng, mọi route compile). Đây là công cụ build-time nên override an toàn — postcss 8.5.x tương thích ngược 8.4.x.
+
 ## [0.12.4] — 2026-07-21 — Tìm kiếm bảng tin theo tên ga
 
 ### Tính năng

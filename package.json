@@ -25,6 +25,9 @@
     "react-dom": "^19.1.0",
     "zod": "^3.25.0"
   },
+  "overrides": {
+    "postcss": "^8.5.10"
+  },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.10",
     "@types/node": "^22.15.0",
