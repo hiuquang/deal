@@ -139,6 +139,11 @@ export function TradePanel({ conversation, myUserId, onTradeChange }: Props) {
 
       {!trade && (
         <div className="space-y-2">
+          {/* Nhắc gặp mặt trực tiếp xong mới chốt giá + đánh giá — chặn báo
+              hoàn tất khống trước khi hai bên thật sự trao đổi. */}
+          <p className="rounded-lg border border-amber-200 bg-amber-50 p-2 text-xs font-medium text-amber-800">
+            {t("trade.meetFirst")}
+          </p>
           <p className="text-xs text-slate-600">
             {isBuyOrder ? t("trade.boExplain") : t("trade.explain")}
           </p>

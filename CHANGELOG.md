@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## [0.12.8] — 2026-07-21 — Nhắc gặp mặt trước khi chốt giá
+
+### Tính năng
+- **Dòng nhắc trên khu chốt giá trong chat** (`trade.meetFirst`, box vàng 🤝): "gặp mặt trực tiếp và hoàn tất giao dịch rồi mới bấm chốt giá và đánh giá" — chặn tâm lý báo hoàn tất khống trước khi hai bên thật sự trao đổi (bảo vệ chất lượng dữ liệu giá đóng). Hiện ở giai đoạn chưa có trade (trước ô 成約金額); giai đoạn xác nhận đã có sẵn `safety.confirm`. i18n đủ ja/vi/en.
+
 ## [0.12.7] — 2026-07-21 — Sửa chat: cuộn xem lịch sử + layout iPhone
 
 ### Sửa lỗi

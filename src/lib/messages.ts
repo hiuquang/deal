@@ -277,6 +277,11 @@ export const MESSAGES = {
   "chat.sendFail": { ja: "送信に失敗しました。もう一度お試しください。", vi: "Gửi tin nhắn thất bại. Vui lòng thử lại.", en: "Failed to send. Please try again." },
 
   // ---- Trade panel ----
+  "trade.meetFirst": {
+    ja: "🤝 実際に会って取引を完了してから、成約報告と評価を行ってください。",
+    vi: "🤝 Hãy gặp mặt trực tiếp và hoàn tất giao dịch rồi mới bấm chốt giá và đánh giá.",
+    en: "🤝 Meet in person and complete the exchange first — then report the final price and rate.",
+  },
   "trade.explain": {
     ja: "取引がまとまったら、成約金額を入力して完了報告してください。相手が同じ金額で確認すると相場データに登録されます（トレードの場合は換算額）。",
     vi: "Khi đã chốt kèo, nhập giá chốt và báo hoàn tất. Đối phương xác nhận cùng số tiền thì dữ liệu giá được ghi nhận (trao đổi thẻ thì nhập giá trị quy đổi).",
