@@ -34,3 +34,17 @@ Web P2P trade thẻ TCG (Pokémon / One Piece / mục その他 cho sản phẩm
 4. Đổi `TERMS_VERSION` (`src/lib/terms.ts`) → toàn bộ user phải re-accept; **nhớ sync bản hardcode trong `prisma/seed.ts`**.
 5. Chuỗi UI mới = thêm khóa vào `src/lib/messages.ts` **đủ 3 thứ tiếng** ja/vi/en. Ngoại lệ giữ tiếng Nhật: `/terms`, `/privacy`, lỗi từ server.
 6. Kiến trúc bắt buộc: routes (`src/app/api/**`, chỉ validate zod) → services (`src/server/services/**`, logic + unit test) → repositories (`src/server/repositories/**`, mọi truy cập Prisma). Frontend chỉ fetch qua `src/lib/api-client.ts`.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues (`hiuquang/deal`, dùng `gh` CLI). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context — `CONTEXT.md` + `docs/adr/` at the repo root (created lazily by `/domain-modeling`). See `docs/agents/domain.md`.
