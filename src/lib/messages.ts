@@ -76,9 +76,9 @@ export const MESSAGES = {
   "home.tabBox": { ja: "BOX", vi: "BOX", en: "Boxes" },
   "home.count": { ja: "{n}件の出品", vi: "{n} tin đăng", en: "{n} listings" },
   "home.searchPlaceholder": {
-    ja: "カード名・セット・番号で検索",
-    vi: "Tìm theo tên thẻ, set hoặc số thẻ",
-    en: "Search by card name, set or number",
+    ja: "カード名・セット・番号・駅名で検索",
+    vi: "Tìm theo tên thẻ, set, số thẻ hoặc tên ga",
+    en: "Search by card name, set, number or station",
   },
   "home.searchClear": { ja: "検索をクリア", vi: "Xóa tìm kiếm", en: "Clear search" },
   "home.empty": {

@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [0.12.4] — 2026-07-21 — Tìm kiếm bảng tin theo tên ga
+
+### Tính năng
+- **Thanh tìm kiếm ở bảng tin bán lọc được cả tên ga gần nhất** (`station`): trước đây `q` chỉ khớp `contains` trên thẻ liên kết (tên JP/EN, set, số thẻ). Nay chuyển OR lên tầng listing để khớp **thẻ HOẶC `station`** (`listListings`, repositories/listings.ts). Lọc game/category vẫn giữ trên card (AND) như cũ. Placeholder cập nhật đủ 3 tiếng (ja/vi/en); `docs/api/listings.md` ghi rõ `q` match thêm `station`.
+- Verify: `q=新松戸` / `q=松戸` (một phần ga) / `q=Thịt` (tên thẻ — chống hồi quy) đều ra kết quả; UI trang chủ hiển thị đúng. 185 unit test pass, `tsc` sạch. Tin gom (buy-orders) không có trường ga nên không đổi.
+
 ## [0.12.3] — 2026-07-20 — Migrate DB + region sang Tokyo (cắt vòng Sydney)
 
 ### Hiệu năng (gốc rễ độ trễ)

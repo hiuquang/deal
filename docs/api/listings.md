@@ -8,7 +8,7 @@ Quy ước chung: [README.md](README.md).
 
 - Mặc định `status=active`, 20 kết quả/trang.
 - Thứ tự (0.12.1): **tin của người bán VIP trước** (`seller.isVip desc`), trong mỗi nhóm mới nhất trước (`createdAt desc`). Đặc quyền VIP — xem CHANGELOG 0.12.0.
-- `q` (≤100 ký tự): tìm sản phẩm — khớp `contains` trên tên JP/EN, set, số thẻ của card liên kết (cùng cách với autocomplete `/api/cards`).
+- `q` (≤100 ký tự): tìm sản phẩm — khớp `contains` trên tên JP/EN, set, số thẻ của card liên kết (cùng cách với autocomplete `/api/cards`) **HOẶC** tên ga gần nhất (`station`) của tin.
 - `mine=1`: chỉ listing của tôi, mọi status (cần đăng nhập).
 - `category=single|box` (P3).
 
