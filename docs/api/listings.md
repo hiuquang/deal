@@ -38,7 +38,12 @@ Quy ước chung: [README.md](README.md).
 
 ### PATCH /api/listings/:id (chủ listing)
 
-`{"status": "cancelled"}` → `{listing}`. Lỗi: `403 FORBIDDEN` (không phải chủ), `409 IN_TRADE` (đang có trade), `409 INVALID_STATUS`.
+Body là **một trong hai** dạng:
+
+- `{"status": "cancelled"}` — gỡ tin. Lỗi: `403 FORBIDDEN` (không phải chủ), `409 IN_TRADE` (đang có trade), `409 INVALID_STATUS`.
+- `{"askingPriceJpy": 12000}` — sửa giá chào (0.12.6); `null` = chuyển về 要相談. Chỉ tin `active` — khác `active` → `409 INVALID_STATUS`. Giá validate như khi tạo (số nguyên 1..10,000,000). Giá chào chỉ để thương lượng — **không đụng dữ liệu giá thị trường** (`price_records`).
+
+→ `{listing}`.
 
 Trạng thái listing: `active | in_trade | closed | cancelled` — chuyển tự động theo trade (xem [trades.md](trades.md)).
 

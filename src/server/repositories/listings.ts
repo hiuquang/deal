@@ -87,3 +87,11 @@ export function updateListingStatus(id: string, status: string) {
     include: listingInclude,
   });
 }
+
+export function updateListingAskingPrice(id: string, askingPriceJpy: number | null) {
+  return prisma.listing.update({
+    where: { id },
+    data: { askingPriceJpy },
+    include: listingInclude,
+  });
+}

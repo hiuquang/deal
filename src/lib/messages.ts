@@ -20,6 +20,8 @@ export const MESSAGES = {
   "common.error": { ja: "エラーが発生しました。", vi: "Đã xảy ra lỗi.", en: "Something went wrong." },
   "common.negotiable": { ja: "要相談", vi: "Thương lượng", en: "Negotiable" },
   "common.back": { ja: "戻る", vi: "Quay lại", en: "Back" },
+  "common.save": { ja: "保存", vi: "Lưu", en: "Save" },
+  "common.cancel": { ja: "キャンセル", vi: "Hủy", en: "Cancel" },
   "footer.tagline": {
     ja: "DEAL — 手数料ゼロ・P2P TCGトレードプラットフォーム（MVP）",
     vi: "DEAL — Nền tảng trade thẻ TCG P2P, phí 0% (MVP)",
@@ -183,6 +185,12 @@ export const MESSAGES = {
   "detail.listedOn": { ja: "出品日", vi: "Ngày đăng", en: "Listed on" },
   "detail.desc": { ja: "説明", vi: "Mô tả", en: "Description" },
   "detail.cancel": { ja: "出品を取り下げる", vi: "Gỡ tin đăng", en: "Withdraw listing" },
+  "detail.editPrice": { ja: "価格を変更", vi: "Sửa giá", en: "Edit price" },
+  "detail.pricePlaceholder": {
+    ja: "空欄で要相談",
+    vi: "Để trống = thương lượng",
+    en: "Empty = negotiable",
+  },
   "detail.viewPrices": { ja: "この商品の相場データを見る", vi: "Xem dữ liệu giá của sản phẩm này", en: "View price data for this item" },
   "detail.photoAlt": { ja: "{name}の実物写真", vi: "Ảnh thật của {name}", en: "Photo of {name}" },
   "safety.chat": {

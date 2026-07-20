@@ -13,6 +13,7 @@ vi.mock("@/server/repositories/listings", () => ({
   findListingById: vi.fn(),
   createListing: vi.fn(),
   updateListingStatus: vi.fn(),
+  updateListingAskingPrice: vi.fn(),
 }));
 
 import * as cardsRepo from "@/server/repositories/cards";
@@ -132,5 +133,42 @@ describe("listingService.cancel", () => {
     const dto = await listingService.cancel("seller1", "l1");
     expect(listingsRepo.updateListingStatus).toHaveBeenCalledWith("l1", "cancelled");
     expect(dto.status).toBe("cancelled");
+  });
+});
+
+describe("listingService.updatePrice", () => {
+  it("404 khi tin không tồn tại", async () => {
+    vi.mocked(listingsRepo.findListingById).mockResolvedValue(null);
+    await expectApiError(listingService.updatePrice("seller1", "nope", 9000), "NOT_FOUND");
+  });
+
+  it("403 khi không phải chủ tin", async () => {
+    vi.mocked(listingsRepo.findListingById).mockResolvedValue(makeListing());
+    await expectApiError(listingService.updatePrice("stranger", "l1", 9000), "FORBIDDEN");
+  });
+
+  it("409 INVALID_STATUS khi tin không còn active (đang giao dịch)", async () => {
+    vi.mocked(listingsRepo.findListingById).mockResolvedValue(makeListing({ status: "in_trade" }));
+    await expectApiError(listingService.updatePrice("seller1", "l1", 9000), "INVALID_STATUS");
+  });
+
+  it("chủ tin đổi giá tin active → gọi repo với giá mới", async () => {
+    vi.mocked(listingsRepo.findListingById).mockResolvedValue(makeListing());
+    vi.mocked(listingsRepo.updateListingAskingPrice).mockResolvedValue(
+      makeListing({ askingPriceJpy: 12000 })
+    );
+    const dto = await listingService.updatePrice("seller1", "l1", 12000);
+    expect(listingsRepo.updateListingAskingPrice).toHaveBeenCalledWith("l1", 12000);
+    expect(dto.askingPriceJpy).toBe(12000);
+  });
+
+  it("đặt giá null → chuyển về 要相談", async () => {
+    vi.mocked(listingsRepo.findListingById).mockResolvedValue(makeListing());
+    vi.mocked(listingsRepo.updateListingAskingPrice).mockResolvedValue(
+      makeListing({ askingPriceJpy: null })
+    );
+    const dto = await listingService.updatePrice("seller1", "l1", null);
+    expect(listingsRepo.updateListingAskingPrice).toHaveBeenCalledWith("l1", null);
+    expect(dto.askingPriceJpy).toBeNull();
   });
 });

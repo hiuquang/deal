@@ -150,6 +150,11 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify({ status: "cancelled" }),
     }),
+  updateListingPrice: (id: string, askingPriceJpy: number | null) =>
+    request<{ listing: ListingDto }>(`/api/listings/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ askingPriceJpy }),
+    }),
 
   // ---- buy orders (tin gom số lượng lớn: người mua đăng → người bán chào bán) ----
   listBuyOrders: (

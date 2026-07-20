@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [0.12.6] — 2026-07-21 — Chủ tin sửa giá chào sau khi đăng
+
+### Tính năng
+- **Chủ tin đổi giá chào (`askingPriceJpy`) trên trang chi tiết tin**: nút 価格を変更 cạnh giá (chỉ chủ tin + tin `active`), editor inline — nhập số mới hoặc để trống → 要相談. `PATCH /api/listings/:id` giờ nhận union: `{status:"cancelled"}` (gỡ tin, như cũ) HOẶC `{askingPriceJpy: number|null}` (sửa giá). Service `updatePrice` guard: 404/403/`409 INVALID_STATUS` (khác active — tin đang giao dịch/đã đóng khóa giá). Giá validate như khi tạo (1..10,000,000). **Không đụng `price_records`** — giá chào chỉ để thương lượng, giữ nguyên bất biến dữ liệu giá thị trường.
+- i18n đủ ja/vi/en (detail.editPrice, detail.pricePlaceholder, common.save, common.cancel). Docs `docs/api/listings.md` cập nhật PATCH.
+- Test: +5 unit (updatePrice: 404/403/409/đổi giá/null→要相談) — 190 test pass. Verify UI end-to-end trên dev+prod DB bằng tin test tạm (đã xóa ngay): 5000→8000 OK, trống→要相談 OK, prefill giá hiện tại OK; PATCH giá tin `in_trade` trả đúng 409.
+
 ## [0.12.5] — 2026-07-21 — Vá lỗ hổng postcss (override)
 
 ### Bảo mật

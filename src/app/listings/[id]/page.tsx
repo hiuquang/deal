@@ -23,6 +23,8 @@ export default function ListingDetailPage({
   const [listing, setListing] = useState<ListingDto | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [editingPrice, setEditingPrice] = useState(false);
+  const [priceInput, setPriceInput] = useState("");
 
   useEffect(() => {
     api
@@ -45,6 +47,29 @@ export default function ListingDetailPage({
     try {
       const { listing: updated } = await api.cancelListing(id);
       setListing(updated);
+    } catch (e) {
+      setError(e instanceof ApiClientError ? e.message : t("common.error"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function startEditPrice() {
+    setPriceInput(listing?.askingPriceJpy ? String(listing.askingPriceJpy) : "");
+    setError(null);
+    setEditingPrice(true);
+  }
+
+  async function handleSavePrice() {
+    // Ô trống → 要相談 (null); ngược lại gửi số nguyên, server validate 1..上限.
+    const trimmed = priceInput.trim();
+    const value = trimmed === "" ? null : Number(trimmed);
+    setBusy(true);
+    setError(null);
+    try {
+      const { listing: updated } = await api.updateListingPrice(id, value);
+      setListing(updated);
+      setEditingPrice(false);
     } catch (e) {
       setError(e instanceof ApiClientError ? e.message : t("common.error"));
     } finally {
@@ -78,16 +103,53 @@ export default function ListingDetailPage({
             )}
           </div>
 
-          <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-black text-indigo-700">
-              {listing.askingPriceJpy ? formatJpy(listing.askingPriceJpy) : t("common.negotiable")}
-            </span>
-            <span className="rounded bg-slate-100 px-2 py-0.5 text-xs">
-              {t(`ttype.${listing.tradeType}` as MessageKey)}
-            </span>
-            <span className="rounded bg-slate-100 px-2 py-0.5 text-xs">
-              {t(`lstatus.${listing.status}` as MessageKey)}
-            </span>
+          <div className="space-y-2">
+            <div className="flex items-baseline gap-3">
+              <span className="text-3xl font-black text-indigo-700">
+                {listing.askingPriceJpy ? formatJpy(listing.askingPriceJpy) : t("common.negotiable")}
+              </span>
+              <span className="rounded bg-slate-100 px-2 py-0.5 text-xs">
+                {t(`ttype.${listing.tradeType}` as MessageKey)}
+              </span>
+              <span className="rounded bg-slate-100 px-2 py-0.5 text-xs">
+                {t(`lstatus.${listing.status}` as MessageKey)}
+              </span>
+              {isOwner && listing.status === "active" && !editingPrice && (
+                <button
+                  onClick={startEditPrice}
+                  className="ml-auto rounded-lg border border-indigo-200 px-3 py-1 text-xs font-semibold text-indigo-700 hover:bg-indigo-50"
+                >
+                  {t("detail.editPrice")}
+                </button>
+              )}
+            </div>
+            {isOwner && editingPrice && (
+              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50/50 p-3">
+                <span className="text-sm text-slate-500">¥</span>
+                <input
+                  type="number"
+                  min={1}
+                  value={priceInput}
+                  onChange={(e) => setPriceInput(e.target.value)}
+                  placeholder={t("detail.pricePlaceholder")}
+                  className="w-44 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                />
+                <button
+                  onClick={handleSavePrice}
+                  disabled={busy}
+                  className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  {t("common.save")}
+                </button>
+                <button
+                  onClick={() => setEditingPrice(false)}
+                  disabled={busy}
+                  className="rounded-lg border border-slate-300 px-4 py-1.5 text-sm font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-50"
+                >
+                  {t("common.cancel")}
+                </button>
+              </div>
+            )}
           </div>
 
           <dl className="space-y-2 rounded-xl border border-slate-200 bg-white p-4 text-sm">

@@ -77,3 +77,25 @@ export async function cancel(userId: string, id: string): Promise<ListingDto> {
   console.log(`[listing] cancelled ${id} by ${userId}`);
   return toListingDto(updated);
 }
+
+// Chủ tin sửa giá chào (要相談 nếu null). Chỉ tin đang bán (active) — tin đang
+// giao dịch/đã kết thúc khóa giá. Không đụng price_records (giá thị trường).
+export async function updatePrice(
+  userId: string,
+  id: string,
+  askingPriceJpy: number | null
+): Promise<ListingDto> {
+  const listing = await listings.findListingById(id);
+  if (!listing) {
+    throw new ApiError(404, "NOT_FOUND", "出品が見つかりません。");
+  }
+  if (listing.sellerId !== userId) {
+    throw new ApiError(403, "FORBIDDEN", "自分の出品のみ操作できます。");
+  }
+  if (listing.status !== "active") {
+    throw new ApiError(409, "INVALID_STATUS", "販売中の出品のみ価格を変更できます。");
+  }
+  const updated = await listings.updateListingAskingPrice(id, askingPriceJpy);
+  console.log(`[listing] price updated ${id} by ${userId} -> ${askingPriceJpy ?? "negotiable"}`);
+  return toListingDto(updated);
+}

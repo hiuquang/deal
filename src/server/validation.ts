@@ -123,9 +123,13 @@ export const createListingSchema = z.object({
   note: z.string().trim().max(500).optional().nullable(),
 });
 
-export const patchListingSchema = z.object({
-  status: z.literal("cancelled"),
-});
+// PATCH listing: hoặc hủy tin (status), hoặc sửa giá chào (askingPriceJpy).
+// askingPriceJpy có mặt (không optional) để phân biệt với nhánh status; null =
+// chuyển về 要相談. Giá này chỉ để thương lượng, không vào dữ liệu giá thị trường.
+export const patchListingSchema = z.union([
+  z.object({ status: z.literal("cancelled") }),
+  z.object({ askingPriceJpy: priceJpy.nullable() }),
+]);
 
 export const listListingsSchema = z.object({
   // Từ khóa tìm sản phẩm: khớp tên/set/số của thẻ trong listing.

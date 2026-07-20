@@ -19,8 +19,12 @@ export const PATCH = withErrorHandling(
   async (req: NextRequest, ctx: { params: Promise<{ id: string }> }) => {
     const user = await requireVerifiedUser();
     const { id } = await ctx.params;
-    patchListingSchema.parse(await req.json());
-    const listing = await listingService.cancel(user.id, id);
+    const body = patchListingSchema.parse(await req.json());
+    // Union: nhánh có `status` = hủy tin; nhánh còn lại = sửa giá chào.
+    const listing =
+      "status" in body
+        ? await listingService.cancel(user.id, id)
+        : await listingService.updatePrice(user.id, id, body.askingPriceJpy);
     return NextResponse.json({ listing });
   }
 );
