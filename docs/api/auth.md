@@ -14,6 +14,7 @@ nên đếm trong RAM là vô nghĩa. Ngưỡng khai báo ở `LIMITS`
 | `/api/auth/login` | IP | 20 / 10 phút |
 | `/api/auth/login` | email | 8 / 10 phút |
 | `/api/auth/register` | IP | 5 / giờ |
+| `/api/auth/register` | **toàn cục** | **500 tài khoản / ngày** (reset 0h JST) — 429 `REGISTRATION_FULL` |
 | `/api/auth/forgot` | IP | 6 / giờ |
 | `/api/auth/forgot` | email | **3 / giờ** |
 | `/api/auth/reset` | IP | 10 / giờ |
@@ -43,7 +44,7 @@ Vì sao thế:
 { "user": { "id": "cm...", "email": "taro@example.com", "displayName": "Taro" } }
 ```
 
-Lỗi: `400 VALIDATION` (password < 8 ký tự, thiếu agreeTerms...), `409 EMAIL_TAKEN`, `429 RATE_LIMITED`. Đăng ký xong tự gửi mail verify (xem dưới).
+Lỗi: `400 VALIDATION` (password < 8 ký tự, thiếu agreeTerms...), `409 EMAIL_TAKEN`, `429 RATE_LIMITED`, `429 REGISTRATION_FULL` (đủ 500 tài khoản mới trong ngày — quyết định chủ web, hằng số `DAILY_REGISTRATION_LIMIT` trong rate-limit-service). Trần ngày đếm **tài khoản tạo thành công** chứ không đếm lượt gọi: check trước khi tạo (không cộng), tạo xong mới cộng — request lỗi không đốt quota ngày, kẻ phá không khóa được đăng ký bằng request hỏng; đổi lại có race nhỏ lúc cận trần (có thể lố vài tài khoản — trần kinh doanh, chấp nhận). Đăng ký xong tự gửi mail verify (xem dưới).
 
 ## POST /api/auth/login
 

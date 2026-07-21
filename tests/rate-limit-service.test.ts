@@ -10,12 +10,20 @@ import { expectApiError } from "./helpers";
 
 vi.mock("@/server/repositories/rate-limits", () => ({
   hit: vi.fn(),
+  peek: vi.fn(),
   reset: vi.fn(),
   sweepExpired: vi.fn(),
 }));
 
 import * as rateLimits from "@/server/repositories/rate-limits";
-import { LIMITS, clear, enforce } from "@/server/services/rate-limit-service";
+import {
+  DAILY_REGISTRATION_LIMIT,
+  LIMITS,
+  assertDailyRegistrationOpen,
+  clear,
+  countRegistration,
+  enforce,
+} from "@/server/services/rate-limit-service";
 
 const mocked = vi.mocked(rateLimits);
 
@@ -88,6 +96,45 @@ describe("enforce", () => {
 
   it("gửi email siết chặt hơn đăng nhập (mail thật tốn quota SMTP)", () => {
     expect(LIMITS["forgot:email"].limit).toBeLessThan(LIMITS["login:email"].limit);
+  });
+});
+
+describe("trần đăng ký toàn cục theo ngày (500 tài khoản/ngày JST)", () => {
+  it("dưới trần → cho đăng ký", async () => {
+    mocked.peek.mockResolvedValue(DAILY_REGISTRATION_LIMIT - 1);
+    await expect(assertDailyRegistrationOpen()).resolves.toBeUndefined();
+  });
+
+  it("chạm trần → 429 REGISTRATION_FULL (check KHÔNG cộng đếm)", async () => {
+    mocked.peek.mockResolvedValue(DAILY_REGISTRATION_LIMIT);
+    await expectApiError(assertDailyRegistrationOpen(), "REGISTRATION_FULL", 429);
+    expect(mocked.hit).not.toHaveBeenCalled();
+  });
+
+  it("key theo ngày JST dạng register:daily:YYYY-MM-DD", async () => {
+    mocked.peek.mockResolvedValue(0);
+    await assertDailyRegistrationOpen();
+    expect(mocked.peek).toHaveBeenCalledWith(
+      expect.stringMatching(/^register:daily:\d{4}-\d{2}-\d{2}$/)
+    );
+  });
+
+  it("DB lỗi khi check → fail-open (không khóa đăng ký cả app)", async () => {
+    mocked.peek.mockRejectedValue(new Error("pooler nguội"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    await expect(assertDailyRegistrationOpen()).resolves.toBeUndefined();
+  });
+
+  it("countRegistration cộng đúng key ngày; lỗi DB không phá luồng đăng ký", async () => {
+    mocked.hit.mockResolvedValue({ count: 1, resetAt: new Date() });
+    await countRegistration();
+    expect(mocked.hit).toHaveBeenCalledWith(
+      expect.stringMatching(/^register:daily:\d{4}-\d{2}-\d{2}$/),
+      48 * 60 * 60 * 1000
+    );
+    mocked.hit.mockRejectedValue(new Error("db down"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    await expect(countRegistration()).resolves.toBeUndefined();
   });
 });
 

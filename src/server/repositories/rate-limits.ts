@@ -30,6 +30,15 @@ export async function hit(
   return { count: rows[0].count, resetAt: rows[0].window_end };
 }
 
+/**
+ * Đọc số đếm hiện tại KHÔNG cộng (0 nếu chưa có bản ghi/cửa sổ đã hết hạn) —
+ * cho kiểu trần "check trước, tạo xong mới cộng" (trần đăng ký ngày).
+ */
+export async function peek(key: string): Promise<number> {
+  const row = await prisma.rateLimit.findUnique({ where: { key } });
+  return !row || row.windowEnd <= new Date() ? 0 : row.count;
+}
+
 /** Xóa bộ đếm (dùng khi đăng nhập thành công → không phạt người dùng thật). */
 export async function reset(key: string): Promise<void> {
   await prisma.rateLimit.deleteMany({ where: { key } });

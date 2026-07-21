@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [0.13.2] — 2026-07-21 — Trần đăng ký 500 tài khoản/ngày
+
+### Tính năng
+- **Trần đăng ký toàn cục theo ngày** (quyết định chủ web): tối đa 500 tài khoản mới/ngày, reset 0h giờ Nhật. Đầy trần → `429 REGISTRATION_FULL` "本日の新規登録は定員に達しました。明日改めてご登録ください。". Hằng số `DAILY_REGISTRATION_LIMIT` (rate-limit-service) — đổi trần chỉ sửa 1 số.
+- Cơ chế: dùng lại bảng `rate_limits` (đếm atomic phía Postgres, nhiều instance Vercel không đếm thiếu), key theo ngày JST `register:daily:YYYY-MM-DD`. Khác các rate-limit khác: đếm **tài khoản tạo thành công** — check trước khi tạo (repo thêm `peek` đọc-không-cộng), tạo xong mới cộng → request lỗi (trùng email…) không đốt quota, không thể phá bằng request hỏng. Fail-open khi DB lỗi như triết lý sẵn có.
+- +5 unit test (dưới/chạm trần, key JST, fail-open, count lỗi không phá luồng); `docs/api/auth.md` cập nhật bảng ngưỡng + lý do.
+
 ## [0.13.1] — 2026-07-21 — Polling thông minh cho chat (giảm ~60-70% request)
 
 ### Hiệu năng

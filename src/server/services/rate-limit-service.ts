@@ -67,3 +67,50 @@ export async function enforce(action: LimitAction, identifier: string): Promise<
 export async function clear(action: LimitAction, identifier: string): Promise<void> {
   await rateLimits.reset(`${action}:${identifier.toLowerCase()}`).catch(() => {});
 }
+
+/**
+ * Trần đăng ký TOÀN CỤC theo ngày (quyết định chủ web): tối đa
+ * DAILY_REGISTRATION_LIMIT tài khoản mới/ngày, reset 0h giờ Nhật.
+ *
+ * Khác enforce() ở chỗ đếm TÀI KHOẢN TẠO THÀNH CÔNG chứ không đếm lượt gọi:
+ * check (không cộng) trước khi tạo, tạo xong route mới gọi countRegistration()
+ * — request lỗi (trùng email, sai validate…) không đốt quota, kẻ phá không
+ * thể bắn request hỏng để khóa đăng ký cả ngày. Race nhỏ giữa check và cộng
+ * có thể lố vài tài khoản lúc cận trần — chấp nhận được với trần kinh doanh
+ * (đây không phải ranh giới bảo mật).
+ */
+export const DAILY_REGISTRATION_LIMIT = 500;
+
+/** Key theo ngày JST — sang ngày mới là key mới (bộ đếm tự về 0), key cũ sweep dọn. */
+function dailyRegistrationKey(): string {
+  const jstDate = new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  return `register:daily:${jstDate}`;
+}
+
+/** Gọi TRƯỚC khi tạo tài khoản. Đầy trần → 429 REGISTRATION_FULL; DB lỗi → fail-open. */
+export async function assertDailyRegistrationOpen(): Promise<void> {
+  let count: number;
+  try {
+    count = await rateLimits.peek(dailyRegistrationKey());
+  } catch (e) {
+    console.error("[rate-limit] bộ đếm đăng ký ngày lỗi, cho qua:", e);
+    return;
+  }
+  if (count >= DAILY_REGISTRATION_LIMIT) {
+    throw new ApiError(
+      429,
+      "REGISTRATION_FULL",
+      "本日の新規登録は定員に達しました。明日改めてご登録ください。"
+    );
+  }
+}
+
+/**
+ * Gọi SAU khi tạo tài khoản thành công. windowMs 48h chỉ để sweep dọn bản ghi
+ * cũ — thứ thật sự reset bộ đếm là key đổi theo ngày. Lỗi DB không phá đăng ký.
+ */
+export async function countRegistration(): Promise<void> {
+  await rateLimits.hit(dailyRegistrationKey(), 48 * 60 * 60 * 1000).catch((e) => {
+    console.error("[rate-limit] không cộng được bộ đếm đăng ký ngày:", e);
+  });
+}
