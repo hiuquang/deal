@@ -20,14 +20,14 @@ import { SiteFooter } from "@/components/site-footer";
 import { BackBar } from "@/components/back-bar";
 
 export const metadata: Metadata = {
-  title: "DEAL — 手数料ゼロのTCGトレード",
+  title: "DEAL — Trade thẻ TCG phí 0%",
   description:
-    "ポケモンカード・ワンピースカードをユーザー同士で直接取引。手数料ゼロ、透明な相場データ。",
+    "Trade thẻ Pokémon và One Piece trực tiếp giữa người chơi với nhau. Phí 0%, dữ liệu giá minh bạch.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ja" className={notoSans.variable}>
+    <html lang="vi" className={notoSans.variable}>
       <body className="min-h-screen antialiased">
         <I18nProvider>
           <AuthProvider>

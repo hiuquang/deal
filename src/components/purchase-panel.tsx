@@ -116,7 +116,7 @@ export function PurchasePanel({ listing }: { listing: ListingDto }) {
       </h2>
       {error && <ErrorBox message={error} />}
       {/* Tin đã đóng/hủy: vẫn xem danh sách + mở chat đã kết nối, nhưng ẩn nút
-          連携 với người mới — kết nối thêm trên tin đã đóng là vô nghĩa. */}
+          kết nối với người mới — kết nối thêm trên tin đã đóng là vô nghĩa. */}
       {listing.status !== "active" && (
         <p className="text-xs text-slate-500">{t("buy.listingClosed")}</p>
       )}
@@ -140,7 +140,7 @@ export function PurchasePanel({ listing }: { listing: ListingDto }) {
                   ) : (
                     t("seller.noRating")
                   )}
-                  ・{t("buy.tradesShort", { n: request.buyerContributionCount })}・
+                  ·{t("buy.tradesShort", { n: request.buyerContributionCount })}·
                   {formatDateTime(request.createdAt)}
                 </p>
               </div>

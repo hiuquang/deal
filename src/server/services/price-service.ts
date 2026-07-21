@@ -42,7 +42,7 @@ export async function getForCard(
 
   const card = await cards.findCardById(cardId);
   if (!card) {
-    throw new ApiError(404, "NOT_FOUND", "カードが見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy thẻ.");
   }
 
   const contributionCount = await users.countContributions(userId);
@@ -51,7 +51,7 @@ export async function getForCard(
     throw new ApiError(
       403,
       "NEED_CONTRIBUTION",
-      "相場データを見るには、まず1件の取引を成立させてデータを提供してください。",
+      "Để xem dữ liệu giá, hãy hoàn tất 1 giao dịch để đóng góp dữ liệu trước.",
       { recordCount: teaserCount }
     );
   }

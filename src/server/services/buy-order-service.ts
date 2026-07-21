@@ -23,7 +23,7 @@ export async function create(
 ): Promise<BuyOrderDto> {
   const card = await cards.findCardById(input.cardId);
   if (!card) {
-    throw new ApiError(404, "CARD_NOT_FOUND", "指定されたカードが見つかりません。");
+    throw new ApiError(404, "CARD_NOT_FOUND", "Không tìm thấy thẻ đã chọn.");
   }
   const order = await buyOrders.createBuyOrder({
     buyerId,
@@ -38,7 +38,7 @@ export async function create(
 export async function getById(id: string): Promise<BuyOrderDto> {
   const order = await buyOrders.findBuyOrderById(id);
   if (!order) {
-    throw new ApiError(404, "NOT_FOUND", "募集が見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy tin gom.");
   }
   return toBuyOrderDto(order);
 }
@@ -46,13 +46,13 @@ export async function getById(id: string): Promise<BuyOrderDto> {
 export async function cancel(userId: string, id: string): Promise<BuyOrderDto> {
   const order = await buyOrders.findBuyOrderById(id);
   if (!order) {
-    throw new ApiError(404, "NOT_FOUND", "募集が見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy tin gom.");
   }
   if (order.buyerId !== userId) {
-    throw new ApiError(403, "FORBIDDEN", "自分の募集のみ操作できます。");
+    throw new ApiError(403, "FORBIDDEN", "Bạn chỉ thao tác được trên tin gom của mình.");
   }
   if (order.status !== "active") {
-    throw new ApiError(409, "INVALID_STATUS", "この募集は既に終了しています。");
+    throw new ApiError(409, "INVALID_STATUS", "Tin gom này đã kết thúc.");
   }
   const updated = await buyOrders.updateBuyOrderStatus(id, "cancelled");
   console.log(`[buy-order] cancelled ${id} by ${userId}`);

@@ -218,7 +218,7 @@ export default function MePage() {
                   <p className="text-xs text-slate-500">
                     {t("me.with", { name: trade.counterpartName })}
                     {trade.counterpartIsVip && <VipBadge />}{" "}
-                    {formatDate(trade.createdAt)}・{formatJpy(trade.finalPriceJpy)}
+                    {formatDate(trade.createdAt)}·{formatJpy(trade.finalPriceJpy)}
                   </p>
                 </div>
                 <TradeStatusBadge status={trade.status} />
@@ -246,7 +246,7 @@ export default function MePage() {
                     {listing.card.nameJa}
                   </Link>
                   <p className="text-xs text-slate-500">
-                    {t(`cond.${listing.condition}` as MessageKey)}・
+                    {t(`cond.${listing.condition}` as MessageKey)}·
                     {formatJpy(listing.askingPriceJpy)}
                   </p>
                 </div>

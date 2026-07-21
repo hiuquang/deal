@@ -12,12 +12,12 @@ import type { FavoriteIdsDto, FavoriteKind, SavedItemDto } from "@/lib/types";
 
 async function assertListingExists(listingId: string) {
   const listing = await listingsRepo.findListingById(listingId);
-  if (!listing) throw new ApiError(404, "NOT_FOUND", "出品が見つかりません。");
+  if (!listing) throw new ApiError(404, "NOT_FOUND", "Không tìm thấy tin đăng.");
 }
 
 async function assertBuyOrderExists(buyOrderId: string) {
   const order = await buyOrdersRepo.findBuyOrderById(buyOrderId);
-  if (!order) throw new ApiError(404, "NOT_FOUND", "まとめ買いが見つかりません。");
+  if (!order) throw new ApiError(404, "NOT_FOUND", "Không tìm thấy tin gom.");
 }
 
 /** Bật/tắt lưu. Trả trạng thái mới (`favorited`). Idempotent theo hướng. */

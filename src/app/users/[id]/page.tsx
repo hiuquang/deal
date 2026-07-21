@@ -86,7 +86,7 @@ export default function UserProfilePage({
               {profile.ratingAvg !== null && (
                 <>
                   <span className="text-amber-500">★</span> {profile.ratingAvg.toFixed(1)}
-                  {t("seller.ratingCount", { n: profile.ratingCount })}・
+                  {t("seller.ratingCount", { n: profile.ratingCount })}·
                 </>
               )}
               {t("profile.memberSince", { date: formatDate(profile.memberSince) })}
@@ -201,7 +201,7 @@ export default function UserProfilePage({
                     <span className="text-slate-200">{"★".repeat(5 - review.score)}</span>
                   </span>
                   <span className="text-xs text-slate-400">
-                    <VipName name={review.raterDisplayName} isVip={review.raterIsVip} />・
+                    <VipName name={review.raterDisplayName} isVip={review.raterIsVip} />·
                     {formatDate(review.createdAt)}
                   </span>
                 </div>

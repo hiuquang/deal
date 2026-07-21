@@ -118,7 +118,7 @@ function ChatContent() {
                     <VipName
                       name={conversation.otherPartyName}
                       isVip={conversation.otherPartyIsVip}
-                    />・
+                    />·
                     {conversation.kind === "buy_order"
                       ? t("chat.buyOrderQty", { n: conversation.buyOrder.quantity })
                       : formatJpy(conversation.listing.askingPriceJpy)}

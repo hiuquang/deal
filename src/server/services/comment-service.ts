@@ -21,7 +21,7 @@ function toCommentDto(comment: CommentWithUser): CommentDto {
 export async function list(listingId: string): Promise<CommentDto[]> {
   const listing = await listingsRepo.findListingById(listingId);
   if (!listing) {
-    throw new ApiError(404, "NOT_FOUND", "出品が見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy tin đăng.");
   }
   const rows = await commentsRepo.listComments(listingId);
   return rows.map(toCommentDto);
@@ -35,7 +35,7 @@ export async function create(
 ): Promise<CommentDto> {
   const listing = await listingsRepo.findListingById(listingId);
   if (!listing) {
-    throw new ApiError(404, "NOT_FOUND", "出品が見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy tin đăng.");
   }
   const comment = await commentsRepo.createComment(listingId, userId, body);
   return toCommentDto(comment);

@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.17.0] — 2026-07-22 — Gỡ tiếng Nhật, chuyển sang Việt (mặc định) + Anh
+
+### Thay đổi lớn
+- **Gỡ hoàn toàn tiếng Nhật khỏi UI** (quyết định chủ web). Ngôn ngữ còn lại: 🇻🇳 vi (**mặc định**) + 🇬🇧 en; switcher bỏ 日本語. `Locale = "vi" | "en"`, `messages.ts` mỗi khóa còn `{ vi, en }` (strip 355 field `ja`), i18n default + fallback = vi, `<html lang="vi">`, metadata tiếng Việt.
+- **Điều khoản + Chính sách bảo mật dịch sang tiếng Việt** (`/terms`, `/privacy`). `TERMS_VERSION` 1.0 → **2.0 (2026-07-22)** (sync `prisma/seed.ts`) → user hiện tại phải đồng ý lại 1 lần ở lần vào kế tiếp.
+- **Toàn bộ lỗi server sang tiếng Việt**: ApiError + zod messages trong ~16 file service/route/validation, `errors.ts` (INTERNAL/UNAUTHORIZED), `session.ts` (EMAIL_NOT_VERIFIED/TERMS_NOT_ACCEPTED), `middleware.ts` (CSRF), mail xác nhận/reset (auth-service), lỗi kết nối api-client, trang `/dev/mailbox`.
+- Dấu phân cách `・` (Nhật) → `·` toàn site. Card `nameJa`/`nameEn` GIỮ NGUYÊN (dữ liệu thật của thẻ, không phải UI).
+- Verify: tsc sạch, 212 test pass (sửa 1 assert message JP→VI). Browser: mặc định vi + `lang=vi`, switcher chỉ vi/en, đổi en OK, terms/privacy tiếng Việt v2.0, 0 lỗi console. Còn 28 comment `//` lẻ tiếng Nhật (nội bộ, build tự cắt — không tới người dùng). Docs CLAUDE.md/i18n.md cập nhật.
+
 ## [0.16.0] — 2026-07-21 — Đánh giá bắt buộc + tự xóa chat sau giao dịch
 
 ### Tính năng

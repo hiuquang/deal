@@ -51,7 +51,7 @@ async function toOfferDto(offer: OfferWithRelations): Promise<BuyOrderOfferDto> 
 export async function listForOrder(buyOrderId: string): Promise<BuyOrderOfferDto[]> {
   const order = await buyOrdersRepo.findBuyOrderById(buyOrderId);
   if (!order) {
-    throw new ApiError(404, "NOT_FOUND", "募集が見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy tin gom.");
   }
   const rows = await offersRepo.listOffersForOrder(buyOrderId);
   const [summaries, conversations] = await Promise.all([
@@ -76,17 +76,17 @@ export async function create(
 ): Promise<BuyOrderOfferDto> {
   const order = await buyOrdersRepo.findBuyOrderById(buyOrderId);
   if (!order) {
-    throw new ApiError(404, "NOT_FOUND", "募集が見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy tin gom.");
   }
   if (order.buyerId === sellerId) {
-    throw new ApiError(409, "OWN_ORDER", "自分の募集には応募できません。");
+    throw new ApiError(409, "OWN_ORDER", "Không thể chào bán cho tin gom của chính mình.");
   }
   if (order.status !== "active") {
-    throw new ApiError(409, "NOT_ACTIVE", "この募集は現在受付していません。");
+    throw new ApiError(409, "NOT_ACTIVE", "Tin gom này hiện không nhận chào bán.");
   }
   const existing = await offersRepo.findOffer(buyOrderId, sellerId);
   if (existing) {
-    throw new ApiError(409, "ALREADY_OFFERED", "既にこの募集に応募済みです。");
+    throw new ApiError(409, "ALREADY_OFFERED", "Bạn đã chào bán cho tin gom này rồi.");
   }
   const offer = await offersRepo.createOffer({
     buyOrderId,
@@ -105,10 +105,10 @@ export async function connect(
 ): Promise<{ offer: BuyOrderOfferDto; conversationId: string }> {
   const offer = await offersRepo.findOfferById(offerId);
   if (!offer) {
-    throw new ApiError(404, "NOT_FOUND", "応募が見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy lượt chào bán.");
   }
   if (offer.buyOrder.buyerId !== userId) {
-    throw new ApiError(403, "FORBIDDEN", "募集の投稿者のみ連携できます。");
+    throw new ApiError(403, "FORBIDDEN", "Chỉ người đăng tin gom mới kết nối được.");
   }
   const conversation = await conversationsRepo.findOrCreateBuyOrderConversation(
     offer.buyOrderId,

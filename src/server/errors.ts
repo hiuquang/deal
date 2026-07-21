@@ -15,7 +15,7 @@ export class ApiError extends Error {
 }
 
 export const unauthorized = () =>
-  new ApiError(401, "UNAUTHORIZED", "ログインが必要です。");
+  new ApiError(401, "UNAUTHORIZED", "Bạn cần đăng nhập.");
 
 export function errorToResponse(e: unknown): NextResponse {
   if (e instanceof ApiError) {
@@ -39,7 +39,7 @@ export function errorToResponse(e: unknown): NextResponse {
   }
   console.error("[api] unexpected error:", e);
   return NextResponse.json(
-    { error: { code: "INTERNAL", message: "サーバーエラーが発生しました。", details: null } },
+    { error: { code: "INTERNAL", message: "Đã xảy ra lỗi máy chủ.", details: null } },
     { status: 500 }
   );
 }

@@ -58,7 +58,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new ApiClientError(
       res.status,
       body?.error.code ?? "UNKNOWN",
-      body?.error.message ?? "通信エラーが発生しました。",
+      body?.error.message ?? "Đã xảy ra lỗi kết nối.",
       body?.error.details
     );
   }

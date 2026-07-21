@@ -67,14 +67,14 @@ export async function requireVerifiedUser(): Promise<User> {
     throw new ApiError(
       403,
       "EMAIL_NOT_VERIFIED",
-      "この操作にはメールアドレスの確認が必要です。受信箱の確認メールをご確認ください。"
+      "Thao tác này cần xác nhận email. Vui lòng kiểm tra email xác nhận trong hộp thư."
     );
   }
   if (user.termsAcceptedVersion !== TERMS_VERSION) {
     throw new ApiError(
       403,
       "TERMS_NOT_ACCEPTED",
-      "最新の利用規約への同意が必要です。画面の案内に従って同意してください。"
+      "Bạn cần đồng ý với Điều khoản sử dụng mới nhất. Vui lòng làm theo hướng dẫn trên màn hình."
     );
   }
   return user;

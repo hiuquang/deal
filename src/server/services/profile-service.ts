@@ -143,7 +143,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export async function getProfile(userId: string): Promise<UserProfileDto> {
   const user = await ratingsRepo.findUserById(userId);
   if (!user) {
-    throw new ApiError(404, "NOT_FOUND", "ユーザーが見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy người dùng.");
   }
   const [revealed, tradeStats, reportStats, reviews, listings] = await Promise.all([
     ratingsRepo.listRevealedRatingsForUser(userId),

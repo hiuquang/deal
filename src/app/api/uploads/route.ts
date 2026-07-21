@@ -32,7 +32,7 @@ async function store(name: string, buf: Buffer, contentType: string): Promise<st
     });
     if (!res.ok) {
       console.error("Supabase Storage upload failed:", res.status, await res.text());
-      throw new ApiError(500, "INTERNAL", "画像のアップロードに失敗しました。");
+      throw new ApiError(500, "INTERNAL", "Tải ảnh lên thất bại.");
     }
     return `${supabaseUrl}/storage/v1/object/public/uploads/${name}`;
   }
@@ -50,14 +50,14 @@ export const POST = withErrorHandling(async (req: NextRequest) => {
   const form = await req.formData();
   const file = form.get("file");
   if (!(file instanceof File)) {
-    throw new ApiError(400, "VALIDATION", "画像ファイルを選択してください。");
+    throw new ApiError(400, "VALIDATION", "Vui lòng chọn file ảnh.");
   }
   const ext = ALLOWED[file.type];
   if (!ext) {
-    throw new ApiError(400, "VALIDATION", "JPEG / PNG / WebP のみアップロードできます。");
+    throw new ApiError(400, "VALIDATION", "Chỉ tải lên được JPEG / PNG / WebP.");
   }
   if (file.size > MAX_SIZE) {
-    throw new ApiError(400, "VALIDATION", "画像サイズは5MB以下にしてください。");
+    throw new ApiError(400, "VALIDATION", "Kích thước ảnh tối đa 5MB.");
   }
 
   const name = `${randomUUID()}${ext}`;

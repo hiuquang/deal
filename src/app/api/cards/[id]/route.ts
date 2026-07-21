@@ -8,7 +8,7 @@ export const GET = withErrorHandling(
     const { id } = await ctx.params;
     const card = await cards.findCardById(id);
     if (!card) {
-      throw new ApiError(404, "NOT_FOUND", "カードが見つかりません。");
+      throw new ApiError(404, "NOT_FOUND", "Không tìm thấy thẻ.");
     }
     return NextResponse.json({ card: toCardDto(card) });
   }

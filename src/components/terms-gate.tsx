@@ -47,7 +47,7 @@ export function TermsGate() {
           <Link href="/terms" target="_blank" className="text-indigo-600 underline">
             {t("legal.terms")}
           </Link>
-          ・
+          ·
           <Link href="/privacy" target="_blank" className="text-indigo-600 underline">
             {t("legal.privacy")}
           </Link>

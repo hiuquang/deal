@@ -118,7 +118,7 @@ export function CardAutocomplete({ game, category, onSelect }: Props) {
                 <span className="font-medium">{card.nameJa}</span>
                 <span className="text-xs text-slate-500">
                   {t(`game.${card.game}` as MessageKey)}
-                  {cardSpec(card) ? `・${cardSpec(card)}` : ""}
+                  {cardSpec(card) ? `·${cardSpec(card)}` : ""}
                 </span>
               </button>
             </li>

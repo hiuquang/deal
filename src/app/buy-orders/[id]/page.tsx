@@ -63,7 +63,7 @@ export default function BuyOrderDetailPage({
               {t("bo.wants", { n: order.quantity })}
             </span>
             <p className="text-xs text-slate-500">
-              {t(`game.${order.card.game}` as MessageKey)}・
+              {t(`game.${order.card.game}` as MessageKey)}·
               {t(`cat.${order.card.category}` as MessageKey)}
             </p>
           </div>
@@ -75,7 +75,7 @@ export default function BuyOrderDetailPage({
           </div>
           {cardSpec(order.card) && (
             <p className="text-sm text-slate-500">
-              {order.card.nameEn}・{cardSpec(order.card)}
+              {order.card.nameEn}·{cardSpec(order.card)}
             </p>
           )}
         </div>

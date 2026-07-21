@@ -90,7 +90,7 @@ describe("enforce", () => {
       await enforce("forgot:email", "a@b.c");
       expect.fail("phải ném RATE_LIMITED");
     } catch (e) {
-      expect((e as Error).message).toContain("5分後");
+      expect((e as Error).message).toContain("5 phút");
     }
   });
 

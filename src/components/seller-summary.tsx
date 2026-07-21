@@ -68,7 +68,7 @@ export function SellerSummary({ sellerId, listingId }: Props) {
             ) : (
               t("seller.noRating")
             )}
-            ・{t("seller.trades", { n: summary.contributionCount })}・
+            ·{t("seller.trades", { n: summary.contributionCount })}·
             <Link href={`/users/${sellerId}`} className="text-indigo-600 hover:underline">
               {t("seller.viewProfile")}
             </Link>

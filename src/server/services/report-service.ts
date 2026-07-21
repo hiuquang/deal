@@ -8,11 +8,11 @@ export async function report(
   input: { reportedUserId: string; listingId?: string | null; reason: string }
 ): Promise<void> {
   if (input.reportedUserId === reporterId) {
-    throw new ApiError(409, "SELF_REPORT", "自分自身は通報できません。");
+    throw new ApiError(409, "SELF_REPORT", "Không thể tự báo cáo chính mình.");
   }
   const target = await ratingsRepo.findUserById(input.reportedUserId);
   if (!target) {
-    throw new ApiError(404, "NOT_FOUND", "ユーザーが見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy người dùng.");
   }
   await reportsRepo.createReport({
     reporterId,

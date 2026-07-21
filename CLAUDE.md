@@ -1,6 +1,6 @@
 # DEAL — bản đồ dự án (đọc file này trước, KHÔNG đọc toàn bộ docs/)
 
-Web P2P trade thẻ TCG (Pokémon / One Piece / mục その他 cho sản phẩm khác) cho thị trường Nhật, **zero-fee**. Mục tiêu cốt lõi: thu thập **giá đóng (closing price)** đáng tin cậy làm nền cho AI dự đoán giá. Dự án portfolio cá nhân. UI tiếng Nhật, có switcher ja/vi/en.
+Web P2P trade thẻ TCG (Pokémon / One Piece / mục "Khác" cho sản phẩm khác) cho thị trường Nhật, **zero-fee**. Mục tiêu cốt lõi: thu thập **giá đóng (closing price)** đáng tin cậy làm nền cho AI dự đoán giá. Dự án portfolio cá nhân. UI **tiếng Việt (mặc định)**, có switcher vi/en (tiếng Nhật đã gỡ ở v0.17.0).
 
 ## Làm gì → đọc file nào
 
@@ -32,7 +32,7 @@ Web P2P trade thẻ TCG (Pokémon / One Piece / mục その他 cho sản phẩm
 2. **KHÔNG bỏ font Noto Sans** (next/font, subset vietnamese) trong layout — bỏ là tái lỗi phông dấu tiếng Việt trên Windows.
 3. **KHÔNG đọc/ghi `SMTP_PASS`** trong `.env` (Gmail App Password thật; `.env` đã gitignore).
 4. Đổi `TERMS_VERSION` (`src/lib/terms.ts`) → toàn bộ user phải re-accept; **nhớ sync bản hardcode trong `prisma/seed.ts`**.
-5. Chuỗi UI mới = thêm khóa vào `src/lib/messages.ts` **đủ 3 thứ tiếng** ja/vi/en. Ngoại lệ giữ tiếng Nhật: `/terms`, `/privacy`, lỗi từ server.
+5. Chuỗi UI mới = thêm khóa vào `src/lib/messages.ts` **đủ 2 thứ tiếng** vi/en (mặc định vi). Lỗi server + `/terms` + `/privacy` giờ cũng tiếng Việt (không còn ngoại lệ tiếng Nhật). Card có `nameJa`/`nameEn` là DATA thật của thẻ — không phải UI, đừng đụng.
 6. Kiến trúc bắt buộc: routes (`src/app/api/**`, chỉ validate zod) → services (`src/server/services/**`, logic + unit test) → repositories (`src/server/repositories/**`, mọi truy cập Prisma). Frontend chỉ fetch qua `src/lib/api-client.ts`.
 
 ## Agent skills

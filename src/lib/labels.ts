@@ -46,7 +46,7 @@ export function cardTitle(card: {
   return `${card.nameJa}（${card.setCode} ${card.cardNumber}）`;
 }
 
-/** Dòng thông số "set số・rarity・ngôn ngữ" — null với entry user tự thêm. */
+/** Dòng thông số "set số·rarity·ngôn ngữ" — null với entry user tự thêm. */
 export function cardSpec(card: {
   game: string;
   setCode: string;
@@ -55,5 +55,5 @@ export function cardSpec(card: {
   language: string;
 }): string | null {
   if (isUserProduct(card)) return null;
-  return `${card.setCode} ${card.cardNumber}・${card.rarity}・${card.language}`;
+  return `${card.setCode} ${card.cardNumber}·${card.rarity}·${card.language}`;
 }

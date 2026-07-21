@@ -12,7 +12,7 @@ const AUTO_CLOSE_DAYS = 7;
 
 function assertParticipant(trade: TradeWithRelations, userId: string) {
   if (trade.buyerId !== userId && trade.sellerId !== userId) {
-    throw new ApiError(403, "FORBIDDEN", "この取引に参加していません。");
+    throw new ApiError(403, "FORBIDDEN", "Bạn không tham gia giao dịch này.");
   }
 }
 
@@ -81,10 +81,10 @@ export async function create(
   let source: { listingId?: string; buyOrderId?: string; cardId: string; condition: string; quantity: number };
   if (conversation.buyOrder) {
     if (conversation.buyOrder.status !== "active") {
-      throw new ApiError(409, "NOT_ACTIVE", "この募集は既に終了しています。");
+      throw new ApiError(409, "NOT_ACTIVE", "Tin gom này đã kết thúc.");
     }
     if (!input.condition || !input.quantity) {
-      throw new ApiError(400, "VALIDATION", "状態と数量を入力してください。");
+      throw new ApiError(400, "VALIDATION", "Vui lòng nhập tình trạng và số lượng.");
     }
     assertConditionMatchesCategory(conversation.buyOrder.card.category, input.condition);
     source = {
@@ -98,7 +98,7 @@ export async function create(
     // race window được chặn tiếp ở index DB bên dưới.
     const existing = await tradesRepo.findActiveTradeByListing(conversation.listing.id);
     if (existing) {
-      throw new ApiError(409, "TRADE_EXISTS", "この出品には既に取引が存在します。");
+      throw new ApiError(409, "TRADE_EXISTS", "Tin đăng này đã có giao dịch.");
     }
     source = {
       listingId: conversation.listing.id,
@@ -127,7 +127,7 @@ export async function create(
     });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
-      throw new ApiError(409, "TRADE_EXISTS", "既に進行中の取引が存在します。");
+      throw new ApiError(409, "TRADE_EXISTS", "Đã có giao dịch đang diễn ra.");
     }
     throw e;
   }
@@ -147,7 +147,7 @@ export async function getById(userId: string, id: string): Promise<TradeDto> {
   await autoCloseExpiredThrottled();
   const trade = await tradesRepo.findTradeById(id);
   if (!trade) {
-    throw new ApiError(404, "NOT_FOUND", "取引が見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy giao dịch.");
   }
   assertParticipant(trade, userId);
   return toTradeDto(trade, userId);
@@ -166,25 +166,25 @@ export async function confirm(
 ): Promise<TradeDto> {
   const trade = await tradesRepo.findTradeById(id);
   if (!trade) {
-    throw new ApiError(404, "NOT_FOUND", "取引が見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy giao dịch.");
   }
   assertParticipant(trade, userId);
   if (trade.status !== "pending") {
-    throw new ApiError(409, "ALREADY_CONFIRMED", "この取引は既に確定済みです。");
+    throw new ApiError(409, "ALREADY_CONFIRMED", "Giao dịch này đã được xác nhận.");
   }
   if (trade.initiatorId === userId) {
     throw new ApiError(
       409,
       "WAITING_COUNTERPART",
-      "あなたは既に確認済みです。相手の確認を待っています。"
+      "Bạn đã xác nhận rồi. Đang chờ đối phương xác nhận."
     );
   }
   if (trade.finalPriceJpy !== finalPriceJpy) {
     throw new ApiError(
       409,
       "PRICE_MISMATCH",
-      "相手が入力した金額と一致しません。チャットで金額を確認してください。",
-      { expectedHint: "金額が一致するまで取引は確定されません。" }
+      "Số tiền không khớp với đối phương. Vui lòng xác nhận lại số tiền trong chat.",
+      { expectedHint: "Giao dịch chưa xác nhận cho tới khi số tiền khớp nhau." }
     );
   }
   // Bên xác nhận cũng phải nhập đúng SỐ LƯỢNG — cùng cơ chế chống khai láo
@@ -193,7 +193,7 @@ export async function confirm(
     throw new ApiError(
       409,
       "QUANTITY_MISMATCH",
-      "相手が入力した数量と一致しません。チャットで数量を確認してください。"
+      "Số lượng không khớp với đối phương. Vui lòng xác nhận lại số lượng trong chat."
     );
   }
   // card/condition denormalize trên trade — với trade listing giá trị y hệt
@@ -219,11 +219,11 @@ export async function confirm(
 export async function cancel(userId: string, id: string): Promise<TradeDto> {
   const trade = await tradesRepo.findTradeById(id);
   if (!trade) {
-    throw new ApiError(404, "NOT_FOUND", "取引が見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy giao dịch.");
   }
   assertParticipant(trade, userId);
   if (trade.status !== "pending") {
-    throw new ApiError(409, "INVALID_STATUS", "確定済みの取引はキャンセルできません。");
+    throw new ApiError(409, "INVALID_STATUS", "Không thể hủy giao dịch đã xác nhận.");
   }
   const cancelled = await tradesRepo.cancelTrade(id, trade.listingId);
   console.log(`[trade] cancelled ${id} by ${userId}`);

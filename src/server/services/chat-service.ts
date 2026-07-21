@@ -9,7 +9,7 @@ function assertMember(conversation: ConversationWithRelations, userId: string) {
   const isMember =
     conversation.buyerId === userId || conversation.sellerId === userId;
   if (!isMember) {
-    throw new ApiError(403, "FORBIDDEN", "このチャットに参加していません。");
+    throw new ApiError(403, "FORBIDDEN", "Bạn không tham gia đoạn chat này.");
   }
 }
 
@@ -130,7 +130,7 @@ export async function getUnreadCount(userId: string): Promise<number> {
 export async function markRead(userId: string, conversationId: string): Promise<void> {
   const conversation = await conversations.findConversationById(conversationId);
   if (!conversation) {
-    throw new ApiError(404, "NOT_FOUND", "チャットが見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy đoạn chat.");
   }
   assertMember(conversation, userId);
   const role = conversation.buyerId === userId ? "buyer" : "seller";
@@ -144,7 +144,7 @@ export async function getMessages(
 ): Promise<MessageDto[]> {
   const conversation = await conversations.findConversationById(conversationId);
   if (!conversation) {
-    throw new ApiError(404, "NOT_FOUND", "チャットが見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy đoạn chat.");
   }
   assertMember(conversation, userId);
 
@@ -166,7 +166,7 @@ export async function sendMessage(
 ): Promise<MessageDto> {
   const conversation = await conversations.findConversationById(conversationId);
   if (!conversation) {
-    throw new ApiError(404, "NOT_FOUND", "チャットが見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy đoạn chat.");
   }
   assertMember(conversation, userId);
   const message = await conversations.createMessage(conversationId, userId, body);
@@ -179,7 +179,7 @@ export async function sendMessage(
 export async function getMembership(userId: string, conversationId: string) {
   const conversation = await conversations.findConversationById(conversationId);
   if (!conversation) {
-    throw new ApiError(404, "NOT_FOUND", "チャットが見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy đoạn chat.");
   }
   assertMember(conversation, userId);
   return conversation;

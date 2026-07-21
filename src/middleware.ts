@@ -26,7 +26,7 @@ export function middleware(req: NextRequest) {
   }
 
   return NextResponse.json(
-    { error: { code: "FORBIDDEN", message: "不正なリクエスト元です。", details: null } },
+    { error: { code: "FORBIDDEN", message: "Nguồn yêu cầu không hợp lệ.", details: null } },
     { status: 403 }
   );
 }

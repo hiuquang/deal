@@ -58,7 +58,7 @@ export async function enforce(action: LimitAction, identifier: string): Promise<
     throw new ApiError(
       429,
       "RATE_LIMITED",
-      `リクエストが多すぎます。${minutesLeft(resetAt)}分後にもう一度お試しください。`
+      `Bạn thao tác quá nhiều. Vui lòng thử lại sau ${minutesLeft(resetAt)} phút.`
     );
   }
 }
@@ -100,7 +100,7 @@ export async function assertDailyRegistrationOpen(): Promise<void> {
     throw new ApiError(
       429,
       "REGISTRATION_FULL",
-      "本日の新規登録は定員に達しました。明日改めてご登録ください。"
+      "Hôm nay đã đủ số lượng đăng ký mới. Vui lòng đăng ký lại vào ngày mai."
     );
   }
 }

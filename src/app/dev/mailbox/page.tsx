@@ -33,7 +33,7 @@ export default function DevMailboxPage() {
 
   if (error) {
     return (
-      <Empty message="この画面は開発環境専用です（SMTP設定済み・本番環境では無効）。" />
+      <Empty message="Màn hình này chỉ dùng cho môi trường phát triển (đã cấu hình SMTP · vô hiệu ở production)." />
     );
   }
   if (!emails) return <Loading />;
@@ -41,12 +41,12 @@ export default function DevMailboxPage() {
   return (
     <div className="space-y-4">
       <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">
-        🛠 <strong>開発用メールボックス</strong> — SMTP未設定のため、送信されたメールはここに届きます。
-        本番では実際のメールアドレスに送信されます。
+        🛠 <strong>Hộp thư dev</strong> — SMTP chưa cấu hình nên email gửi đi sẽ hiện ở đây.
+        Ở production, email sẽ gửi tới địa chỉ thật.
       </div>
-      <h1 className="text-xl font-bold">受信メール（{emails.length}件）</h1>
+      <h1 className="text-xl font-bold">Hộp thư đến ({emails.length})</h1>
       {emails.length === 0 ? (
-        <Empty message="メールはまだありません。新規登録するとここに確認メールが届きます。" />
+        <Empty message="Chưa có email nào. Khi đăng ký mới, email xác nhận sẽ hiện ở đây." />
       ) : (
         <ul className="space-y-3">
           {emails.map((mail) => (
@@ -54,7 +54,7 @@ export default function DevMailboxPage() {
               <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
                 <p className="text-sm font-bold">{mail.subject}</p>
                 <p className="text-xs text-slate-400">
-                  宛先: {mail.to}・{formatDateTime(mail.createdAt)}
+                  Đến: {mail.to}·{formatDateTime(mail.createdAt)}
                 </p>
               </div>
               <p className="whitespace-pre-wrap text-sm text-slate-700">

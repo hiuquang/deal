@@ -97,13 +97,13 @@ export default function ListingDetailPage({
         <div className="space-y-4">
           <div>
             <p className="text-xs text-slate-500">
-              {t(`game.${listing.card.game}` as MessageKey)}・
+              {t(`game.${listing.card.game}` as MessageKey)}·
               {t(`cat.${listing.card.category}` as MessageKey)}
             </p>
             <h1 className="text-2xl font-bold">{listing.card.nameJa}</h1>
             {cardSpec(listing.card) && (
               <p className="text-sm text-slate-500">
-                {listing.card.nameEn}・{cardSpec(listing.card)}
+                {listing.card.nameEn}·{cardSpec(listing.card)}
               </p>
             )}
           </div>

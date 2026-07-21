@@ -34,17 +34,17 @@ export async function rate(
 ): Promise<RatingDto> {
   const trade = await tradesRepo.findTradeById(tradeId);
   if (!trade) {
-    throw new ApiError(404, "NOT_FOUND", "取引が見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy giao dịch.");
   }
   if (trade.buyerId !== userId && trade.sellerId !== userId) {
-    throw new ApiError(403, "FORBIDDEN", "この取引に参加していません。");
+    throw new ApiError(403, "FORBIDDEN", "Bạn không tham gia giao dịch này.");
   }
   if (trade.status !== "confirmed" && trade.status !== "self_reported") {
-    throw new ApiError(409, "TRADE_NOT_CLOSED", "成立した取引のみ評価できます。");
+    throw new ApiError(409, "TRADE_NOT_CLOSED", "Chỉ đánh giá được giao dịch đã hoàn tất.");
   }
   const existing = await ratingsRepo.findRatingsByTrade(tradeId);
   if (existing.some((r) => r.raterId === userId)) {
-    throw new ApiError(409, "ALREADY_RATED", "この取引は既に評価済みです。");
+    throw new ApiError(409, "ALREADY_RATED", "Bạn đã đánh giá giao dịch này rồi.");
   }
   const rateeId = trade.buyerId === userId ? trade.sellerId : trade.buyerId;
   const rating = await ratingsRepo.createRating({
@@ -76,10 +76,10 @@ export async function getState(
 ): Promise<TradeRatingStateDto> {
   const trade = await tradesRepo.findTradeById(tradeId);
   if (!trade) {
-    throw new ApiError(404, "NOT_FOUND", "取引が見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy giao dịch.");
   }
   if (trade.buyerId !== userId && trade.sellerId !== userId) {
-    throw new ApiError(403, "FORBIDDEN", "この取引に参加していません。");
+    throw new ApiError(403, "FORBIDDEN", "Bạn không tham gia giao dịch này.");
   }
   const ratings = await ratingsRepo.findRatingsByTrade(tradeId);
   const mine = ratings.find((r) => r.raterId === userId) ?? null;
@@ -139,7 +139,7 @@ export async function getUserSummaries(
 export async function getUserSummary(userId: string): Promise<UserSummaryDto> {
   const user = await ratingsRepo.findUserById(userId);
   if (!user) {
-    throw new ApiError(404, "NOT_FOUND", "ユーザーが見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy người dùng.");
   }
   const [revealed, contributionCount] = await Promise.all([
     ratingsRepo.listRevealedRatingsForUser(userId),

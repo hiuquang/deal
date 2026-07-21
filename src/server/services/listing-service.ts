@@ -33,7 +33,7 @@ export async function create(
 ): Promise<ListingDto> {
   const card = await cards.findCardById(input.cardId);
   if (!card) {
-    throw new ApiError(404, "CARD_NOT_FOUND", "指定されたカードが見つかりません。");
+    throw new ApiError(404, "CARD_NOT_FOUND", "Không tìm thấy thẻ đã chọn.");
   }
   assertConditionMatchesCategory(card.category, input.condition);
   const listing = await listings.createListing({
@@ -54,7 +54,7 @@ export async function create(
 export async function getById(id: string): Promise<ListingDto> {
   const listing = await listings.findListingById(id);
   if (!listing) {
-    throw new ApiError(404, "NOT_FOUND", "出品が見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy tin đăng.");
   }
   return toListingDto(listing);
 }
@@ -62,16 +62,16 @@ export async function getById(id: string): Promise<ListingDto> {
 export async function cancel(userId: string, id: string): Promise<ListingDto> {
   const listing = await listings.findListingById(id);
   if (!listing) {
-    throw new ApiError(404, "NOT_FOUND", "出品が見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy tin đăng.");
   }
   if (listing.sellerId !== userId) {
-    throw new ApiError(403, "FORBIDDEN", "自分の出品のみ操作できます。");
+    throw new ApiError(403, "FORBIDDEN", "Bạn chỉ thao tác được trên tin đăng của mình.");
   }
   if (listing.status === "in_trade") {
-    throw new ApiError(409, "IN_TRADE", "取引進行中の出品はキャンセルできません。");
+    throw new ApiError(409, "IN_TRADE", "Không thể hủy tin đang có giao dịch.");
   }
   if (listing.status !== "active") {
-    throw new ApiError(409, "INVALID_STATUS", "この出品は既に終了しています。");
+    throw new ApiError(409, "INVALID_STATUS", "Tin đăng này đã kết thúc.");
   }
   const updated = await listings.updateListingStatus(id, "cancelled");
   console.log(`[listing] cancelled ${id} by ${userId}`);
@@ -87,13 +87,13 @@ export async function updatePrice(
 ): Promise<ListingDto> {
   const listing = await listings.findListingById(id);
   if (!listing) {
-    throw new ApiError(404, "NOT_FOUND", "出品が見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy tin đăng.");
   }
   if (listing.sellerId !== userId) {
-    throw new ApiError(403, "FORBIDDEN", "自分の出品のみ操作できます。");
+    throw new ApiError(403, "FORBIDDEN", "Bạn chỉ thao tác được trên tin đăng của mình.");
   }
   if (listing.status !== "active") {
-    throw new ApiError(409, "INVALID_STATUS", "販売中の出品のみ価格を変更できます。");
+    throw new ApiError(409, "INVALID_STATUS", "Chỉ đổi được giá cho tin đang bán.");
   }
   const updated = await listings.updateListingAskingPrice(id, askingPriceJpy);
   console.log(`[listing] price updated ${id} by ${userId} -> ${askingPriceJpy ?? "negotiable"}`);

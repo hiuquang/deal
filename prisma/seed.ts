@@ -26,7 +26,7 @@ async function main() {
     { email: "demo@example.com", displayName: "デモユーザー" },
   ];
   // Giữ đồng bộ với src/lib/terms.ts
-  const TERMS_VERSION = "1.0 (2026-07-14)";
+  const TERMS_VERSION = "2.0 (2026-07-22)";
   const users = [];
   for (const def of userDefs) {
     users.push(

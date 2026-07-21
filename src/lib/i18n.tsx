@@ -1,14 +1,13 @@
 "use client";
 
 // i18n nhẹ: locale lưu localStorage, t(key, vars) tra từ điển messages.ts.
-// Mặc định tiếng Nhật (thị trường chính); fallback về ja khi thiếu bản dịch.
+// Mặc định tiếng Việt; fallback về vi khi thiếu bản dịch.
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { MESSAGES, type Locale, type MessageKey } from "@/lib/messages";
 
 export type { Locale, MessageKey };
 
 export const LOCALE_OPTIONS: { value: Locale; label: string; flag: string }[] = [
-  { value: "ja", label: "日本語", flag: "🇯🇵" },
   { value: "vi", label: "Tiếng Việt", flag: "🇻🇳" },
   { value: "en", label: "English", flag: "🇬🇧" },
 ];
@@ -22,19 +21,19 @@ interface I18nState {
 }
 
 const I18nContext = createContext<I18nState>({
-  locale: "ja",
+  locale: "vi",
   setLocale: () => {},
-  t: (key) => MESSAGES[key]?.ja ?? key,
+  t: (key) => MESSAGES[key]?.vi ?? key,
 });
 
 const STORAGE_KEY = "deal_locale";
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("ja");
+  const [locale, setLocaleState] = useState<Locale>("vi");
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === "ja" || saved === "vi" || saved === "en") {
+    if (saved === "vi" || saved === "en") {
       setLocaleState(saved);
     }
   }, []);
@@ -47,7 +46,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
   const t = useCallback(
     (key: MessageKey, vars?: Vars) => {
-      let text: string = MESSAGES[key]?.[locale] ?? MESSAGES[key]?.ja ?? key;
+      let text: string = MESSAGES[key]?.[locale] ?? MESSAGES[key]?.vi ?? key;
       if (vars) {
         for (const [name, value] of Object.entries(vars)) {
           text = text.replaceAll(`{${name}}`, String(value));

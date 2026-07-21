@@ -15,12 +15,12 @@ async function sendVerificationMail(user: User): Promise<void> {
   const rawToken = await tokens.issueToken(user.id, "verify", VERIFY_TTL);
   await sendMail(
     user.email,
-    "【DEAL】メールアドレスの確認",
-    `${user.displayName} 様\n\n` +
-      `DEALへのご登録ありがとうございます。\n` +
-      `以下のリンクをクリックしてメールアドレスを確認してください（24時間有効）:\n\n` +
+    "【DEAL】Xác nhận địa chỉ email",
+    `${user.displayName} thân mến,\n\n` +
+      `Cảm ơn bạn đã đăng ký DEAL.\n` +
+      `Nhấn vào liên kết dưới đây để xác nhận email (hiệu lực 24 giờ):\n\n` +
       `${appUrl()}/verify?token=${rawToken}\n\n` +
-      `心当たりがない場合はこのメールを無視してください。`
+      `Nếu bạn không thực hiện yêu cầu này, hãy bỏ qua email.`
   );
 }
 
@@ -31,7 +31,7 @@ export async function register(input: {
 }): Promise<{ dto: UserDto; user: User }> {
   const existing = await users.findByEmail(input.email);
   if (existing) {
-    throw new ApiError(409, "EMAIL_TAKEN", "このメールアドレスは既に登録されています。");
+    throw new ApiError(409, "EMAIL_TAKEN", "Địa chỉ email này đã được đăng ký.");
   }
   const passwordHash = await bcrypt.hash(input.password, 10);
   const user = await users.createUser({
@@ -57,7 +57,7 @@ export async function login(input: {
     throw new ApiError(
       401,
       "INVALID_CREDENTIALS",
-      "メールアドレスまたはパスワードが正しくありません。"
+      "Email hoặc mật khẩu không đúng."
     );
   }
   return { dto: toUserDto(user), user };
@@ -97,7 +97,7 @@ export async function verifyEmail(token: string): Promise<void> {
     throw new ApiError(
       400,
       "INVALID_TOKEN",
-      "リンクが無効か期限切れです。確認メールを再送してください。"
+      "Liên kết không hợp lệ hoặc đã hết hạn. Vui lòng gửi lại email xác nhận."
     );
   }
   await tokens.markTokenUsed(record.id);
@@ -107,7 +107,7 @@ export async function verifyEmail(token: string): Promise<void> {
 
 export async function resendVerification(user: User): Promise<void> {
   if (user.emailVerifiedAt) {
-    throw new ApiError(409, "ALREADY_VERIFIED", "既にメール確認済みです。");
+    throw new ApiError(409, "ALREADY_VERIFIED", "Email đã được xác nhận rồi.");
   }
   await sendVerificationMail(user);
 }
@@ -124,12 +124,12 @@ export async function requestPasswordReset(email: string): Promise<void> {
   const rawToken = await tokens.issueToken(user.id, "reset", RESET_TTL);
   await sendMail(
     user.email,
-    "【DEAL】パスワード再設定",
-    `${user.displayName} 様\n\n` +
-      `パスワード再設定のリクエストを受け付けました。\n` +
-      `以下のリンクから新しいパスワードを設定してください（1時間有効）:\n\n` +
+    "【DEAL】Đặt lại mật khẩu",
+    `${user.displayName} thân mến,\n\n` +
+      `Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu của bạn.\n` +
+      `Đặt mật khẩu mới qua liên kết dưới đây (hiệu lực 1 giờ):\n\n` +
       `${appUrl()}/reset-password?token=${rawToken}\n\n` +
-      `心当たりがない場合はこのメールを無視してください。パスワードは変更されません。`
+      `Nếu bạn không thực hiện yêu cầu này, hãy bỏ qua email. Mật khẩu sẽ không bị thay đổi.`
   );
 }
 
@@ -140,7 +140,7 @@ export async function resetPassword(token: string, password: string): Promise<vo
     throw new ApiError(
       400,
       "INVALID_TOKEN",
-      "リンクが無効か期限切れです。もう一度再設定をリクエストしてください。"
+      "Liên kết không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu đặt lại mật khẩu lần nữa."
     );
   }
   const passwordHash = await bcrypt.hash(password, 10);

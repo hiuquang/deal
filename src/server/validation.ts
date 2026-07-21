@@ -31,8 +31,8 @@ export function assertConditionMatchesCategory(category: string, condition: stri
       400,
       "CONDITION_MISMATCH",
       category === "box"
-        ? "BOXにはシュリンク付き/なしの状態を選択してください。"
-        : "シングルカードにはカード用の状態を選択してください。"
+        ? "Với BOX, hãy chọn tình trạng còn/mất shrink."
+        : "Với thẻ lẻ, hãy chọn tình trạng dành cho thẻ."
     );
   }
 }
@@ -43,16 +43,16 @@ export const MAX_PRICE_JPY = 10_000_000;
 const priceJpy = z
   .number()
   .int()
-  .min(1, "1円以上を入力してください")
-  .max(MAX_PRICE_JPY, "1,000万円以下を入力してください");
+  .min(1, "Vui lòng nhập từ 1 trở lên")
+  .max(MAX_PRICE_JPY, "Vui lòng nhập tối đa 10.000.000");
 
 export const registerSchema = z.object({
-  email: z.string().email("メールアドレスの形式が正しくありません"),
-  password: z.string().min(8, "パスワードは8文字以上にしてください").max(72),
-  displayName: z.string().trim().min(1, "表示名を入力してください").max(30),
-  // Bắt buộc tick đồng ý 利用規約 + プライバシーポリシー khi đăng ký
+  email: z.string().email("Địa chỉ email không hợp lệ"),
+  password: z.string().min(8, "Mật khẩu phải từ 8 ký tự trở lên").max(72),
+  displayName: z.string().trim().min(1, "Vui lòng nhập tên hiển thị").max(30),
+  // Bắt buộc tick đồng ý Điều khoản + Chính sách bảo mật khi đăng ký
   agreeTerms: z.literal(true, {
-    errorMap: () => ({ message: "利用規約とプライバシーポリシーへの同意が必要です" }),
+    errorMap: () => ({ message: "Bạn cần đồng ý với Điều khoản sử dụng và Chính sách bảo mật" }),
   }),
 });
 
@@ -66,12 +66,12 @@ export const verifyTokenSchema = z.object({
 });
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().email("メールアドレスの形式が正しくありません"),
+  email: z.string().email("Địa chỉ email không hợp lệ"),
 });
 
 export const resetPasswordSchema = z.object({
   token: z.string().min(1),
-  password: z.string().min(8, "パスワードは8文字以上にしてください").max(72),
+  password: z.string().min(8, "Mật khẩu phải từ 8 ký tự trở lên").max(72),
 });
 
 export const cardSearchSchema = z.object({
@@ -89,8 +89,8 @@ export const createUserProductSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(1, "商品名を入力してください")
-    .max(100, "商品名は100文字までです"),
+    .min(1, "Vui lòng nhập tên sản phẩm")
+    .max(100, "Tên sản phẩm tối đa 100 ký tự"),
   category: z.enum(CATEGORIES),
 });
 
@@ -110,13 +110,13 @@ export function isOwnImageUrl(value: string): boolean {
 export const createListingSchema = z.object({
   cardId: z.string().min(1),
   condition: z.enum(CONDITIONS),
-  imageUrl: z.string().refine(isOwnImageUrl, "画像をアップロードしてください"),
+  imageUrl: z.string().refine(isOwnImageUrl, "Vui lòng tải ảnh lên"),
   askingPriceJpy: priceJpy.optional().nullable(),
   quantity: z.coerce
     .number()
     .int()
-    .min(1, "数量は1以上を入力してください")
-    .max(99, "数量は99以下を入力してください")
+    .min(1, "Số lượng phải từ 1 trở lên")
+    .max(99, "Số lượng tối đa là 99")
     .default(1),
   tradeType: z.enum(TRADE_TYPES),
   station: z.string().trim().max(50).optional().nullable(),
@@ -125,7 +125,7 @@ export const createListingSchema = z.object({
 
 // PATCH listing: hoặc hủy tin (status), hoặc sửa giá chào (askingPriceJpy).
 // askingPriceJpy có mặt (không optional) để phân biệt với nhánh status; null =
-// chuyển về 要相談. Giá này chỉ để thương lượng, không vào dữ liệu giá thị trường.
+// chuyển về "thương lượng". Giá này chỉ để thương lượng, không vào dữ liệu giá thị trường.
 export const patchListingSchema = z.union([
   z.object({ status: z.literal("cancelled") }),
   z.object({ askingPriceJpy: priceJpy.nullable() }),
@@ -145,8 +145,8 @@ export const listListingsSchema = z.object({
 const buyQuantity = z.coerce
   .number()
   .int()
-  .min(1, "数量は1以上を入力してください")
-  .max(999, "数量は999以下を入力してください");
+  .min(1, "Số lượng phải từ 1 trở lên")
+  .max(999, "Số lượng tối đa là 999");
 
 export const createBuyOrderSchema = z.object({
   cardId: z.string().min(1),
@@ -165,7 +165,7 @@ export const listBuyOrdersSchema = z.object({
 
 export const createOfferSchema = z.object({
   quantity: buyQuantity,
-  message: z.string().trim().max(300, "メッセージは300文字までです").optional().nullable(),
+  message: z.string().trim().max(300, "Lời nhắn tối đa 300 ký tự").optional().nullable(),
 });
 
 // Lưu/bỏ lưu tin (❤️): kind=loại tin, id=đích, favorited=trạng thái muốn đặt.
@@ -176,7 +176,7 @@ export const toggleFavoriteSchema = z.object({
 });
 
 export const createMessageSchema = z.object({
-  body: z.string().trim().min(1, "メッセージを入力してください").max(1000),
+  body: z.string().trim().min(1, "Vui lòng nhập tin nhắn").max(1000),
 });
 
 export const createTradeSchema = z.object({
@@ -199,16 +199,16 @@ export const pricesQuerySchema = z.object({
 });
 
 export const createRatingSchema = z.object({
-  score: z.number().int().min(1, "1〜5で評価してください").max(5, "1〜5で評価してください"),
-  comment: z.string().trim().max(300, "コメントは300文字までです").optional().nullable(),
+  score: z.number().int().min(1, "Vui lòng đánh giá từ 1 đến 5 sao").max(5, "Vui lòng đánh giá từ 1 đến 5 sao"),
+  comment: z.string().trim().max(300, "Bình luận tối đa 300 ký tự").optional().nullable(),
 });
 
 export const createCommentSchema = z.object({
   body: z
     .string()
     .trim()
-    .min(1, "コメントを入力してください")
-    .max(500, "コメントは500文字までです"),
+    .min(1, "Vui lòng nhập bình luận")
+    .max(500, "Bình luận tối đa 500 ký tự"),
 });
 
 export const createReportSchema = z.object({
@@ -217,6 +217,6 @@ export const createReportSchema = z.object({
   reason: z
     .string()
     .trim()
-    .min(10, "通報理由は10文字以上で入力してください")
-    .max(500, "通報理由は500文字までです"),
+    .min(10, "Lý do báo cáo cần tối thiểu 10 ký tự")
+    .max(500, "Lý do báo cáo tối đa 500 ký tự"),
 });

@@ -35,17 +35,17 @@ async function toRequestDto(request: RequestWithRelations): Promise<PurchaseRequ
 export async function create(userId: string, listingId: string): Promise<PurchaseRequestDto> {
   const listing = await listingsRepo.findListingById(listingId);
   if (!listing) {
-    throw new ApiError(404, "NOT_FOUND", "出品が見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy tin đăng.");
   }
   if (listing.sellerId === userId) {
-    throw new ApiError(409, "OWN_LISTING", "自分の出品には購入希望を送れません。");
+    throw new ApiError(409, "OWN_LISTING", "Không thể gửi yêu cầu mua cho tin của chính mình.");
   }
   if (listing.status !== "active") {
-    throw new ApiError(409, "NOT_ACTIVE", "この出品は現在受付していません。");
+    throw new ApiError(409, "NOT_ACTIVE", "Tin đăng này hiện không nhận yêu cầu.");
   }
   const existing = await requestsRepo.findRequest(listingId, userId);
   if (existing) {
-    throw new ApiError(409, "ALREADY_REQUESTED", "既に購入希望を送信済みです。");
+    throw new ApiError(409, "ALREADY_REQUESTED", "Bạn đã gửi yêu cầu mua rồi.");
   }
   const request = await requestsRepo.createRequest(listingId, userId);
   console.log(`[request] ${userId} wants to buy listing ${listingId}`);
@@ -59,10 +59,10 @@ export async function listForSeller(
 ): Promise<PurchaseRequestDto[]> {
   const listing = await listingsRepo.findListingById(listingId);
   if (!listing) {
-    throw new ApiError(404, "NOT_FOUND", "出品が見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy tin đăng.");
   }
   if (listing.sellerId !== userId) {
-    throw new ApiError(403, "FORBIDDEN", "出品者のみ購入希望一覧を見られます。");
+    throw new ApiError(403, "FORBIDDEN", "Chỉ người bán mới xem được danh sách yêu cầu mua.");
   }
   const rows = await requestsRepo.listRequestsForListing(listingId);
   return Promise.all(rows.map(toRequestDto));
@@ -84,10 +84,10 @@ export async function connect(
 ): Promise<{ request: PurchaseRequestDto; conversationId: string }> {
   const request = await requestsRepo.findRequestById(requestId);
   if (!request) {
-    throw new ApiError(404, "NOT_FOUND", "購入希望が見つかりません。");
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy yêu cầu mua.");
   }
   if (request.listing.sellerId !== userId) {
-    throw new ApiError(403, "FORBIDDEN", "出品者のみ連携できます。");
+    throw new ApiError(403, "FORBIDDEN", "Chỉ người bán mới kết nối được.");
   }
   const conversation = await conversationsRepo.findOrCreateConversation(
     request.listingId,
