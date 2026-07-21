@@ -168,6 +168,13 @@ export const createOfferSchema = z.object({
   message: z.string().trim().max(300, "メッセージは300文字までです").optional().nullable(),
 });
 
+// Lưu/bỏ lưu tin (❤️): kind=loại tin, id=đích, favorited=trạng thái muốn đặt.
+export const toggleFavoriteSchema = z.object({
+  kind: z.enum(["listing", "buy_order"]),
+  id: z.string().min(1),
+  favorited: z.boolean(),
+});
+
 export const createMessageSchema = z.object({
   body: z.string().trim().min(1, "メッセージを入力してください").max(1000),
 });

@@ -346,6 +346,34 @@ export interface ActivityDto {
   newCount: number;
 }
 
+// ---- Tin đã lưu (❤️ favorites) ----
+
+export type FavoriteKind = "listing" | "buy_order";
+
+/**
+ * 1 mục đã lưu ở trang cá nhân. `available=false` = tin đã gỡ/bán/hủy (hoặc
+ * bị xóa) → UI hiện "sản phẩm này không còn", vẫn cho bấm bỏ lưu.
+ */
+export interface SavedItemDto {
+  kind: FavoriteKind;
+  /** id đích để dựng link (listingId hoặc buyOrderId) — null nếu tin đã bị xóa cứng */
+  targetId: string | null;
+  cardNameJa: string | null;
+  /** ảnh (chỉ listing) để hiện thumbnail */
+  imageUrl: string | null;
+  /** giá chào (listing) hoặc đơn giá tối đa (buy_order); null = 要相談/không khai */
+  priceJpy: number | null;
+  /** còn nhận giao dịch không — false thì hiện "không còn" */
+  available: boolean;
+  savedAt: string;
+}
+
+/** Tập id đã lưu của viewer — để tô tim đầy/rỗng trên thẻ (1 request/toàn trang). */
+export interface FavoriteIdsDto {
+  listingIds: string[];
+  buyOrderIds: string[];
+}
+
 export interface PriceStatsDto {
   count: number;
   median: number | null;

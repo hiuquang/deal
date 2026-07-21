@@ -4,6 +4,9 @@ import type {
   ActivityDto,
   ApiErrorBody,
   BuyOrderDto,
+  FavoriteIdsDto,
+  FavoriteKind,
+  SavedItemDto,
   BuyOrderOfferDto,
   CardDto,
   Category,
@@ -230,6 +233,12 @@ export const api = {
   // ---- hoạt động trên tin của tôi (thông báo trang cá nhân) ----
   getActivity: () => request<ActivityDto>("/api/activity"),
   markActivityRead: () => request<{ ok: boolean }>("/api/activity/read", { method: "POST" }),
+
+  // ---- tin đã lưu (❤️) ----
+  favoriteIds: () => request<FavoriteIdsDto>("/api/favorites/ids"),
+  listFavorites: () => request<{ items: SavedItemDto[] }>("/api/favorites"),
+  toggleFavorite: (kind: FavoriteKind, id: string, favorited: boolean) =>
+    request<{ favorited: boolean }>("/api/favorites", json({ kind, id, favorited })),
   markConversationRead: (conversationId: string) =>
     request<{ ok: boolean }>(`/api/conversations/${conversationId}/read`, {
       method: "POST",

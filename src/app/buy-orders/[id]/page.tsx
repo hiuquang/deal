@@ -6,6 +6,7 @@ import type { BuyOrderDto } from "@/lib/types";
 import { cardSpec, formatDate, formatJpy } from "@/lib/labels";
 import { useAuth } from "@/components/auth-context";
 import { ErrorBox, Loading } from "@/components/ui";
+import { HeartButton } from "@/components/heart-button";
 import { SellerSummary } from "@/components/seller-summary";
 import { OfferPanel } from "@/components/offer-panel";
 import { useI18n, type MessageKey } from "@/lib/i18n";
@@ -66,7 +67,12 @@ export default function BuyOrderDetailPage({
               {t(`cat.${order.card.category}` as MessageKey)}
             </p>
           </div>
-          <h1 className="mt-1 text-2xl font-bold">{order.card.nameJa}</h1>
+          <div className="mt-1 flex items-start justify-between gap-3">
+            <h1 className="text-2xl font-bold">{order.card.nameJa}</h1>
+            {!isOwner && (
+              <HeartButton kind="buy_order" id={order.id} variant="inline" />
+            )}
+          </div>
           {cardSpec(order.card) && (
             <p className="text-sm text-slate-500">
               {order.card.nameEn}・{cardSpec(order.card)}

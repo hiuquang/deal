@@ -381,6 +381,23 @@ export const MESSAGES = {
   "me.canView": { ja: "✓ 相場データ閲覧OK", vi: "✓ Được xem dữ liệu giá", en: "✓ Price data unlocked" },
   "me.locked": { ja: "🔒 取引1件で相場データ開放", vi: "🔒 Hoàn tất 1 giao dịch để mở khóa giá", en: "🔒 Complete 1 trade to unlock prices" },
   "me.noRatingYet": { ja: "評価なし（相互評価後に公開）", vi: "Chưa có đánh giá (công khai sau khi 2 bên đánh giá)", en: "No ratings (revealed after mutual rating)" },
+  "me.saved": { ja: "保存した出品", vi: "Đã lưu", en: "Saved" },
+  "me.savedEmpty": {
+    ja: "保存した出品はまだありません。❤️ボタンで気になる出品を保存できます。",
+    vi: "Chưa lưu tin nào. Bấm ❤️ trên tin để lưu lại xem sau.",
+    en: "Nothing saved yet. Tap ❤️ on a listing to save it for later.",
+  },
+  "fav.add": { ja: "保存する", vi: "Lưu", en: "Save" },
+  "fav.remove": { ja: "保存を解除", vi: "Bỏ lưu", en: "Remove from saved" },
+  "fav.save": { ja: "保存", vi: "Lưu", en: "Save" },
+  "fav.saved": { ja: "保存済み", vi: "Đã lưu", en: "Saved" },
+  "fav.removeShort": { ja: "解除", vi: "Bỏ lưu", en: "Remove" },
+  "fav.gone": { ja: "この出品はもうありません", vi: "Sản phẩm này không còn", en: "This listing is no longer available" },
+  "fav.goneHint": {
+    ja: "取引成立・取り下げなどで終了しました",
+    vi: "Đã bán / gỡ / hủy",
+    en: "Sold, removed, or cancelled",
+  },
   "me.activity": { ja: "お知らせ", vi: "Hoạt động mới", en: "Activity" },
   "me.activityEmpty": {
     ja: "まだお知らせはありません。出品へのコメントや購入希望が届くとここに表示されます。",

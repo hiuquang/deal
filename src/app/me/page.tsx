@@ -3,9 +3,16 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api, ApiClientError } from "@/lib/api-client";
-import type { ActivityDto, ListingDto, TradeDto, UserSummaryDto } from "@/lib/types";
+import type {
+  ActivityDto,
+  ListingDto,
+  SavedItemDto,
+  TradeDto,
+  UserSummaryDto,
+} from "@/lib/types";
 import { formatDate, formatDateTime, formatJpy } from "@/lib/labels";
 import { useAuth } from "@/components/auth-context";
+import { useFavorites } from "@/components/favorites-context";
 import { Empty, Loading, TradeStatusBadge, VipBadge, VipName } from "@/components/ui";
 import { UNREAD_EVENT } from "@/components/nav-bar";
 import { useI18n, type MessageKey } from "@/lib/i18n";
@@ -17,23 +24,27 @@ export default function MePage() {
   const [listings, setListings] = useState<ListingDto[] | null>(null);
   const [summary, setSummary] = useState<UserSummaryDto | null>(null);
   const [activity, setActivity] = useState<ActivityDto | null>(null);
+  const [saved, setSaved] = useState<SavedItemDto[] | null>(null);
 
   useEffect(() => {
     if (!me) return;
     let cancelled = false;
     void (async () => {
       try {
-        const [{ trades }, { listings }, { user }, activityData] = await Promise.all([
-          api.listTrades(),
-          api.listListings({ mine: true }),
-          api.getUserSummary(me.id),
-          api.getActivity(),
-        ]);
+        const [{ trades }, { listings }, { user }, activityData, { items }] =
+          await Promise.all([
+            api.listTrades(),
+            api.listListings({ mine: true }),
+            api.getUserSummary(me.id),
+            api.getActivity(),
+            api.listFavorites(),
+          ]);
         if (cancelled) return;
         setTrades(trades);
         setListings(listings);
         setSummary(user);
         setActivity(activityData);
+        setSaved(items);
         // Mở trang = đã xem hoạt động → ghi mốc rồi báo nav tắt badge.
         // (isNew trong danh sách vừa tải giữ nguyên để user còn thấy cái gì mới.)
         void api
@@ -170,6 +181,21 @@ export default function MePage() {
       </section>
 
       <section className="space-y-3">
+        <h2 className="font-bold">❤️ {t("me.saved")}</h2>
+        {saved === null ? (
+          <Loading />
+        ) : saved.length === 0 ? (
+          <Empty message={t("me.savedEmpty")} />
+        ) : (
+          <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white">
+            {saved.map((item, i) => (
+              <SavedRow key={`${item.kind}-${item.targetId ?? "gone"}-${i}`} item={item} />
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="space-y-3">
         <h2 className="font-bold">{t("me.trades")}</h2>
         {trades === null ? (
           <Loading />
@@ -233,5 +259,77 @@ export default function MePage() {
         )}
       </section>
     </div>
+  );
+}
+
+/**
+ * 1 dòng tin đã lưu. Còn hàng → link tới tin; đã gỡ/bán/hủy hoặc bị xóa →
+ * mờ đi + nhãn "không còn", vẫn cho bấm bỏ lưu để dọn danh sách.
+ */
+function SavedRow({ item }: { item: SavedItemDto }) {
+  const { t } = useI18n();
+  const { toggle } = useFavorites();
+  const [removed, setRemoved] = useState(false);
+
+  if (removed) return null;
+
+  const href = item.kind === "buy_order" ? `/buy-orders/${item.targetId}` : `/listings/${item.targetId}`;
+  const priceText =
+    item.priceJpy != null
+      ? item.kind === "buy_order"
+        ? t("bo.maxUnit", { price: formatJpy(item.priceJpy) })
+        : formatJpy(item.priceJpy)
+      : t("common.negotiable");
+
+  const inner = (
+    <>
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100 text-lg">
+        {item.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
+        ) : (
+          <span aria-hidden="true">{item.kind === "buy_order" ? "📦" : "🎴"}</span>
+        )}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="line-clamp-1 text-sm font-medium">
+          {item.kind === "buy_order" && (
+            <span className="mr-1 rounded bg-amber-100 px-1 text-[10px] font-semibold text-amber-700">
+              {t("chat.buyOrderTag")}
+            </span>
+          )}
+          {item.available && item.cardNameJa ? item.cardNameJa : t("fav.gone")}
+        </p>
+        {item.available ? (
+          <p className="text-xs text-slate-500">{priceText}</p>
+        ) : (
+          <p className="text-xs text-slate-400">{t("fav.goneHint")}</p>
+        )}
+      </div>
+    </>
+  );
+
+  return (
+    <li className="flex items-center gap-3 px-4 py-3">
+      {item.available && item.targetId ? (
+        <Link href={href} className="flex min-w-0 flex-1 items-center gap-3 hover:opacity-80">
+          {inner}
+        </Link>
+      ) : (
+        <div className="flex min-w-0 flex-1 items-center gap-3 opacity-60">{inner}</div>
+      )}
+      <button
+        onClick={async () => {
+          // Bỏ lưu ngay tại danh sách (kind + id đủ để gọi toggle; mục mồ côi
+          // không có targetId thì bỏ qua — hiếm, sẽ tự trôi khi tin bị xóa cứng).
+          if (item.targetId) await toggle(item.kind, item.targetId);
+          setRemoved(true);
+        }}
+        aria-label={t("fav.remove")}
+        className="shrink-0 rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-400 hover:border-red-200 hover:text-red-500"
+      >
+        {t("fav.removeShort")}
+      </button>
+    </li>
   );
 }

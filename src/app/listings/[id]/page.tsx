@@ -7,6 +7,7 @@ import type { ListingDto } from "@/lib/types";
 import { cardSpec, formatDate, formatJpy } from "@/lib/labels";
 import { useAuth } from "@/components/auth-context";
 import { ErrorBox, Loading } from "@/components/ui";
+import { HeartButton } from "@/components/heart-button";
 import { SellerSummary } from "@/components/seller-summary";
 import { PurchasePanel } from "@/components/purchase-panel";
 import { CommentsSection } from "@/components/comments-section";
@@ -126,6 +127,12 @@ export default function ListingDetailPage({
                 >
                   {t("detail.editPrice")}
                 </button>
+              )}
+              {/* Người không phải chủ tin: nút lưu ❤️ */}
+              {!isOwner && (
+                <span className="ml-auto">
+                  <HeartButton kind="listing" id={listing.id} variant="inline" />
+                </span>
               )}
             </div>
             {isOwner && editingPrice && (

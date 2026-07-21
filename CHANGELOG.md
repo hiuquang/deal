@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [0.15.0] — 2026-07-21 — Nút lưu ❤️ + mục "Đã lưu" ở trang cá nhân
+
+### Tính năng
+- **Nút ❤️ lưu/bỏ lưu** trên thẻ tin bán + tin gom (overlay góc thẻ) và trang chi tiết (nút inline cạnh giá — chỉ hiện với người không phải chủ tin). Chưa đăng nhập → bấm chuyển sang /login (không lưu ẩn danh).
+- **Mục "❤️ 保存した出品 / Đã lưu"** đầu trang cá nhân: thumbnail + tên + giá, bấm đi thẳng tới tin. Tin đã bán/gỡ/hủy (status != active) hoặc bị xóa → mờ đi + "この出品はもうありません / Sản phẩm này không còn", vẫn cho bỏ lưu để dọn.
+- **Không spam request**: `FavoritesProvider` tải tập id đã lưu 1 lần khi đăng nhập (`GET /api/favorites/ids`), mọi `HeartButton` tra cứu + toggle optimistic (revert nếu API lỗi) — thẻ nào cũng đúng trạng thái tim mà chỉ 1 request/trang.
+- Schema: bảng `favorites` (user + listing?/buy_order?, 2 unique chặn trùng, cascade), migration `20260722...` đã deploy. Repo/service/validation + endpoint `GET/POST /api/favorites`, `GET /api/favorites/ids`. +8 unit test (208 pass). Docs favorites.md + data-model + README, i18n ja/vi/en.
+
 ## [0.14.0] — 2026-07-21 — Thông báo hoạt động trên tin của mình
 
 ### Tính năng

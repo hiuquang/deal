@@ -45,8 +45,32 @@ model User {
   buyOrders        BuyOrder[]
   buyOrderOffers   BuyOrderOffer[]
   emailTokens      EmailToken[]
+  favorites        Favorite[]
 
   @@map("users")
+}
+
+// Tin đã lưu (❤️): user lưu 1 listing HOẶC 1 buy-order để xem lại ở trang cá
+// nhân. Đúng 1 trong 2 FK khác null (enforce ở service). onDelete Cascade: tin
+// bị xóa cứng thì bản lưu cũng đi — nhưng listing/buy-order hiện chỉ soft-status
+// (cancelled/closed) nên thực tế bản lưu vẫn còn, UI hiện "không còn".
+model Favorite {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  listingId  String?  @map("listing_id")
+  buyOrderId String?  @map("buy_order_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing  Listing?  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyOrder BuyOrder? @relation(fields: [buyOrderId], references: [id], onDelete: Cascade)
+
+  // NULL distinct trong Postgres → 2 unique này chặn trùng lượt lưu listing và
+  // trùng lượt lưu buy-order riêng biệt (không cản nhau).
+  @@unique([userId, listingId])
+  @@unique([userId, buyOrderId])
+  @@index([userId, createdAt])
+  @@map("favorites")
 }
 
 // Token xác nhận email / đặt lại mật khẩu — dùng 1 lần, có hạn.
@@ -139,6 +163,7 @@ model Listing {
   trades           Trade[]
   comments         Comment[]
   purchaseRequests PurchaseRequest[]
+  favorites        Favorite[]
 
   @@index([cardId, status])
   @@index([sellerId])
@@ -232,6 +257,7 @@ model BuyOrder {
   offers        BuyOrderOffer[]
   conversations Conversation[]
   trades        Trade[]
+  favorites     Favorite[]
 
   @@index([cardId, status])
   @@index([status, createdAt])

@@ -91,6 +91,11 @@ reports (P2)      id, reporter_id→users, reported_user_id→users,
 comments (P3)     id, listing_id→listings, user_id→users, body(1–500 ký tự),
                   created_at, updated_at
 
+favorites         id, user_id→users (cascade), listing_id?→listings (cascade),
+                  buy_order_id?→buy_orders (cascade), created_at. Đúng 1 FK
+                  listing/buy_order khác null. Unique (user,listing)+(user,buy_order).
+                  Tin đã lưu ❤️ — xem [api/favorites.md](api/favorites.md).
+
 purchase_requests id, listing_id→listings, buyer_id→users,
 (P3)              status(pending|connected), created_at, updated_at
                   unique(listing_id, buyer_id)

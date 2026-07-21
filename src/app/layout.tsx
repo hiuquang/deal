@@ -11,6 +11,7 @@ const notoSans = Noto_Sans({
   variable: "--font-sans",
 });
 import { AuthProvider } from "@/components/auth-context";
+import { FavoritesProvider } from "@/components/favorites-context";
 import { I18nProvider } from "@/lib/i18n";
 import { NavBar } from "@/components/nav-bar";
 import { VerifyBanner } from "@/components/verify-banner";
@@ -30,14 +31,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen antialiased">
         <I18nProvider>
           <AuthProvider>
-            <NavBar />
-            <VerifyBanner />
-            <TermsGate />
-            <main className="mx-auto max-w-5xl px-4 py-6">
-              <BackBar />
-              {children}
-            </main>
-            <SiteFooter />
+            <FavoritesProvider>
+              <NavBar />
+              <VerifyBanner />
+              <TermsGate />
+              <main className="mx-auto max-w-5xl px-4 py-6">
+                <BackBar />
+                {children}
+              </main>
+              <SiteFooter />
+            </FavoritesProvider>
           </AuthProvider>
         </I18nProvider>
       </body>
