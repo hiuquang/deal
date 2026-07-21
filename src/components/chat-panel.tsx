@@ -1,9 +1,10 @@
 "use client";
 
-// Khung chat 1 conversation — polling tin nhắn mới mỗi 6 giây, CHỈ khi tab
-// đang hiển thị (tab ẩn/thu nhỏ thì ngừng — tiết kiệm phần lớn request khi
-// nhiều người treo tab); quay lại tab là poll bù ngay. MVP dùng polling thay
-// WebSocket (design.md).
+// Khung chat 1 conversation — polling THÔNG MINH: nhịp poll tự điều chỉnh
+// theo mức tương tác (đang gõ/chạm → 5s; im ắng → giãn dần 15s/60s), CHỈ khi
+// tab đang hiển thị. Đối phương nhắn tới hoặc quay lại tab → bật lại nhịp
+// nhanh ngay. Giảm ~60-70% request so với poll cứng 6s mà cảm giác chat gần
+// như không đổi. MVP dùng polling thay WebSocket (roadmap: Supabase Realtime).
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiClientError } from "@/lib/api-client";
 import type { MessageDto } from "@/lib/types";
@@ -11,7 +12,14 @@ import { formatDateTime } from "@/lib/labels";
 import { useI18n } from "@/lib/i18n";
 import { ErrorBox } from "@/components/ui";
 
-const POLL_MS = 6000;
+// Nhịp poll theo mức tương tác. Trường hợp xấu nhất: cả 2 bên treo tab >5
+// phút thì tin đầu tiên tới trễ tối đa ~60s — chấp nhận được với chợ trade
+// (badge nav cũng báo song song); ngay khi thấy tin là quay lại nhịp 5s.
+const POLL_ACTIVE_MS = 5_000; // có tương tác trong 1 phút gần nhất
+const POLL_RECENT_MS = 15_000; // im ắng 1–5 phút
+const POLL_IDLE_MS = 60_000; // treo >5 phút
+const ACTIVE_WINDOW_MS = 60_000;
+const RECENT_WINDOW_MS = 5 * 60_000;
 
 export function ChatPanel({
   conversationId,
@@ -33,6 +41,12 @@ export function ChatPanel({
   // đọc lịch sử thì KHÔNG giật xuống đáy mỗi lần poll có tin mới.
   const stickToBottomRef = useRef(true);
   const lastIdRef = useRef<string | undefined>(undefined);
+  // Mốc tương tác cuối (gõ, chạm, cuộn, gửi, nhận tin) — quyết định nhịp poll.
+  const lastActivityRef = useRef(Date.now());
+
+  const markActivity = useCallback(() => {
+    lastActivityRef.current = Date.now();
+  }, []);
 
   const poll = useCallback(async () => {
     try {
@@ -54,29 +68,54 @@ export function ChatPanel({
           const seen = new Set(prev.map((m) => m.id));
           return [...prev, ...incoming.filter((m) => !seen.has(m.id))];
         });
-        // Có tin của đối phương lúc đang xem → đánh dấu đã đọc, huy hiệu giữ 0.
-        if (incoming.some((m) => m.senderId !== myUserId)) onIncoming?.();
+        // Có tin của đối phương lúc đang xem → đánh dấu đã đọc, huy hiệu giữ
+        // 0; đồng thời tính là tương tác (họ đang nói chuyện với mình) → giữ
+        // nhịp poll nhanh cho cuộc hội thoại mượt.
+        if (incoming.some((m) => m.senderId !== myUserId)) {
+          markActivity();
+          onIncoming?.();
+        }
       }
     } catch {
       // lỗi polling tạm thời — thử lại ở tick sau
     }
-  }, [conversationId, myUserId, onIncoming]);
+  }, [conversationId, myUserId, onIncoming, markActivity]);
 
   useEffect(() => {
     setMessages([]);
     setError(null);
     lastIdRef.current = undefined;
     stickToBottomRef.current = true;
+    lastActivityRef.current = Date.now(); // mở hội thoại = đang tương tác
     void poll();
-    const timer = setInterval(() => {
-      if (document.visibilityState === "visible") void poll();
-    }, POLL_MS);
+    // Chuỗi setTimeout thay setInterval: mỗi tick tự chọn delay theo mức
+    // tương tác hiện tại (5s/15s/60s). Tab ẩn thì bỏ qua tick (không request).
+    const pollDelay = () => {
+      const idle = Date.now() - lastActivityRef.current;
+      if (idle < ACTIVE_WINDOW_MS) return POLL_ACTIVE_MS;
+      if (idle < RECENT_WINDOW_MS) return POLL_RECENT_MS;
+      return POLL_IDLE_MS;
+    };
+    let stopped = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const tick = () => {
+      if (stopped) return;
+      timer = setTimeout(async () => {
+        if (document.visibilityState === "visible") await poll();
+        tick();
+      }, pollDelay());
+    };
+    tick();
     const onVisibilityChange = () => {
-      if (document.visibilityState === "visible") void poll();
+      if (document.visibilityState === "visible") {
+        lastActivityRef.current = Date.now(); // quay lại tab = tương tác
+        void poll();
+      }
     };
     document.addEventListener("visibilitychange", onVisibilityChange);
     return () => {
-      clearInterval(timer);
+      stopped = true;
+      clearTimeout(timer);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [poll]);
@@ -92,6 +131,7 @@ export function ChatPanel({
     e.preventDefault();
     const body = draft.trim();
     if (!body) return;
+    markActivity();
     setBusy(true);
     try {
       await api.sendMessage(conversationId, body);
@@ -118,6 +158,7 @@ export function ChatPanel({
     <div className="flex min-h-0 flex-1 flex-col">
       <div
         ref={listRef}
+        onScroll={markActivity}
         className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain p-3"
       >
         {messages.length === 0 && (
@@ -153,7 +194,11 @@ export function ChatPanel({
         <input
           type="text"
           value={draft}
-          onChange={(e) => setDraft(e.target.value)}
+          onChange={(e) => {
+            markActivity();
+            setDraft(e.target.value);
+          }}
+          onFocus={markActivity}
           maxLength={1000}
           placeholder={t("chat.placeholder")}
           aria-label={t("chat.placeholder")}

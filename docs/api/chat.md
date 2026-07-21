@@ -4,7 +4,7 @@ Quy ước chung: [README.md](README.md).
 
 > **P3**: `POST /api/conversations` đã bị GỠ — conversation chỉ được tạo qua `POST /api/requests/:id/connect` (xem [purchase-requests.md](purchase-requests.md)).
 
-Chat dùng **polling 6s**, incremental qua `?after=` (không WebSocket). Client chỉ poll khi tab đang hiển thị (`visibilitychange`), quay lại tab thì poll bù ngay.
+Chat dùng **polling thông minh** (không WebSocket — roadmap: Supabase Realtime), incremental qua `?after=`. Nhịp poll tự điều chỉnh theo mức tương tác (gõ/chạm/cuộn/gửi/nhận tin, xem `chat-panel.tsx`): tương tác trong 1 phút gần nhất → **5s**; im ắng 1–5 phút → **15s**; treo >5 phút → **60s**. Đối phương nhắn tới hoặc quay lại tab → về ngay nhịp 5s. Client chỉ poll khi tab đang hiển thị (`visibilitychange`), quay lại tab thì poll bù ngay; poll unread ở nav (15s) cũng chỉ chạy khi tab hiển thị. Trường hợp xấu nhất khi cả 2 bên treo tab >5 phút: tin đầu tiên trễ tối đa ~60s (badge nav báo song song).
 
 ### GET /api/conversations
 

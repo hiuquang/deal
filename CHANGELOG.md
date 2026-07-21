@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [0.13.1] — 2026-07-21 — Polling thông minh cho chat (giảm ~60-70% request)
+
+### Hiệu năng
+- **ChatPanel poll theo mức tương tác** thay vì cứng 6s: có tương tác trong 1 phút gần nhất (gõ, chạm ô nhập, cuộn lịch sử, gửi tin, NHẬN tin đối phương) → 5s; im ắng 1–5 phút → 15s; treo >5 phút → 60s. Chuỗi `setTimeout` tự chọn delay mỗi tick (thay `setInterval`); tab ẩn bỏ qua tick. Quay lại tab / đối phương nhắn → reset về nhịp 5s ngay nên hội thoại đang nóng vẫn mượt như cũ. Trade-off ghi rõ trong code: cả 2 bên treo >5 phút thì tin đầu trễ tối đa ~60s.
+- **Poll unread ở nav chỉ chạy khi tab hiển thị** (trước đây `setInterval` 15s chạy cả khi tab ẩn — mỗi tab treo tốn 4 req/phút vô ích); thêm listener `visibilitychange` để quay lại tab là refresh ngay.
+- Động cơ: chat polling là nguồn request lớn nhất của web (user treo chat ~14 req/phút) — đây là đòn 80/20 trước khi chuyển Supabase Realtime (roadmap). `docs/api/chat.md` cập nhật.
+
 ## [0.13.0] — 2026-07-21 — Đợt rà soát UX: sửa 10 lỗi/chỗ chưa logic toàn site
 
 ### Sửa lỗi

@@ -73,19 +73,27 @@ export function NavBar() {
     }
   }, [me]);
 
-  // Poll định kỳ + khi quay lại tab + khi đổi trang (mở/đóng chat) + khi chat
-  // page phát sự kiện sau lúc đánh dấu đã đọc → huy hiệu cập nhật gần như tức thì.
+  // Poll định kỳ (CHỈ khi tab hiển thị — tab ẩn/thu nhỏ không tốn request)
+  // + khi quay lại tab + khi đổi trang (mở/đóng chat) + khi chat page phát
+  // sự kiện sau lúc đánh dấu đã đọc → huy hiệu cập nhật gần như tức thì.
   useEffect(() => {
     void refreshUnread();
     if (!me) return;
-    const timer = setInterval(refreshUnread, UNREAD_POLL_MS);
+    const timer = setInterval(() => {
+      if (document.visibilityState === "visible") void refreshUnread();
+    }, UNREAD_POLL_MS);
     const onFocus = () => refreshUnread();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void refreshUnread();
+    };
     const onEvent = () => refreshUnread();
     window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisible);
     window.addEventListener(UNREAD_EVENT, onEvent);
     return () => {
       clearInterval(timer);
       window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener(UNREAD_EVENT, onEvent);
     };
   }, [me, refreshUnread]);
