@@ -58,16 +58,20 @@ export function NavBar() {
   const router = useRouter();
   const pathname = usePathname();
   const [unread, setUnread] = useState(0);
+  // Hoạt động mới trên tin của mình (comment/購入希望/chào bán) — badge trang cá nhân.
+  const [activity, setActivity] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const refreshUnread = useCallback(async () => {
     if (!me) {
       setUnread(0);
+      setActivity(0);
       return;
     }
     try {
-      const { count } = await api.unreadCount();
+      const { count, activityCount } = await api.unreadCount();
       setUnread(count);
+      setActivity(activityCount);
     } catch {
       // lỗi tạm thời — giữ số cũ, thử lại ở lần poll sau
     }
@@ -112,6 +116,7 @@ export function NavBar() {
   }
 
   const unreadLabel = t("nav.unreadAria", { n: unread });
+  const activityLabel = t("nav.activityAria", { n: activity });
 
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
@@ -150,10 +155,15 @@ export function NavBar() {
             <>
               <Link
                 href="/me"
-                className="flex max-w-[10rem] items-center rounded-md px-3 py-1.5 font-medium text-indigo-700 hover:bg-indigo-50"
+                className="relative flex max-w-[10rem] items-center rounded-md px-3 py-1.5 font-medium text-indigo-700 hover:bg-indigo-50"
               >
                 <span className="truncate">{me.displayName}</span>
                 {me.isVip && <VipBadge />}
+                {activity > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5">
+                    <UnreadBadge count={activity} label={activityLabel} />
+                  </span>
+                )}
               </Link>
               <button
                 onClick={handleLogout}
@@ -202,8 +212,9 @@ export function NavBar() {
                 <path d="M4 7h16M4 12h16M4 17h16" />
               )}
             </svg>
-            {/* Menu đóng thì huy hiệu số bị giấu → chấm đỏ báo còn tin chưa đọc. */}
-            {!menuOpen && unread > 0 && (
+            {/* Menu đóng thì huy hiệu số bị giấu → chấm đỏ báo còn tin chưa đọc
+                hoặc hoạt động mới trên tin của mình. */}
+            {!menuOpen && (unread > 0 || activity > 0) && (
               <span
                 aria-label={unreadLabel}
                 className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-red-500"
@@ -239,10 +250,11 @@ export function NavBar() {
             <>
               <Link
                 href="/me"
-                className="flex items-center rounded-md px-2 py-2.5 font-medium text-indigo-700 hover:bg-indigo-50"
+                className="flex items-center gap-2 rounded-md px-2 py-2.5 font-medium text-indigo-700 hover:bg-indigo-50"
               >
                 <span className="truncate">{me.displayName}</span>
                 {me.isVip && <VipBadge />}
+                <UnreadBadge count={activity} label={activityLabel} />
               </Link>
               <button
                 onClick={handleLogout}

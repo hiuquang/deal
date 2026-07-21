@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.14.0] — 2026-07-21 — Thông báo hoạt động trên tin của mình
+
+### Tính năng
+- **Mục "お知らせ" ở trang cá nhân** (`/me`): gộp 3 loại hoạt động trên tin của mình, mới nhất trước — bình luận của người khác (💬, 20 gần nhất), 購入希望 đang chờ (🛒), chào bán đang chờ trên tin gom (📦). Mỗi dòng: người gửi (kèm VIP badge), tên thẻ, nội dung/số lượng, thời gian, link thẳng tới tin; item mới highlight + chấm đỏ.
+- **Badge đỏ ở nav trên tên mình** (desktop + mobile menu + chấm đỏ hamburger): số hoạt động mới hơn mốc "đã xem". Mở trang cá nhân → `POST /api/activity/read` ghi mốc → badge về 0 (danh sách giữ nguyên — request/offer pending nằm đó tới khi 連携). Semantics giống hệt unread chat.
+- **Không tốn thêm request poll**: `activityCount` gộp vào response `GET /api/conversations/unread-count` sẵn có (giữ thành quả tối ưu 0.13.1). Đếm bằng 3 câu `count` gọn.
+- Schema: cột `users.activity_seen_at` (nullable, migration `20260721131543` đã deploy). Endpoint mới `GET /api/activity` + `POST /api/activity/read`. Derived hoàn toàn — không có bảng notification (cùng triết lý trust system).
+- +5 unit test activity-service (202 test); docs: chat.md (endpoint + unread-count mới), data-model.md, README map, i18n đủ ja/vi/en.
+
 ## [0.13.2] — 2026-07-21 — Trần đăng ký 500 tài khoản/ngày
 
 ### Tính năng

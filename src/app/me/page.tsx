@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api, ApiClientError } from "@/lib/api-client";
-import type { ListingDto, TradeDto, UserSummaryDto } from "@/lib/types";
-import { formatDate, formatJpy } from "@/lib/labels";
+import type { ActivityDto, ListingDto, TradeDto, UserSummaryDto } from "@/lib/types";
+import { formatDate, formatDateTime, formatJpy } from "@/lib/labels";
 import { useAuth } from "@/components/auth-context";
 import { Empty, Loading, TradeStatusBadge, VipBadge, VipName } from "@/components/ui";
+import { UNREAD_EVENT } from "@/components/nav-bar";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 
 export default function MePage() {
@@ -15,21 +16,30 @@ export default function MePage() {
   const [trades, setTrades] = useState<TradeDto[] | null>(null);
   const [listings, setListings] = useState<ListingDto[] | null>(null);
   const [summary, setSummary] = useState<UserSummaryDto | null>(null);
+  const [activity, setActivity] = useState<ActivityDto | null>(null);
 
   useEffect(() => {
     if (!me) return;
     let cancelled = false;
     void (async () => {
       try {
-        const [{ trades }, { listings }, { user }] = await Promise.all([
+        const [{ trades }, { listings }, { user }, activityData] = await Promise.all([
           api.listTrades(),
           api.listListings({ mine: true }),
           api.getUserSummary(me.id),
+          api.getActivity(),
         ]);
         if (cancelled) return;
         setTrades(trades);
         setListings(listings);
         setSummary(user);
+        setActivity(activityData);
+        // Mở trang = đã xem hoạt động → ghi mốc rồi báo nav tắt badge.
+        // (isNew trong danh sách vừa tải giữ nguyên để user còn thấy cái gì mới.)
+        void api
+          .markActivityRead()
+          .then(() => window.dispatchEvent(new Event(UNREAD_EVENT)))
+          .catch(() => {});
       } catch (e) {
         // Session bị thu hồi (vd. vừa đổi mật khẩu ở tab khác) → 401.
         // Đồng bộ lại trạng thái đăng nhập thay vì để lỗi làm sập trang.
@@ -92,6 +102,71 @@ export default function MePage() {
             {me.canViewPrices ? t("me.canView") : t("me.locked")}
           </p>
         </div>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="font-bold">
+          🔔 {t("me.activity")}
+          {activity && activity.newCount > 0 && (
+            <span className="ml-2 rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
+              {activity.newCount}
+            </span>
+          )}
+        </h2>
+        {activity === null ? (
+          <Loading />
+        ) : activity.items.length === 0 ? (
+          <Empty message={t("me.activityEmpty")} />
+        ) : (
+          <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white">
+            {activity.items.map((item, i) => (
+              <li key={`${item.kind}-${item.targetId}-${i}`}>
+                <Link
+                  href={
+                    item.kind === "offer"
+                      ? `/buy-orders/${item.targetId}`
+                      : `/listings/${item.targetId}`
+                  }
+                  className={`flex items-start gap-2 px-4 py-3 hover:bg-slate-50 ${
+                    item.isNew ? "bg-indigo-50/60" : ""
+                  }`}
+                >
+                  <span aria-hidden="true" className="mt-0.5 text-base">
+                    {item.kind === "comment" ? "💬" : item.kind === "request" ? "🛒" : "📦"}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm">
+                      <VipName
+                        name={item.actorName}
+                        isVip={item.actorIsVip}
+                        className="font-medium"
+                      />{" "}
+                      {item.kind === "comment"
+                        ? t("me.actComment", { card: item.cardNameJa })
+                        : item.kind === "request"
+                          ? t("me.actRequest", { card: item.cardNameJa })
+                          : t("me.actOffer", { card: item.cardNameJa, n: item.quantity ?? 0 })}
+                    </span>
+                    {item.body && (
+                      <span className="line-clamp-1 block text-xs text-slate-500">
+                        「{item.body}」
+                      </span>
+                    )}
+                    <span className="block text-[11px] text-slate-400">
+                      {formatDateTime(item.createdAt)}
+                    </span>
+                  </span>
+                  {item.isNew && (
+                    <span
+                      aria-label={t("me.actNew")}
+                      className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-red-500"
+                    />
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section className="space-y-3">

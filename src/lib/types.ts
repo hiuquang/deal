@@ -316,6 +316,36 @@ export interface UserProfileDto {
   activeListings: ListingDto[];
 }
 
+// ---- Hoạt động trên tin của tôi (thông báo ở trang cá nhân) ----
+
+export type ActivityKind = "comment" | "request" | "offer";
+
+/**
+ * 1 dòng hoạt động: người khác bình luận vào tin mình / gửi 購入希望 (pending)
+ * / chào bán vào tin gom của mình (pending). Derived — không có bảng riêng.
+ */
+export interface ActivityItemDto {
+  kind: ActivityKind;
+  /** id để dựng link đích: listingId (comment/request) hoặc buyOrderId (offer) */
+  targetId: string;
+  cardNameJa: string;
+  actorName: string;
+  actorIsVip: boolean;
+  /** nội dung bình luận (kind=comment) */
+  body: string | null;
+  /** số lượng chào bán (kind=offer) */
+  quantity: number | null;
+  /** mới hơn mốc activitySeenAt của viewer → highlight + tính vào badge */
+  isNew: boolean;
+  createdAt: string;
+}
+
+export interface ActivityDto {
+  items: ActivityItemDto[];
+  /** số item isNew — khớp con số badge ở nav */
+  newCount: number;
+}
+
 export interface PriceStatsDto {
   count: number;
   median: number | null;

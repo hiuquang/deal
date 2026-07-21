@@ -6,6 +6,8 @@
 users             id, email(unique), password_hash, display_name,
                   email_verified_at? (P4 — null = chưa xác nhận),
                   terms_accepted_version?, terms_accepted_at? (P5),
+                  activity_seen_at? (mốc "đã xem hoạt động" cho badge thông báo
+                  trang cá nhân — null = chưa xem lần nào, mọi item đều mới),
                   created_at, updated_at, deleted_at (soft delete)
 
 sessions          id, token(unique), user_id→users, expires_at, created_at, updated_at

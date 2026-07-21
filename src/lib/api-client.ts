@@ -1,6 +1,7 @@
 // Tầng gọi API duy nhất của frontend — component KHÔNG fetch trực tiếp.
 // Mọi hàm map 1-1 với API CONTRACT trong design.md mục 5.
 import type {
+  ActivityDto,
   ApiErrorBody,
   BuyOrderDto,
   BuyOrderOfferDto,
@@ -224,7 +225,11 @@ export const api = {
   listConversations: () =>
     request<{ conversations: ConversationDto[] }>("/api/conversations"),
   unreadCount: () =>
-    request<{ count: number }>("/api/conversations/unread-count"),
+    request<{ count: number; activityCount: number }>("/api/conversations/unread-count"),
+
+  // ---- hoạt động trên tin của tôi (thông báo trang cá nhân) ----
+  getActivity: () => request<ActivityDto>("/api/activity"),
+  markActivityRead: () => request<{ ok: boolean }>("/api/activity/read", { method: "POST" }),
   markConversationRead: (conversationId: string) =>
     request<{ ok: boolean }>(`/api/conversations/${conversationId}/read`, {
       method: "POST",

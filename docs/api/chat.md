@@ -24,7 +24,15 @@ Chat dùng **polling thông minh** (không WebSocket — roadmap: Supabase Realt
 
 ### GET /api/conversations/unread-count
 
-→ `{count}` — tổng tin chưa đọc của viewer (huy hiệu đỏ ở nav). Mỗi hội thoại: đếm tin của bên kia gửi sau mốc đã đọc của mình; hội thoại chưa mở lần nào (vừa được match) tính tối thiểu 1. Nav poll ~15s + refetch khi focus/đổi route/sự kiện `deal:unread`.
+→ `{count, activityCount}` — số liệu cho badge ở nav, gộp 1 endpoint vì bị poll định kỳ (tách riêng = nhân đôi request). `count`: tổng tin chat chưa đọc (mỗi hội thoại đếm tin bên kia gửi sau mốc đã đọc; chưa mở lần nào tính tối thiểu 1). `activityCount`: hoạt động mới trên tin của mình — xem `GET /api/activity` bên dưới. Nav poll ~15s (chỉ khi tab hiển thị) + refetch khi focus/đổi route/sự kiện `deal:unread`.
+
+### GET /api/activity
+
+→ `{items: [...], newCount}` — hoạt động trên tin của viewer, mới nhất trước (derived, không có bảng notification): bình luận của người khác vào tin mình (`kind:"comment"`, 20 gần nhất), 購入希望 đang pending (`kind:"request"`), chào bán pending trên tin gom của mình (`kind:"offer"`). Mỗi item: `targetId` (listingId hoặc buyOrderId để dựng link), `cardNameJa`, `actorName/actorIsVip`, `body` (comment), `quantity` (offer), `isNew` (sau mốc `users.activity_seen_at` — mốc null thì tất cả là mới), `createdAt`. Request/offer pending nằm trong danh sách tới khi chủ tin 連携 — `isNew` chỉ quyết định highlight + badge.
+
+### POST /api/activity/read
+
+Ghi mốc đã xem (= now) → `{ok:true}`, badge `activityCount` về 0. Trang cá nhân gọi khi mở.
 
 ### POST /api/conversations/:id/read
 
