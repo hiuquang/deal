@@ -18,14 +18,19 @@ vi.mock("@/server/repositories/ratings", () => ({
 vi.mock("@/server/repositories/users", () => ({
   countContributions: vi.fn(),
 }));
+vi.mock("@/server/repositories/conversations", () => ({
+  setMessagesPurgeAt: vi.fn(),
+}));
 
 import * as tradesRepo from "@/server/repositories/trades";
 import * as ratingsRepo from "@/server/repositories/ratings";
 import * as usersRepo from "@/server/repositories/users";
+import * as conversationsRepo from "@/server/repositories/conversations";
 import * as ratingService from "@/server/services/rating-service";
 
 const trade = {
   id: "t1",
+  conversationId: "c1",
   buyerId: "buyer1",
   sellerId: "seller1",
   status: "confirmed",
@@ -80,6 +85,27 @@ describe("ratingService.rate", () => {
     expect(ratingsRepo.createRating).toHaveBeenCalledWith(
       expect.objectContaining({ raterId: "buyer1", rateeId: "seller1", score: 4 })
     );
+  });
+
+  it("rating ĐẦU (mới 1/2) → CHƯA hẹn xóa chat", async () => {
+    vi.mocked(ratingsRepo.findRatingsByTrade).mockResolvedValue([]); // chưa ai rate
+    vi.mocked(ratingsRepo.createRating).mockResolvedValue(makeRating("buyer1") as never);
+    await ratingService.rate("buyer1", "t1", { score: 5 });
+    expect(conversationsRepo.setMessagesPurgeAt).not.toHaveBeenCalled();
+  });
+
+  it("rating THỨ 2 → hẹn xóa nội dung chat của hội thoại (+~1 ngày)", async () => {
+    // đối phương đã rate → rating này là cái thứ 2
+    vi.mocked(ratingsRepo.findRatingsByTrade).mockResolvedValue([makeRating("seller1")] as never);
+    vi.mocked(ratingsRepo.createRating).mockResolvedValue(makeRating("buyer1") as never);
+    const before = Date.now();
+    await ratingService.rate("buyer1", "t1", { score: 5 });
+    expect(conversationsRepo.setMessagesPurgeAt).toHaveBeenCalledTimes(1);
+    const [convId, purgeAt] = vi.mocked(conversationsRepo.setMessagesPurgeAt).mock.calls[0];
+    expect(convId).toBe("c1");
+    const delay = (purgeAt as Date).getTime() - before;
+    expect(delay).toBeGreaterThan(23 * 3600 * 1000);
+    expect(delay).toBeLessThan(25 * 3600 * 1000);
   });
 });
 

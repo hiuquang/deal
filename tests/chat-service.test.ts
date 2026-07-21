@@ -7,10 +7,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@/server/repositories/conversations", () => ({
   listConversationsWithReadState: vi.fn(),
   countUnreadMessages: vi.fn(),
+  listConversationsToPurge: vi.fn(),
+  purgeMessages: vi.fn(),
 }));
 
 import * as conversationsRepo from "@/server/repositories/conversations";
-import { getUnreadCount } from "@/server/services/chat-service";
+import {
+  __resetPurgeThrottle,
+  getUnreadCount,
+  purgeExpiredChats,
+  purgeExpiredChatsThrottled,
+} from "@/server/services/chat-service";
 
 const ME = "me";
 
@@ -76,5 +83,28 @@ describe("getUnreadCount", () => {
       .mockResolvedValueOnce(5);
 
     expect(await getUnreadCount(ME)).toBe(7);
+  });
+});
+
+describe("purgeExpiredChats — xóa nội dung chat tới hạn", () => {
+  beforeEach(() => __resetPurgeThrottle());
+
+  it("xóa messages cho từng hội thoại tới hạn", async () => {
+    vi.mocked(conversationsRepo.listConversationsToPurge).mockResolvedValue([
+      { id: "a" },
+      { id: "b" },
+    ] as never);
+    vi.mocked(conversationsRepo.purgeMessages).mockResolvedValue(3);
+    const n = await purgeExpiredChats();
+    expect(n).toBe(2);
+    expect(conversationsRepo.purgeMessages).toHaveBeenCalledWith("a");
+    expect(conversationsRepo.purgeMessages).toHaveBeenCalledWith("b");
+  });
+
+  it("throttle: lần 2 ngay sau bị bỏ qua (không quét trùng)", async () => {
+    vi.mocked(conversationsRepo.listConversationsToPurge).mockResolvedValue([] as never);
+    await purgeExpiredChatsThrottled();
+    await purgeExpiredChatsThrottled();
+    expect(conversationsRepo.listConversationsToPurge).toHaveBeenCalledTimes(1);
   });
 });

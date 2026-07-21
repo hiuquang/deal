@@ -162,6 +162,12 @@ interface ConversationBase {
    */
   unreadCount: number;
   activeTradeId: string | null;
+  /**
+   * Nội dung tin nhắn đã bị xóa tự động (1 ngày sau khi trade chốt + cả 2 đã
+   * đánh giá). Conversation vẫn còn (link lịch sử giao dịch không gãy) — UI
+   * hiện thông báo "chat đã xóa" thay danh sách tin, khóa ô nhập.
+   */
+  messagesPurged: boolean;
   updatedAt: string;
 }
 

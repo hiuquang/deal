@@ -288,6 +288,16 @@ export const MESSAGES = {
     vi: "Gửi tin nhắn đầu tiên để bắt đầu thương lượng.",
     en: "Send the first message to start negotiating.",
   },
+  "chat.purgedTitle": {
+    ja: "このチャットは削除されました",
+    vi: "Đoạn chat này đã được xóa",
+    en: "This chat has been deleted",
+  },
+  "chat.purgedDesc": {
+    ja: "取引成立・相互評価の完了から1日後、メッセージは自動的に削除されます。取引履歴と評価は残ります。",
+    vi: "Tin nhắn tự động xóa 1 ngày sau khi giao dịch và đánh giá hoàn tất. Lịch sử giao dịch và đánh giá vẫn được giữ.",
+    en: "Messages are auto-deleted 1 day after the trade and mutual rating complete. Trade history and ratings are kept.",
+  },
   "chat.placeholder": { ja: "メッセージを入力…", vi: "Nhập tin nhắn…", en: "Type a message…" },
   "chat.send": { ja: "送信", vi: "Gửi", en: "Send" },
   "chat.sendFail": { ja: "送信に失敗しました。もう一度お試しください。", vi: "Gửi tin nhắn thất bại. Vui lòng thử lại.", en: "Failed to send. Please try again." },
@@ -337,6 +347,11 @@ export const MESSAGES = {
     ja: "評価は相手も評価するまで互いに公開されません（報復評価の防止）。",
     vi: "Đánh giá được giữ kín đến khi cả hai bên đều đánh giá (chống trả đũa).",
     en: "Ratings stay hidden until both sides have rated (prevents retaliation).",
+  },
+  "rate.required": {
+    ja: "⭐ 取引成立後の評価は必須です。相手を評価してください。",
+    vi: "⭐ Đánh giá sau giao dịch là bắt buộc. Vui lòng đánh giá đối phương.",
+    en: "⭐ Rating after a trade is required. Please rate your partner.",
   },
   "rate.doneWaiting": { ja: "✓ 評価済み（{stars}）— 相手の評価後に互いに公開されます。", vi: "✓ Đã đánh giá ({stars}) — sẽ công khai khi đối phương đánh giá xong.", en: "✓ Rated ({stars}) — revealed once the other party rates too." },
   "rate.mine": { ja: "あなたの評価:", vi: "Đánh giá của bạn:", en: "Your rating:" },

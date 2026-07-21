@@ -33,6 +33,9 @@ function toConversationDto(
     lastMessage: last ? toMessageDto(last) : null,
     unreadCount,
     activeTradeId: conversation.trades?.[0]?.id ?? null,
+    // Nội dung tin nhắn đã bị xóa (1 ngày sau khi trade + đánh giá xong) →
+    // UI hiện thông báo thay danh sách tin, khóa ô nhập.
+    messagesPurged: conversation.messagesPurgedAt !== null,
     updatedAt: conversation.updatedAt.toISOString(),
   };
   // Hội thoại từ listing hoặc từ tin gom — xây DTO trong nhánh tương ứng để
@@ -63,7 +66,36 @@ function toConversationDto(
   throw new Error(`conversation ${conversation.id} has neither listing nor buy order`);
 }
 
+/**
+ * Sweep xóa nội dung chat tới hạn (throttle 1 lần/phút/process, giống
+ * auto-close trade). Gọi lazy ở listMine thay cho cron. Xóa messages của các
+ * hội thoại có messagesPurgeAt <= now và chưa xóa; conversation shell ở lại.
+ */
+const PURGE_CHECK_INTERVAL_MS = 60_000;
+let nextPurgeCheckAt = 0;
+
+export function __resetPurgeThrottle() {
+  nextPurgeCheckAt = 0;
+}
+
+export async function purgeExpiredChatsThrottled(): Promise<number> {
+  const now = Date.now();
+  if (now < nextPurgeCheckAt) return 0;
+  nextPurgeCheckAt = now + PURGE_CHECK_INTERVAL_MS;
+  return purgeExpiredChats();
+}
+
+export async function purgeExpiredChats(): Promise<number> {
+  const due = await conversations.listConversationsToPurge(new Date());
+  for (const { id } of due) {
+    const count = await conversations.purgeMessages(id);
+    console.log(`[chat] purged ${count} messages of conversation ${id} (trade + rating done)`);
+  }
+  return due.length;
+}
+
 export async function listMine(userId: string): Promise<ConversationDto[]> {
+  await purgeExpiredChatsThrottled();
   const rows = await conversations.listConversationsForUser(userId);
   // Đếm chưa đọc từng hội thoại — cùng quy tắc với getUnreadCount (mốc null
   // tính tối thiểu 1). Vòng lặp count/hội thoại: đủ cho MVP, số lượng nhỏ.

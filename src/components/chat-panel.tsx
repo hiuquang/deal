@@ -25,11 +25,14 @@ export function ChatPanel({
   conversationId,
   myUserId,
   onIncoming,
+  purged = false,
 }: {
   conversationId: string;
   myUserId: string;
   /** Gọi khi có tin mới của đối phương lúc đang xem → đánh dấu đã đọc. */
   onIncoming?: () => void;
+  /** Nội dung tin nhắn đã bị xóa tự động → hiện thông báo, không poll/không nhập. */
+  purged?: boolean;
 }) {
   const { t } = useI18n();
   const [messages, setMessages] = useState<MessageDto[]>([]);
@@ -82,6 +85,8 @@ export function ChatPanel({
   }, [conversationId, myUserId, onIncoming, markActivity]);
 
   useEffect(() => {
+    // Chat đã bị xóa nội dung → không poll, không hiện gì (khối notice riêng lo).
+    if (purged) return;
     setMessages([]);
     setError(null);
     lastIdRef.current = undefined;
@@ -118,7 +123,7 @@ export function ChatPanel({
       clearTimeout(timer);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [poll]);
+  }, [poll, purged]);
 
   // Cuộn TRONG container (không scrollIntoView — nó kéo cả trang, trên iPhone
   // gây giật với thanh URL). Chỉ tự cuộn khi user đang bám đáy.
@@ -149,6 +154,19 @@ export function ChatPanel({
     } finally {
       setBusy(false);
     }
+  }
+
+  // Chat đã bị xóa nội dung (1 ngày sau khi trade + đánh giá xong): không còn
+  // tin, không cho nhắn tiếp — chỉ 1 dòng thông báo. Hồ sơ giao dịch/đánh giá
+  // vẫn xem được ở TradePanel bên dưới.
+  if (purged) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 p-6 text-center">
+        <span aria-hidden="true" className="text-2xl">🗑️</span>
+        <p className="text-sm font-medium text-slate-500">{t("chat.purgedTitle")}</p>
+        <p className="max-w-xs text-xs text-slate-400">{t("chat.purgedDesc")}</p>
+      </div>
+    );
   }
 
   return (

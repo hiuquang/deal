@@ -180,6 +180,7 @@ function ChatContent() {
               conversationId={selected.id}
               myUserId={me.id}
               onIncoming={handleIncoming}
+              purged={selected.messagesPurged}
             />
             <TradePanel conversation={selected} myUserId={me.id} onTradeChange={reload} />
           </>

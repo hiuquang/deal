@@ -55,13 +55,24 @@ export function RatingSection({ tradeId }: { tradeId: string }) {
 
   if (!state) return null;
 
+  const mustRate = !state.myRating;
+
   return (
-    <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-3">
+    // Chưa đánh giá → viền hổ phách nổi bật (bắt buộc); đã đánh giá → viền nhạt.
+    <div
+      className={`space-y-2 rounded-lg border p-3 ${
+        mustRate ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-white"
+      }`}
+    >
       <p className="text-xs font-semibold text-slate-600">{t("rate.title")}</p>
       {error && <ErrorBox message={error} />}
 
       {!state.myRating ? (
         <div className="space-y-2">
+          {/* Đánh giá là bước BẮT BUỘC sau khi chốt giá — nhắc rõ, không có nút bỏ qua. */}
+          <p className="rounded-md bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-800">
+            {t("rate.required")}
+          </p>
           <div className="flex gap-1" role="radiogroup" aria-label={t("rate.aria")}>
             {[1, 2, 3, 4, 5].map((n) => (
               <button

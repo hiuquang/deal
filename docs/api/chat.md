@@ -34,6 +34,12 @@ Chat dùng **polling thông minh** (không WebSocket — roadmap: Supabase Realt
 
 Ghi mốc đã xem (= now) → `{ok:true}`, badge `activityCount` về 0. Trang cá nhân gọi khi mở.
 
+### Vòng đời chat — tự xóa sau giao dịch (v0.16.0)
+
+Khi trade chốt (confirmed/self_reported) **và CẢ 2 bên đã đánh giá**, rating thứ 2 đặt `conversations.messages_purge_at = now + 1 ngày` (repo `setMessagesPurgeAt`, chỉ đặt khi null → idempotent). **Sweep lazy** ở `chat-service.purgeExpiredChatsThrottled()` (throttle 1 lần/phút/process, gọi trong `listMine` — KHÔNG cron, giống auto-close trade): xóa **nội dung tin nhắn** của hội thoại tới hạn (`messages_purge_at <= now AND messages_purged_at IS NULL`), ghi `messages_purged_at`. **Giữ conversation shell + trade + price_records** — chỉ nội dung `messages` biến mất. `ConversationDto.messagesPurged=true` → UI hiện "このチャットは削除されました", ẩn ô nhập, không poll. Rating không hoàn tất (1 bên không đánh giá) → không đặt hạn → chat không bị xóa.
+
+**Đánh giá bắt buộc**: sau khi chốt giá, form đánh giá trong chat là bước bắt buộc (banner 必須, không có nút bỏ qua) — nhắc dai trong chat, không chặn phần còn lại của web. Xem [ratings-reports-users.md](ratings-reports-users.md).
+
 ### POST /api/conversations/:id/read
 
 Đánh dấu hội thoại đã đọc cho viewer (mốc = now) → `{ok:true}`. Client gọi khi mở/đang xem hội thoại. Lỗi: `403`, `404`.

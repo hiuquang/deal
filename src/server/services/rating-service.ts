@@ -2,8 +2,13 @@ import { ApiError } from "@/server/errors";
 import * as ratingsRepo from "@/server/repositories/ratings";
 import * as tradesRepo from "@/server/repositories/trades";
 import * as usersRepo from "@/server/repositories/users";
+import * as conversationsRepo from "@/server/repositories/conversations";
 import type { RatingDto, TradeRatingStateDto, UserSummaryDto } from "@/lib/types";
 import type { Rating } from "@prisma/client";
+
+// Sau khi trade chốt + CẢ 2 đã đánh giá: 1 ngày sau xóa nội dung chat của hội
+// thoại đó (chủ web quyết định — dọn chat cũ, bảo vệ riêng tư). Sweep ở chat-service.
+const CHAT_PURGE_DELAY_MS = 24 * 60 * 60 * 1000;
 
 function toRatingDto(rating: Rating): RatingDto {
   return {
@@ -50,6 +55,17 @@ export async function rate(
     comment: input.comment?.trim() || null,
   });
   console.log(`[rating] ${userId} rated trade ${tradeId} (score ${input.score})`);
+
+  // Rating này là cái thứ 2 → trade "hoàn tất trọn vẹn" (giao dịch + cả 2 đánh
+  // giá) → hẹn xóa nội dung chat sau 1 ngày. setMessagesPurgeAt chỉ đặt khi
+  // chưa đặt (idempotent) nên gọi ở đây an toàn.
+  if (existing.length + 1 >= 2) {
+    await conversationsRepo.setMessagesPurgeAt(
+      trade.conversationId,
+      new Date(Date.now() + CHAT_PURGE_DELAY_MS)
+    );
+    console.log(`[chat] scheduled purge for conversation ${trade.conversationId} (+1 day)`);
+  }
   return toRatingDto(rating);
 }
 

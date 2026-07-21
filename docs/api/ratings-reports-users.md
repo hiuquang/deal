@@ -6,6 +6,8 @@ Quy ước chung: [README.md](README.md). Bất biến: rating blind-mutual — 
 
 Chỉ rate được trade đã chốt (`confirmed`/`self_reported`), mỗi bên đúng 1 lần. Rating của đối phương **chỉ hiện khi cả 2 đã rate** (chống trả đũa). KHÔNG liên quan việc lưu giá.
 
+**Đánh giá bắt buộc (v0.16.0)**: sau khi chốt giá, đánh giá là bước **bắt buộc** trong chat — `RatingSection` hiện banner 必須 nổi bật, không có nút bỏ qua (nhắc dai trong chat, KHÔNG chặn phần còn lại của web — không ép được 1 cú click nên đây là cơ chế UI). Rating **thứ 2** của trade còn kích hoạt tự xóa chat sau 1 ngày (`setMessagesPurgeAt` → sweep, xem [chat.md](chat.md)).
+
 ### POST /api/trades/:id/rating (cần verified)
 
 ```json

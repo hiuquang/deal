@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [0.16.0] — 2026-07-21 — Đánh giá bắt buộc + tự xóa chat sau giao dịch
+
+### Tính năng
+- **Đánh giá bắt buộc sau khi chốt giá**: `RatingSection` khi chưa đánh giá → viền hổ phách + banner "必須 / đánh giá là bắt buộc", không có nút bỏ qua. Cơ chế nhắc dai trong chat (không ép được 1 cú click), KHÔNG chặn phần còn lại của web (theo quyết định chủ web).
+- **Tự xóa nội dung chat 1 ngày sau khi trade + cả 2 đã đánh giá**: rating THỨ 2 của trade đặt `conversations.messages_purge_at = now + 1 ngày` (idempotent `setMessagesPurgeAt`). Sweep lazy `purgeExpiredChatsThrottled` (throttle 1/phút, gọi trong `listMine` — KHÔNG cron, giống auto-close trade) xóa nội dung `messages`, ghi `messages_purged_at`. **Giữ conversation shell + trade history + price_records** — chỉ nội dung tin nhắn biến mất. `ConversationDto.messagesPurged=true` → UI hiện "このチャットは削除されました", ẩn ô nhập, ngừng poll. Rating không hoàn tất → không đặt hạn → chat không bị xóa.
+- Schema: `conversations.messages_purge_at` + `messages_purged_at` (+ index), migration `20260722...` đã deploy. +4 unit test (rating hẹn purge đúng ở rating thứ 2; sweep xóa + throttle) — **212 pass**. Verify E2E trên dev bằng conversation/trade tạm (banner 必須 hiện, 3 tin present → set hạn quá khứ → sweep xóa sạch, conversation+trade còn, UI hiện thông báo, ô nhập ẩn) rồi dọn sạch. Docs chat.md/ratings/data-model + i18n ja/vi/en.
+
 ## [0.15.0] — 2026-07-21 — Nút lưu ❤️ + mục "Đã lưu" ở trang cá nhân
 
 ### Tính năng

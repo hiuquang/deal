@@ -130,6 +130,39 @@ export function listConversationsForUser(userId: string) {
   });
 }
 
+/**
+ * Đặt hạn xóa chat = purgeAt CHỈ khi chưa đặt (updateMany + điều kiện null →
+ * idempotent: rating thứ 2 đặt 1 lần, lần gọi thừa không dời hạn).
+ */
+export function setMessagesPurgeAt(conversationId: string, purgeAt: Date) {
+  return prisma.conversation.updateMany({
+    where: { id: conversationId, messagesPurgeAt: null },
+    data: { messagesPurgeAt: purgeAt },
+  });
+}
+
+/** Hội thoại tới hạn xóa nội dung mà chưa xóa (cho sweep). */
+export function listConversationsToPurge(now: Date, limit = 50) {
+  return prisma.conversation.findMany({
+    where: { messagesPurgeAt: { lte: now }, messagesPurgedAt: null },
+    select: { id: true },
+    take: limit,
+  });
+}
+
+/**
+ * Xóa NỘI DUNG tin nhắn của 1 hội thoại + ghi mốc đã xóa. Giữ conversation
+ * shell (trade history + link /me không gãy) — chỉ nội dung messages biến mất.
+ */
+export async function purgeMessages(conversationId: string): Promise<number> {
+  const { count } = await prisma.message.deleteMany({ where: { conversationId } });
+  await prisma.conversation.update({
+    where: { id: conversationId },
+    data: { messagesPurgedAt: new Date() },
+  });
+  return count;
+}
+
 export function listMessages(conversationId: string, afterCreatedAt?: Date) {
   return prisma.message.findMany({
     where: {

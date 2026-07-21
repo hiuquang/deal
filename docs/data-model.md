@@ -29,6 +29,9 @@ listings          id, seller_id→users, card_id→cards, condition, image_url,
                      giao dịch chốt). Muốn tồn kho thật = thay đổi lớn ở trade.
 
 conversations     id, listing_id?→listings, buy_order_id?→buy_orders (P8),
+                  messages_purge_at? / messages_purged_at? (v0.16.0 — tự xóa
+                  nội dung chat 1 ngày sau khi trade + cả 2 đánh giá xong; sweep
+                  lazy, xem api/chat.md).
                   buyer_id→users, seller_id→users NOT NULL (P8 lưu trực tiếp
                     thay vì suy từ listing.seller_id, backfill hàng cũ;
                     P9.1 siết NOT NULL),

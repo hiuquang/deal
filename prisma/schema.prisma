@@ -220,6 +220,12 @@ model Conversation {
   // bên kia có created_at > mốc này. Buyer null khi vừa được match → báo là 1.
   buyerLastReadAt  DateTime? @map("buyer_last_read_at")
   sellerLastReadAt DateTime? @map("seller_last_read_at")
+  // Vòng đời chat sau giao dịch: khi trade chốt + CẢ 2 đã đánh giá, đặt
+  // messagesPurgeAt = now + 1 ngày. Sweep lazy xóa nội dung tin nhắn khi tới
+  // hạn rồi ghi messagesPurgedAt (null = chưa xóa). Giữ conversation + trade
+  // history + price_records — chỉ xóa nội dung messages.
+  messagesPurgeAt  DateTime? @map("messages_purge_at")
+  messagesPurgedAt DateTime? @map("messages_purged_at")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -236,6 +242,8 @@ model Conversation {
   // 2 index này phục vụ query nóng nhất của app.
   @@index([buyerId])
   @@index([sellerId])
+  // Sweep xóa chat: WHERE messages_purge_at <= now AND messages_purged_at IS NULL
+  @@index([messagesPurgeAt])
   @@map("conversations")
 }
 
