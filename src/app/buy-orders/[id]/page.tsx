@@ -80,6 +80,15 @@ export default function BuyOrderDetailPage({
           )}
         </div>
 
+        {order.imageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={order.imageUrl}
+            alt={order.card.nameJa}
+            className="max-h-96 w-full rounded-xl border border-slate-200 object-contain"
+          />
+        )}
+
         <dl className="space-y-2 rounded-xl border border-slate-200 bg-white p-4 text-sm">
           <div className="flex justify-between">
             <dt className="text-slate-500">{t("bod.quantity")}</dt>

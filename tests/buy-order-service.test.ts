@@ -27,6 +27,7 @@ function makeOrder(over: Record<string, unknown> = {}) {
     cardId: "card1",
     quantity: 10,
     maxUnitPriceJpy: 5000,
+    imageUrl: null,
     status: "active",
     createdAt: new Date("2026-07-16T00:00:00Z"),
     card: {
@@ -59,11 +60,21 @@ describe("buyOrderService.create", () => {
     );
   });
 
-  it("thẻ tồn tại → tạo tin, maxUnitPriceJpy mặc định null", async () => {
+  it("thẻ tồn tại → tạo tin, maxUnitPriceJpy + imageUrl mặc định null", async () => {
     vi.mocked(cardsRepo.findCardById).mockResolvedValue({ id: "card1" } as never);
     vi.mocked(buyOrdersRepo.createBuyOrder).mockResolvedValue(makeOrder());
     await buyOrderService.create("buyer1", { cardId: "card1", quantity: 10 });
-    expect(vi.mocked(buyOrdersRepo.createBuyOrder).mock.calls[0][0].maxUnitPriceJpy).toBeNull();
+    const arg = vi.mocked(buyOrdersRepo.createBuyOrder).mock.calls[0][0];
+    expect(arg.maxUnitPriceJpy).toBeNull();
+    expect(arg.imageUrl).toBeNull();
+  });
+
+  it("truyền imageUrl xuống repository khi có ảnh minh họa", async () => {
+    vi.mocked(cardsRepo.findCardById).mockResolvedValue({ id: "card1" } as never);
+    vi.mocked(buyOrdersRepo.createBuyOrder).mockResolvedValue(makeOrder());
+    const url = "https://x.supabase.co/storage/v1/object/public/uploads/a.jpg";
+    await buyOrderService.create("buyer1", { cardId: "card1", quantity: 10, imageUrl: url });
+    expect(vi.mocked(buyOrdersRepo.createBuyOrder).mock.calls[0][0].imageUrl).toBe(url);
   });
 });
 

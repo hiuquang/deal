@@ -65,6 +65,7 @@ export function createBuyOrder(data: {
   cardId: string;
   quantity: number;
   maxUnitPriceJpy: number | null;
+  imageUrl: string | null;
 }) {
   return prisma.buyOrder.create({ data, include: buyOrderInclude });
 }

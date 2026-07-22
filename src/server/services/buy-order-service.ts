@@ -19,7 +19,7 @@ export async function list(filter: {
 
 export async function create(
   buyerId: string,
-  input: { cardId: string; quantity: number; maxUnitPriceJpy?: number | null }
+  input: { cardId: string; quantity: number; maxUnitPriceJpy?: number | null; imageUrl?: string | null }
 ): Promise<BuyOrderDto> {
   const card = await cards.findCardById(input.cardId);
   if (!card) {
@@ -30,6 +30,7 @@ export async function create(
     cardId: input.cardId,
     quantity: input.quantity,
     maxUnitPriceJpy: input.maxUnitPriceJpy ?? null,
+    imageUrl: input.imageUrl ?? null,
   });
   console.log(`[buy-order] created ${order.id} by ${buyerId} (card ${card.id} x${input.quantity})`);
   return toBuyOrderDto(order);

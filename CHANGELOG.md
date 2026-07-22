@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [0.18.0] — 2026-07-22 — Ảnh minh họa cho tin gom số lượng lớn
+
+### Tính năng
+- **Tin gom (まとめ買い) thêm được ảnh minh họa** (tùy chọn): ô upload ở form đăng tin gom, tái dùng luồng `/api/uploads` + Supabase Storage như tin bán. Ảnh mẫu thẻ/BOX muốn gom giúp người bán nhận ra đúng món. Có preview + nút bỏ ảnh; để trống vẫn đăng được (khác tin bán — ảnh bắt buộc).
+- Hiển thị: ảnh lớn ở trang chi tiết tin gom (`object-contain`, chỉ khi có), thumbnail 4:3 trên thẻ danh sách tin gom.
+- Schema: cột `buy_orders.image_url` (nullable), migration `20260722100000_buy_order_image_url` đã deploy Tokyo. Thread qua validation (`isOwnImageUrl` như tin bán) → service → repo → serializer → `BuyOrderDto.imageUrl`. +1 unit test (imageUrl thread xuống repo; mặc định null) — **213 pass**, tsc sạch. Verify: form render đúng ô ảnh (tùy chọn, tiếng Việt), 0 lỗi console. Docs data-model + api/buy-orders cập nhật.
+
 ## [0.17.0] — 2026-07-22 — Gỡ tiếng Nhật, chuyển sang Việt (mặc định) + Anh
 
 ### Thay đổi lớn

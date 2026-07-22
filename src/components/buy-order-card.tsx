@@ -24,6 +24,14 @@ export function BuyOrderCard({ order }: { order: BuyOrderDto }) {
           <HeartButton kind="buy_order" id={order.id} />
         </div>
       </div>
+      {order.imageUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={order.imageUrl}
+          alt={order.card.nameJa}
+          className="aspect-[4/3] w-full rounded-lg object-cover"
+        />
+      )}
       <p className="line-clamp-1 text-sm font-semibold group-hover:text-indigo-600">
         {order.card.nameJa}
       </p>

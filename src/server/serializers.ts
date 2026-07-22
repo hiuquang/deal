@@ -63,6 +63,7 @@ export function toBuyOrderDto(order: BuyOrderWithRelations): BuyOrderDto {
     buyerIsVip: order.buyer.isVip,
     quantity: order.quantity,
     maxUnitPriceJpy: order.maxUnitPriceJpy,
+    imageUrl: order.imageUrl,
     status: order.status as BuyOrderStatus,
     offerCount: order._count.offers,
     createdAt: order.createdAt.toISOString(),

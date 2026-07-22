@@ -186,6 +186,7 @@ export const api = {
     cardId: string;
     quantity: number;
     maxUnitPriceJpy?: number | null;
+    imageUrl?: string | null;
   }) => request<{ buyOrder: BuyOrderDto }>("/api/buy-orders", json(data)),
   getBuyOrder: (id: string) =>
     request<{ buyOrder: BuyOrderDto }>(`/api/buy-orders/${id}`),

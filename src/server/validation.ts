@@ -152,6 +152,7 @@ export const createBuyOrderSchema = z.object({
   cardId: z.string().min(1),
   quantity: buyQuantity,
   maxUnitPriceJpy: priceJpy.optional().nullable(),
+  imageUrl: z.string().refine(isOwnImageUrl, "Ảnh không hợp lệ").optional().nullable(),
 });
 
 export const listBuyOrdersSchema = z.object({

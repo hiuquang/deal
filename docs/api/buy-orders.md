@@ -20,12 +20,13 @@ Query: `q` (tên/set/số thẻ), `game`, `category`, `cardId`, `page`, `mine=1`
 ```json
 { "buyOrders": [{ "id": "...", "card": { ... }, "buyerId": "...",
   "buyerDisplayName": "Buyer", "quantity": 20, "maxUnitPriceJpy": 80000,
+  "imageUrl": null,
   "status": "active", "offerCount": 1, "createdAt": "..." }], "total": 1 }
 ```
 
 ### POST /api/buy-orders (cần verified)
 
-Body: `{ cardId, quantity (1..999), maxUnitPriceJpy? (1..10tr, null) }` → `201 {buyOrder}`. Lỗi: `404 CARD_NOT_FOUND`.
+Body: `{ cardId, quantity (1..999), maxUnitPriceJpy? (1..10tr, null), imageUrl? (URL ảnh đã upload qua /api/uploads, tùy chọn/null — validate isOwnImageUrl) }` → `201 {buyOrder}`. Lỗi: `404 CARD_NOT_FOUND`.
 
 ### GET /api/buy-orders/:id → `{buyOrder}` (công khai). `404 NOT_FOUND`.
 

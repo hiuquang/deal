@@ -256,6 +256,7 @@ model BuyOrder {
   cardId          String   @map("card_id")
   quantity        Int // số lượng cần gom (1..999)
   maxUnitPriceJpy Int?     @map("max_unit_price_jpy") // đơn giá tối đa mong muốn, tùy chọn
+  imageUrl        String?  @map("image_url") // ảnh minh họa thẻ muốn gom, tùy chọn
   status          String   @default("active") // active | cancelled
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")

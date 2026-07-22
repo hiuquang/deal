@@ -508,6 +508,13 @@ export const MESSAGES = {
   "bon.quantity": { vi: "Số lượng cần", en: "Quantity wanted" },
   "bon.maxPrice": { vi: "Đơn giá tối đa (tùy chọn)", en: "Max unit price (optional)" },
   "bon.maxPriceExample": { vi: "VD: 5000 (tối đa mỗi bản)", en: "e.g. 5000 (per unit)" },
+  "bon.photo": { vi: "Ảnh minh họa (tùy chọn, tối đa 5MB)", en: "Reference photo (optional, max 5MB)" },
+  "bon.photoHint": {
+    vi: "Ảnh mẫu thẻ/BOX bạn muốn gom giúp người bán nhận ra đúng món.",
+    en: "A sample photo of the card/box you want helps sellers recognize it.",
+  },
+  "bon.photoPreviewAlt": { vi: "Xem trước ảnh tải lên", en: "Upload preview" },
+  "bon.removePhoto": { vi: "Bỏ ảnh", en: "Remove photo" },
   "bon.submit": { vi: "Đăng tin", en: "Post request" },
   "bon.submitting": { vi: "Đang gửi…", en: "Submitting…" },
   "bon.loginPrompt": {

@@ -23,6 +23,8 @@ export default function NewBuyOrderPage() {
   const [card, setCard] = useState<CardDto | null>(null);
   const [quantity, setQuantity] = useState("10");
   const [maxPrice, setMaxPrice] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -38,16 +40,27 @@ export default function NewBuyOrderPage() {
     );
   }
 
+  function handleFile(f: File | null) {
+    setFile(f);
+    setPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return f ? URL.createObjectURL(f) : null;
+    });
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!card) return setError(t("bon.errNoCard"));
     setBusy(true);
     setError(null);
     try {
+      // Ảnh minh họa là tùy chọn — chỉ upload khi người đăng có chọn file.
+      const imageUrl = file ? (await api.uploadImage(file)).url : null;
       const { buyOrder } = await api.createBuyOrder({
         cardId: card.id,
         quantity: Number(quantity) || 1,
         maxUnitPriceJpy: maxPrice ? Number(maxPrice) : null,
+        imageUrl,
       });
       router.push(`/buy-orders/${buyOrder.id}`);
     } catch (err) {
@@ -113,6 +126,33 @@ export default function NewBuyOrderPage() {
               className={input}
             />
           </div>
+        </div>
+
+        <div>
+          <label htmlFor="photo" className="mb-1 block text-sm font-medium">
+            {t("bon.photo")}
+          </label>
+          <input
+            id="photo"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
+            className="block w-full text-sm text-slate-500 file:mr-3 file:rounded-lg file:border-0 file:bg-amber-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-amber-700"
+          />
+          <p className="mt-1 text-xs text-slate-500">{t("bon.photoHint")}</p>
+          {preview && (
+            <div className="mt-2 flex items-center gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={preview} alt={t("bon.photoPreviewAlt")} className="h-40 rounded-lg object-cover" />
+              <button
+                type="button"
+                onClick={() => handleFile(null)}
+                className="text-sm text-red-600 hover:underline"
+              >
+                {t("bon.removePhoto")}
+              </button>
+            </div>
+          )}
         </div>
 
         <button

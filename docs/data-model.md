@@ -46,6 +46,8 @@ conversations     id, listing_id?→listings, buy_order_id?→buy_orders (P8),
 
 buy_orders (P8)   id, buyer_id→users, card_id→cards, quantity(1–999),
                   max_unit_price_jpy? (đơn giá tối đa mong muốn),
+                  image_url? (ảnh minh họa thẻ muốn gom, tùy chọn — v0.18.0,
+                    validate qua isOwnImageUrl như listing),
                   status(active|cancelled), created_at, updated_at
                   — tin "gom số lượng lớn": người mua cần N bản của 1 thẻ.
                     Giai đoạn 1 CHƯA ghi giá (chỉ kết nối sang chat riêng).

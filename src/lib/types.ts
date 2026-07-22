@@ -87,6 +87,8 @@ export interface BuyOrderDto {
   quantity: number;
   /** đơn giá tối đa mong muốn (JPY) — null nếu không khai */
   maxUnitPriceJpy: number | null;
+  /** ảnh minh họa thẻ muốn gom — null nếu người đăng không tải lên */
+  imageUrl: string | null;
   status: BuyOrderStatus;
   /** số chào bán hiện có (để hiện ở thẻ danh sách) */
   offerCount: number;
