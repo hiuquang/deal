@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [0.20.0] — 2026-07-22 — Nút "Đã bán · đóng tin" cho chủ tin đăng
+
+### Tính năng
+- **Chủ tin đăng có nút "Đã bán · đóng tin"** (xanh lá, nút chính) ở trang chi tiết, cạnh nút "Gỡ tin đăng" (nay thành nút phụ). Đặt tin sang `closed` (khác `cancelled` = gỡ vì không bán) — hữu ích khi bán offline hoặc muốn đóng gọn sau khi giao dịch xong mà đối phương chưa đánh giá (bổ trợ cho mốc auto-đóng-khi-đánh-giá ở v0.19.0). Có `window.confirm` vì đóng tin không hoàn tác được. Badge trạng thái hiện sẵn "Đã bán" cho `closed`.
+- Kỹ thuật: mở rộng union `patchListingSchema` → `status ∈ {cancelled, closed}`; tách guard chung `assertOwnerCanEnd` (chỉ chủ tin, chỉ khi active, chặn khi có trade **pending**) dùng cho cả `cancel` và `markSold` mới; route PATCH phân nhánh theo `status`; `api.markListingSold`. Không migration. +4 unit test markSold — **220 pass**, tsc sạch. Verify: trang chi tiết render sạch 0 lỗi console (xem nút chủ tin cần đăng nhập đúng chủ — kỹ thuật set cookie phiên tạm bị chặn nên chưa chụp được, guard đã phủ bằng unit test).
+
 ## [0.19.0] — 2026-07-22 — Tin bán giữ active suốt trade, chỉ đóng sau khi đánh giá
 
 ### Thay đổi lớn (theo quyết định chủ web)

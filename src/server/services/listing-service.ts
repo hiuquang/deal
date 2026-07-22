@@ -60,7 +60,13 @@ export async function getById(id: string): Promise<ListingDto> {
   return toListingDto(listing);
 }
 
-export async function cancel(userId: string, id: string): Promise<ListingDto> {
+/**
+ * Guard chung cho 2 thao tác kết thúc tin của chủ (gỡ tin = cancelled, đánh
+ * dấu đã bán = closed): chỉ chủ tin, chỉ khi đang active, và chặn khi còn
+ * trade đang thương lượng (pending) — tin giữ active suốt quá trình trade nên
+ * không dựa vào trạng thái in_trade cũ. Trade đã chốt chờ đánh giá thì cho qua.
+ */
+async function assertOwnerCanEnd(userId: string, id: string) {
   const listing = await listings.findListingById(id);
   if (!listing) {
     throw new ApiError(404, "NOT_FOUND", "Không tìm thấy tin đăng.");
@@ -71,14 +77,25 @@ export async function cancel(userId: string, id: string): Promise<ListingDto> {
   if (listing.status !== "active") {
     throw new ApiError(409, "INVALID_STATUS", "Tin đăng này đã kết thúc.");
   }
-  // Tin giữ active suốt quá trình trade → chặn hủy bằng cách kiểm tra trade
-  // đang thương lượng (pending), thay cho trạng thái in_trade cũ.
   const pending = await tradesRepo.findPendingTradeByListing(id);
   if (pending) {
-    throw new ApiError(409, "IN_TRADE", "Không thể hủy tin đang có giao dịch.");
+    throw new ApiError(409, "IN_TRADE", "Không thể kết thúc tin khi đang có giao dịch dang dở.");
   }
+}
+
+export async function cancel(userId: string, id: string): Promise<ListingDto> {
+  await assertOwnerCanEnd(userId, id);
   const updated = await listings.updateListingStatus(id, "cancelled");
   console.log(`[listing] cancelled ${id} by ${userId}`);
+  return toListingDto(updated);
+}
+
+/** Chủ tin tự đánh dấu ĐÃ BÁN → đóng tin (closed). Khác cancel ở ngữ nghĩa
+ *  (đã giao dịch xong thay vì gỡ bỏ) nhưng cùng guard. Không đụng price_records. */
+export async function markSold(userId: string, id: string): Promise<ListingDto> {
+  await assertOwnerCanEnd(userId, id);
+  const updated = await listings.updateListingStatus(id, "closed");
+  console.log(`[listing] marked sold (closed) ${id} by ${userId}`);
   return toListingDto(updated);
 }
 

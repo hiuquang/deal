@@ -20,11 +20,17 @@ export const PATCH = withErrorHandling(
     const user = await requireVerifiedUser();
     const { id } = await ctx.params;
     const body = patchListingSchema.parse(await req.json());
-    // Union: nhánh có `status` = hủy tin; nhánh còn lại = sửa giá chào.
-    const listing =
-      "status" in body
-        ? await listingService.cancel(user.id, id)
-        : await listingService.updatePrice(user.id, id, body.askingPriceJpy);
+    // Union: nhánh có `status` = kết thúc tin (cancelled = gỡ / closed = đã
+    // bán); nhánh còn lại = sửa giá chào.
+    let listing;
+    if ("status" in body) {
+      listing =
+        body.status === "closed"
+          ? await listingService.markSold(user.id, id)
+          : await listingService.cancel(user.id, id);
+    } else {
+      listing = await listingService.updatePrice(user.id, id, body.askingPriceJpy);
+    }
     return NextResponse.json({ listing });
   }
 );

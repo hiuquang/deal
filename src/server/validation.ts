@@ -127,7 +127,8 @@ export const createListingSchema = z.object({
 // askingPriceJpy có mặt (không optional) để phân biệt với nhánh status; null =
 // chuyển về "thương lượng". Giá này chỉ để thương lượng, không vào dữ liệu giá thị trường.
 export const patchListingSchema = z.union([
-  z.object({ status: z.literal("cancelled") }),
+  // "cancelled" = gỡ tin (không bán); "closed" = chủ tự đánh dấu đã bán/đóng tin.
+  z.object({ status: z.enum(["cancelled", "closed"]) }),
   z.object({ askingPriceJpy: priceJpy.nullable() }),
 ]);
 

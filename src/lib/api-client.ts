@@ -154,6 +154,11 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify({ status: "cancelled" }),
     }),
+  markListingSold: (id: string) =>
+    request<{ listing: ListingDto }>(`/api/listings/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ status: "closed" }),
+    }),
   updateListingPrice: (id: string, askingPriceJpy: number | null) =>
     request<{ listing: ListingDto }>(`/api/listings/${id}`, {
       method: "PATCH",

@@ -144,6 +144,33 @@ describe("listingService.cancel", () => {
   });
 });
 
+describe("listingService.markSold", () => {
+  it("403 khi không phải chủ tin", async () => {
+    vi.mocked(listingsRepo.findListingById).mockResolvedValue(makeListing());
+    await expectApiError(listingService.markSold("stranger", "l1"), "FORBIDDEN");
+  });
+
+  it("409 IN_TRADE khi đang có trade pending", async () => {
+    vi.mocked(listingsRepo.findListingById).mockResolvedValue(makeListing());
+    vi.mocked(tradesRepo.findPendingTradeByListing).mockResolvedValue({ id: "t1" } as never);
+    await expectApiError(listingService.markSold("seller1", "l1"), "IN_TRADE");
+  });
+
+  it("409 INVALID_STATUS khi tin đã kết thúc", async () => {
+    vi.mocked(listingsRepo.findListingById).mockResolvedValue(makeListing({ status: "closed" }));
+    await expectApiError(listingService.markSold("seller1", "l1"), "INVALID_STATUS");
+  });
+
+  it("chủ tin đánh dấu đã bán tin active → cập nhật status closed", async () => {
+    vi.mocked(listingsRepo.findListingById).mockResolvedValue(makeListing());
+    vi.mocked(tradesRepo.findPendingTradeByListing).mockResolvedValue(null);
+    vi.mocked(listingsRepo.updateListingStatus).mockResolvedValue(makeListing({ status: "closed" }));
+    const dto = await listingService.markSold("seller1", "l1");
+    expect(listingsRepo.updateListingStatus).toHaveBeenCalledWith("l1", "closed");
+    expect(dto.status).toBe("closed");
+  });
+});
+
 describe("listingService.updatePrice", () => {
   it("404 khi tin không tồn tại", async () => {
     vi.mocked(listingsRepo.findListingById).mockResolvedValue(null);

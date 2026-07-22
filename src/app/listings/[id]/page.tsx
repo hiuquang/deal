@@ -59,6 +59,21 @@ export default function ListingDetailPage({
     }
   }
 
+  async function handleMarkSold() {
+    // Đóng tin là không thể hoàn tác → xác nhận trước.
+    if (!window.confirm(t("detail.markSoldConfirm"))) return;
+    setBusy(true);
+    setActionError(null);
+    try {
+      const { listing: updated } = await api.markListingSold(id);
+      setListing(updated);
+    } catch (e) {
+      setActionError(e instanceof ApiClientError ? e.message : t("common.error"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function startEditPrice() {
     setPriceInput(listing?.askingPriceJpy ? String(listing.askingPriceJpy) : "");
     setActionError(null);
@@ -201,13 +216,22 @@ export default function ListingDetailPage({
 
           <div className="space-y-2">
             {isOwner && listing.status === "active" && (
-              <button
-                onClick={handleCancel}
-                disabled={busy}
-                className="w-full rounded-lg border border-red-300 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
-              >
-                {t("detail.cancel")}
-              </button>
+              <>
+                <button
+                  onClick={handleMarkSold}
+                  disabled={busy}
+                  className="w-full rounded-lg bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  {t("detail.markSold")}
+                </button>
+                <button
+                  onClick={handleCancel}
+                  disabled={busy}
+                  className="w-full rounded-lg border border-red-300 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+                >
+                  {t("detail.cancel")}
+                </button>
+              </>
             )}
             <Link
               href={`/prices/${listing.card.id}`}

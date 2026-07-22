@@ -175,6 +175,11 @@ export const MESSAGES = {
   "detail.listedOn": { vi: "Ngày đăng", en: "Listed on" },
   "detail.desc": { vi: "Mô tả", en: "Description" },
   "detail.cancel": { vi: "Gỡ tin đăng", en: "Withdraw listing" },
+  "detail.markSold": { vi: "Đã bán · đóng tin", en: "Mark as sold" },
+  "detail.markSoldConfirm": {
+    vi: "Đóng tin này? Tin sẽ được đánh dấu Đã bán và không hiện trên bảng nữa. Không thể hoàn tác.",
+    en: "Close this listing? It will be marked Sold and removed from the board. This cannot be undone.",
+  },
   "detail.editPrice": { vi: "Sửa giá", en: "Edit price" },
   "detail.pricePlaceholder": {
     vi: "Để trống = thương lượng",
