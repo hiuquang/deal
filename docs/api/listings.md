@@ -28,7 +28,7 @@ Quy ước chung: [README.md](README.md).
 ```
 
 - `condition` thẻ lẻ ∈ `PSA10|PSA9|BGS95|RAW_NM|RAW_LP|RAW_MP|RAW_HP|DAMAGED`; BOX ∈ `BOX_SHRINK|BOX_NO_SHRINK` — **phải khớp `category` của card**, lệch → `400 CONDITION_MISMATCH`.
-- `quantity`: số nguyên 1–99, mặc định 1 — số lượng cùng loại người bán có. **Hiện chỉ là thông tin** (thương lượng trong chat); luồng trade vẫn đóng listing khi 1 giao dịch chốt, chưa trừ tồn từng đơn.
+- `quantity`: số nguyên 1–99, mặc định 1 — số lượng cùng loại người bán có. **Hiện chỉ là thông tin** (thương lượng trong chat); chưa trừ tồn từng đơn. Tin chỉ đóng sau khi giao dịch chốt giá + cả 2 đánh giá xong (v0.19.0).
 - `tradeType` ∈ `sell|trade`; `askingPriceJpy`, `note`, `station` (≤50 ký tự, P6.1) optional.
 - `askingPriceJpy` chỉ để thương lượng — **không bao giờ vào dữ liệu giá thị trường**.
 
@@ -40,12 +40,12 @@ Quy ước chung: [README.md](README.md).
 
 Body là **một trong hai** dạng:
 
-- `{"status": "cancelled"}` — gỡ tin. Lỗi: `403 FORBIDDEN` (không phải chủ), `409 IN_TRADE` (đang có trade), `409 INVALID_STATUS`.
+- `{"status": "cancelled"}` — gỡ tin. Lỗi: `403 FORBIDDEN` (không phải chủ), `409 IN_TRADE` (đang có trade **pending**), `409 INVALID_STATUS`.
 - `{"askingPriceJpy": 12000}` — sửa giá chào (0.12.6); `null` = chuyển về 要相談. Chỉ tin `active` — khác `active` → `409 INVALID_STATUS`. Giá validate như khi tạo (số nguyên 1..10,000,000). Giá chào chỉ để thương lượng — **không đụng dữ liệu giá thị trường** (`price_records`).
 
 → `{listing}`.
 
-Trạng thái listing: `active | in_trade | closed | cancelled` — chuyển tự động theo trade (xem [trades.md](trades.md)).
+Trạng thái listing: `active | closed | cancelled` (v0.19.0 — `in_trade` legacy, không còn set). Tin GIỮ `active` suốt quá trình trade; chỉ `closed` khi giao dịch chốt giá + cả 2 đánh giá xong (xem [trades.md](trades.md) + business-rules #9b).
 
 ## Comments — bình luận công khai (P3)
 

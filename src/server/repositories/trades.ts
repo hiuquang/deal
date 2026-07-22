@@ -24,6 +24,12 @@ export function findActiveTradeByListing(listingId: string) {
   });
 }
 
+/** Trade đang thương lượng (pending) trên 1 listing — dùng chặn hủy tin
+ *  khi đang có giao dịch dang dở (tin giữ active suốt quá trình trade). */
+export function findPendingTradeByListing(listingId: string) {
+  return prisma.trade.findFirst({ where: { listingId, status: "pending" } });
+}
+
 export function listTradesForUser(userId: string) {
   return prisma.trade.findMany({
     where: { OR: [{ buyerId: userId }, { sellerId: userId }] },
@@ -33,8 +39,10 @@ export function listTradesForUser(userId: string) {
 }
 
 /**
- * Tạo trade. Nếu gắn listing thì chuyển listing sang in_trade trong cùng
- * transaction; trade từ buy-order không có listing để khóa.
+ * Tạo trade. Tin đăng KHÔNG bị khóa (in_trade) nữa — giữ nguyên active để
+ * vẫn hiện trên bảng + nhận thêm 購入希望 từ người khác trong lúc thương
+ * lượng; tin chỉ đóng khi giao dịch chốt giá XONG và cả 2 đã đánh giá
+ * (xem rating-service). "1 trade active/listing" vẫn được index DB đảm bảo.
  */
 export function createTrade(data: {
   listingId?: string | null;
@@ -49,24 +57,17 @@ export function createTrade(data: {
   finalPriceJpy: number; // với buy-order là ĐƠN GIÁ (giá/1 bản)
   autoCloseAt: Date;
 }) {
-  return prisma.$transaction(async (tx) => {
-    const trade = await tx.trade.create({
-      data: { ...data, status: "pending" },
-      include: tradeInclude,
-    });
-    if (data.listingId) {
-      await tx.listing.update({
-        where: { id: data.listingId },
-        data: { status: "in_trade" },
-      });
-    }
-    return trade;
+  return prisma.trade.create({
+    data: { ...data, status: "pending" },
+    include: tradeInclude,
   });
 }
 
 /**
- * Chốt trade (confirmed hoặc self_reported): cập nhật trạng thái,
- * tạo price_record đúng 1 lần, đóng listing (nếu có) — trong 1 transaction.
+ * Chốt trade (confirmed hoặc self_reported): cập nhật trạng thái + tạo
+ * price_record đúng 1 lần, trong 1 transaction. KHÔNG đóng listing ở đây —
+ * tin chỉ đóng sau khi cả 2 đánh giá xong (rating-service). Trade từ
+ * buy-order cũng không đụng tin gom (chủ tự gỡ khi đủ).
  */
 export function closeTrade(
   tradeId: string,
@@ -99,33 +100,17 @@ export function closeTrade(
         tradedAt: record.tradedAt,
       },
     });
-    // Trade từ buy-order không có listing để đóng (buy-order KHÔNG tự đóng —
-    // chủ tin gom từ nhiều người bán, tự gỡ khi đủ).
-    if (trade.listingId) {
-      await tx.listing.update({
-        where: { id: trade.listingId },
-        data: { status: "closed" },
-      });
-    }
     return trade;
   });
 }
 
-/** Hủy trade pending; nếu gắn listing thì mở lại listing về active. */
-export function cancelTrade(tradeId: string, listingId: string | null) {
-  return prisma.$transaction(async (tx) => {
-    const trade = await tx.trade.update({
-      where: { id: tradeId },
-      data: { status: "cancelled" },
-      include: tradeInclude,
-    });
-    if (listingId) {
-      await tx.listing.update({
-        where: { id: listingId },
-        data: { status: "active" },
-      });
-    }
-    return trade;
+/** Hủy trade pending. Không đụng trạng thái listing — tin vốn giữ active
+ *  suốt quá trình trade nên không cần mở lại. */
+export function cancelTrade(tradeId: string) {
+  return prisma.trade.update({
+    where: { id: tradeId },
+    data: { status: "cancelled" },
+    include: tradeInclude,
   });
 }
 

@@ -15,9 +15,13 @@ vi.mock("@/server/repositories/listings", () => ({
   updateListingStatus: vi.fn(),
   updateListingAskingPrice: vi.fn(),
 }));
+vi.mock("@/server/repositories/trades", () => ({
+  findPendingTradeByListing: vi.fn(),
+}));
 
 import * as cardsRepo from "@/server/repositories/cards";
 import * as listingsRepo from "@/server/repositories/listings";
+import * as tradesRepo from "@/server/repositories/trades";
 import * as listingService from "@/server/services/listing-service";
 
 
@@ -117,8 +121,11 @@ describe("listingService.cancel", () => {
     await expectApiError(listingService.cancel("stranger", "l1"), "FORBIDDEN");
   });
 
-  it("409 IN_TRADE khi tin đang giao dịch", async () => {
-    vi.mocked(listingsRepo.findListingById).mockResolvedValue(makeListing({ status: "in_trade" }));
+  it("409 IN_TRADE khi tin active nhưng đang có trade pending", async () => {
+    // Tin giữ active suốt quá trình trade → guard dựa vào trade pending, không
+    // còn dựa vào trạng thái in_trade.
+    vi.mocked(listingsRepo.findListingById).mockResolvedValue(makeListing());
+    vi.mocked(tradesRepo.findPendingTradeByListing).mockResolvedValue({ id: "t1" } as never);
     await expectApiError(listingService.cancel("seller1", "l1"), "IN_TRADE");
   });
 
@@ -127,8 +134,9 @@ describe("listingService.cancel", () => {
     await expectApiError(listingService.cancel("seller1", "l1"), "INVALID_STATUS");
   });
 
-  it("chủ tin hủy tin active → cập nhật status cancelled", async () => {
+  it("chủ tin hủy tin active (không có trade pending) → cập nhật status cancelled", async () => {
     vi.mocked(listingsRepo.findListingById).mockResolvedValue(makeListing());
+    vi.mocked(tradesRepo.findPendingTradeByListing).mockResolvedValue(null);
     vi.mocked(listingsRepo.updateListingStatus).mockResolvedValue(makeListing({ status: "cancelled" }));
     const dto = await listingService.cancel("seller1", "l1");
     expect(listingsRepo.updateListingStatus).toHaveBeenCalledWith("l1", "cancelled");
@@ -147,8 +155,8 @@ describe("listingService.updatePrice", () => {
     await expectApiError(listingService.updatePrice("stranger", "l1", 9000), "FORBIDDEN");
   });
 
-  it("409 INVALID_STATUS khi tin không còn active (đang giao dịch)", async () => {
-    vi.mocked(listingsRepo.findListingById).mockResolvedValue(makeListing({ status: "in_trade" }));
+  it("409 INVALID_STATUS khi tin không còn active (đã đóng)", async () => {
+    vi.mocked(listingsRepo.findListingById).mockResolvedValue(makeListing({ status: "closed" }));
     await expectApiError(listingService.updatePrice("seller1", "l1", 9000), "INVALID_STATUS");
   });
 

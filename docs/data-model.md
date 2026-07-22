@@ -22,11 +22,13 @@ listings          id, seller_id→users, card_id→cards, condition, image_url,
                   asking_price_jpy?, quantity(default 1, 1–99),
                   trade_type(sell|trade), note?,
                   station? (P6.1 — 最寄り駅, ≤50 ký tự),
-                  status(active|in_trade|closed|cancelled),
+                  status(active|closed|cancelled; in_trade LEGACY — v0.19.0
+                     bỏ, tin giữ active suốt quá trình trade),
                   created_at, updated_at
                   ── quantity hiện CHỈ là thông tin (số lượng người bán có);
-                     luồng trade chưa trừ tồn từng đơn (đóng listing khi 1
-                     giao dịch chốt). Muốn tồn kho thật = thay đổi lớn ở trade.
+                     luồng trade chưa trừ tồn từng đơn. Tin đóng (closed) khi
+                     giao dịch chốt giá XONG và cả 2 đã đánh giá (v0.19.0),
+                     không đóng ngay lúc chốt. Muốn tồn kho thật = đổi lớn ở trade.
 
 conversations     id, listing_id?→listings, buy_order_id?→buy_orders (P8),
                   messages_purge_at? / messages_purged_at? (v0.16.0 — tự xóa
@@ -121,7 +123,7 @@ rate_limits       key (PK, dạng "action:loại:định danh"), count, window_e
 ## Giá trị enum quan trọng
 
 - `condition` thẻ lẻ: `PSA10 | PSA9 | BGS95 | RAW_NM | RAW_LP | RAW_MP | RAW_HP | DAMAGED`; BOX: `BOX_SHRINK | BOX_NO_SHRINK`. **Condition phải khớp `category` của card** → `400 CONDITION_MISMATCH`.
-- `listings.status`: `active → in_trade` (có trade pending) `→ closed` (trade chốt); `cancelled` (chủ hủy) — hủy trade pending thì mở lại `active`.
+- `listings.status`: `active → closed` (**chỉ khi** trade chốt giá XONG *và* cả 2 đã đánh giá — mốc đóng duy nhất ở rating-service, v0.19.0); `cancelled` (chủ hủy). Tin GIỮ `active` suốt quá trình trade để vẫn hiện trên bảng + nhận thêm 購入希望 từ người khác. `in_trade` là trạng thái LEGACY (không còn set); "1 trade active/listing" vẫn do partial unique index đảm bảo, không phụ thuộc trạng thái listing.
 - `trades.status`: `pending → confirmed | self_reported | cancelled`.
 
 ## Giá trị derived (KHÔNG lưu cột)

@@ -1,6 +1,7 @@
 import { ApiError } from "@/server/errors";
 import * as cards from "@/server/repositories/cards";
 import * as listings from "@/server/repositories/listings";
+import * as tradesRepo from "@/server/repositories/trades";
 import { toListingDto } from "@/server/serializers";
 import { assertConditionMatchesCategory } from "@/server/validation";
 import type { ListingDto } from "@/lib/types";
@@ -67,11 +68,14 @@ export async function cancel(userId: string, id: string): Promise<ListingDto> {
   if (listing.sellerId !== userId) {
     throw new ApiError(403, "FORBIDDEN", "Bạn chỉ thao tác được trên tin đăng của mình.");
   }
-  if (listing.status === "in_trade") {
-    throw new ApiError(409, "IN_TRADE", "Không thể hủy tin đang có giao dịch.");
-  }
   if (listing.status !== "active") {
     throw new ApiError(409, "INVALID_STATUS", "Tin đăng này đã kết thúc.");
+  }
+  // Tin giữ active suốt quá trình trade → chặn hủy bằng cách kiểm tra trade
+  // đang thương lượng (pending), thay cho trạng thái in_trade cũ.
+  const pending = await tradesRepo.findPendingTradeByListing(id);
+  if (pending) {
+    throw new ApiError(409, "IN_TRADE", "Không thể hủy tin đang có giao dịch.");
   }
   const updated = await listings.updateListingStatus(id, "cancelled");
   console.log(`[listing] cancelled ${id} by ${userId}`);

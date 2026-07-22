@@ -225,7 +225,7 @@ export async function cancel(userId: string, id: string): Promise<TradeDto> {
   if (trade.status !== "pending") {
     throw new ApiError(409, "INVALID_STATUS", "Không thể hủy giao dịch đã xác nhận.");
   }
-  const cancelled = await tradesRepo.cancelTrade(id, trade.listingId);
+  const cancelled = await tradesRepo.cancelTrade(id);
   console.log(`[trade] cancelled ${id} by ${userId}`);
   return toTradeDto(cancelled, userId);
 }

@@ -66,11 +66,11 @@ describe("requestService.create", () => {
     await expectApiError(requestService.create("seller1", "l1"), "OWN_LISTING");
   });
 
-  it("409 khi listing không còn active", async () => {
+  it("409 khi listing đã đóng (không còn active)", async () => {
     vi.mocked(listingsRepo.findListingById).mockResolvedValue({
       id: "l1",
       sellerId: "seller1",
-      status: "in_trade",
+      status: "closed",
     } as never);
     await expectApiError(requestService.create("buyer1", "l1"), "NOT_ACTIVE");
   });

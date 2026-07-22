@@ -88,6 +88,17 @@ export function updateListingStatus(id: string, status: string) {
   });
 }
 
+/**
+ * Đóng tin khi giao dịch hoàn tất (đã đánh giá) — CHỈ đụng tin đang active,
+ * không ghi đè tin đã hủy/đóng. Dùng updateMany để filter theo status trong
+ * cùng câu lệnh; trả count để log. */
+export function closeListingIfActive(id: string) {
+  return prisma.listing.updateMany({
+    where: { id, status: "active" },
+    data: { status: "closed" },
+  });
+}
+
 export function updateListingAskingPrice(id: string, askingPriceJpy: number | null) {
   return prisma.listing.update({
     where: { id },

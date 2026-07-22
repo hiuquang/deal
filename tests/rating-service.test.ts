@@ -21,11 +21,15 @@ vi.mock("@/server/repositories/users", () => ({
 vi.mock("@/server/repositories/conversations", () => ({
   setMessagesPurgeAt: vi.fn(),
 }));
+vi.mock("@/server/repositories/listings", () => ({
+  closeListingIfActive: vi.fn(),
+}));
 
 import * as tradesRepo from "@/server/repositories/trades";
 import * as ratingsRepo from "@/server/repositories/ratings";
 import * as usersRepo from "@/server/repositories/users";
 import * as conversationsRepo from "@/server/repositories/conversations";
+import * as listingsRepo from "@/server/repositories/listings";
 import * as ratingService from "@/server/services/rating-service";
 
 const trade = {
@@ -54,6 +58,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(tradesRepo.findTradeById).mockResolvedValue(trade);
   vi.mocked(ratingsRepo.findRatingsByTrade).mockResolvedValue([]);
+  vi.mocked(listingsRepo.closeListingIfActive).mockResolvedValue({ count: 1 } as never);
 });
 
 describe("ratingService.rate", () => {
@@ -106,6 +111,36 @@ describe("ratingService.rate", () => {
     const delay = (purgeAt as Date).getTime() - before;
     expect(delay).toBeGreaterThan(23 * 3600 * 1000);
     expect(delay).toBeLessThan(25 * 3600 * 1000);
+  });
+
+  it("rating THỨ 2 của trade LISTING → đóng tin đăng (giao dịch + đánh giá xong)", async () => {
+    vi.mocked(tradesRepo.findTradeById).mockResolvedValue({
+      ...((trade as unknown) as Record<string, unknown>),
+      listingId: "l1",
+    } as never);
+    vi.mocked(ratingsRepo.findRatingsByTrade).mockResolvedValue([makeRating("seller1")] as never);
+    vi.mocked(ratingsRepo.createRating).mockResolvedValue(makeRating("buyer1") as never);
+    await ratingService.rate("buyer1", "t1", { score: 5 });
+    expect(listingsRepo.closeListingIfActive).toHaveBeenCalledWith("l1");
+  });
+
+  it("rating THỨ 2 của trade BUY-ORDER (không listing) → KHÔNG đóng tin nào", async () => {
+    // trade base không có listingId → tin gom tự gỡ, không auto-đóng.
+    vi.mocked(ratingsRepo.findRatingsByTrade).mockResolvedValue([makeRating("seller1")] as never);
+    vi.mocked(ratingsRepo.createRating).mockResolvedValue(makeRating("buyer1") as never);
+    await ratingService.rate("buyer1", "t1", { score: 5 });
+    expect(listingsRepo.closeListingIfActive).not.toHaveBeenCalled();
+  });
+
+  it("rating ĐẦU của trade listing → CHƯA đóng tin", async () => {
+    vi.mocked(tradesRepo.findTradeById).mockResolvedValue({
+      ...((trade as unknown) as Record<string, unknown>),
+      listingId: "l1",
+    } as never);
+    vi.mocked(ratingsRepo.findRatingsByTrade).mockResolvedValue([]); // chưa ai rate
+    vi.mocked(ratingsRepo.createRating).mockResolvedValue(makeRating("buyer1") as never);
+    await ratingService.rate("buyer1", "t1", { score: 5 });
+    expect(listingsRepo.closeListingIfActive).not.toHaveBeenCalled();
   });
 });
 

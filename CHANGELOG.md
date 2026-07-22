@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [0.19.0] — 2026-07-22 — Tin bán giữ active suốt trade, chỉ đóng sau khi đánh giá
+
+### Thay đổi lớn (theo quyết định chủ web)
+- **Tin bán thường KHÔNG còn biến mất khi có người chốt giá.** Trước: tạo trade → listing `in_trade` (ẩn khỏi bảng + chặn 購入希望 mới), chốt → `closed`. Giờ: tin **giữ `active` suốt quá trình thương lượng/chốt giá** để vẫn hiện trên bảng và người khác vẫn gửi 購入希望 được (người bán kết nối được nhiều người). Tin chỉ `closed` khi **giao dịch chốt giá XONG *và* cả 2 đã đánh giá** — mốc đóng duy nhất, đặt ở rating thứ 2 trong `rating-service` (`closeListingIfActive`, chỉ đụng tin đang active nên không ghi đè tin đã hủy).
+- Ràng buộc **"1 trade chưa-cancelled / listing"** không đổi — vẫn do partial unique index `trades_one_active_per_listing` đảm bảo (không còn phụ thuộc trạng thái listing). `in_trade` thành trạng thái **legacy** (không còn set; giữ trong enum cho dữ liệu cũ).
+- `createTrade` / `closeTrade` / `cancelTrade` không đụng trạng thái listing nữa (bỏ 3 transition + gộp bớt `$transaction`). Guard hủy tin dùng `findPendingTradeByListing` (chặn khi có trade **pending**) thay cho check `in_trade`; trade đã chốt chờ đánh giá thì vẫn hủy tin được.
+- Không cần migration (chỉ đổi logic + ngữ nghĩa trạng thái). +3 unit test (đóng tin ở rating thứ 2 với trade listing; không đóng với buy-order/không listing; không đóng ở rating đầu), sửa test guard hủy tin + cancelTrade 1 tham số — **216 pass**, tsc sạch. Docs business-rules #9/#9b + data-model + api/listings + api/trades cập nhật.
+
 ## [0.18.0] — 2026-07-22 — Ảnh minh họa cho tin gom số lượng lớn
 
 ### Tính năng

@@ -2,6 +2,7 @@ import { ApiError } from "@/server/errors";
 import * as ratingsRepo from "@/server/repositories/ratings";
 import * as tradesRepo from "@/server/repositories/trades";
 import * as usersRepo from "@/server/repositories/users";
+import * as listingsRepo from "@/server/repositories/listings";
 import * as conversationsRepo from "@/server/repositories/conversations";
 import type { RatingDto, TradeRatingStateDto, UserSummaryDto } from "@/lib/types";
 import type { Rating } from "@prisma/client";
@@ -57,14 +58,24 @@ export async function rate(
   console.log(`[rating] ${userId} rated trade ${tradeId} (score ${input.score})`);
 
   // Rating này là cái thứ 2 → trade "hoàn tất trọn vẹn" (giao dịch + cả 2 đánh
-  // giá) → hẹn xóa nội dung chat sau 1 ngày. setMessagesPurgeAt chỉ đặt khi
-  // chưa đặt (idempotent) nên gọi ở đây an toàn.
+  // giá). Đây là mốc DUY NHẤT đóng tin đăng: suốt lúc thương lượng/chốt giá
+  // tin vẫn active (hiện trên bảng + nhận thêm 購入希望); chỉ khi chốt giá
+  // XONG và cả 2 đánh giá xong tin mới closed. Cũng hẹn xóa nội dung chat sau
+  // 1 ngày. Cả hai thao tác idempotent nên gọi ở đây an toàn.
   if (existing.length + 1 >= 2) {
     await conversationsRepo.setMessagesPurgeAt(
       trade.conversationId,
       new Date(Date.now() + CHAT_PURGE_DELAY_MS)
     );
     console.log(`[chat] scheduled purge for conversation ${trade.conversationId} (+1 day)`);
+    // Trade từ buy-order không có listing (tin gom tự gỡ khi đủ). closeIfActive
+    // không ghi đè tin đã hủy/đóng do người bán tự thao tác trước đó.
+    if (trade.listingId) {
+      const res = await listingsRepo.closeListingIfActive(trade.listingId);
+      if (res.count > 0) {
+        console.log(`[listing] closed ${trade.listingId} (giao dịch + đánh giá xong)`);
+      }
+    }
   }
   return toRatingDto(rating);
 }

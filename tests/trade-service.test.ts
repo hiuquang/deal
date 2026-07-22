@@ -68,7 +68,7 @@ function makeTrade(overrides: Record<string, unknown> = {}) {
       askingPriceJpy: 52000,
       tradeType: "sell",
       note: null,
-      status: "in_trade",
+      status: "active",
       createdAt: new Date(),
       updatedAt: new Date(),
       card,
@@ -433,8 +433,8 @@ describe("tradeService.cancel — buy-order", () => {
 
     const dto = await tradeService.cancel("buyer1", "t1");
 
-    // listingId null → repo không mở lại listing nào.
-    expect(tradesRepo.cancelTrade).toHaveBeenCalledWith("t1", null);
+    // cancelTrade không còn đụng listing (tin giữ active suốt quá trình trade).
+    expect(tradesRepo.cancelTrade).toHaveBeenCalledWith("t1");
     expect(dto.status).toBe("cancelled");
   });
 });

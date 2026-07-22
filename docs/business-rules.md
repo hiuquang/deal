@@ -15,7 +15,8 @@
 ## Trade
 
 8. **Auto-close 7 ngày** — trade pending không được phản hồi → tự chốt `self_reported`, lazy-check khi có request đọc trade/price (không cron). Lazy-check có throttle 1 phút/process — độ trễ tối đa 1 phút là chấp nhận được vì `autoCloseAt` tính theo ngày.
-9. **1 listing chỉ có 1 trade chưa-cancelled** (`409 TRADE_EXISTS`). Listing sang `in_trade` khi có trade pending, `closed` khi chốt, mở lại `active` khi trade cancel. Ép ở **cả 2 tầng**: check sớm trong service (UX) + partial unique index `trades_one_active_per_listing` ở DB (tuyến phòng thủ cuối, chặn race condition khi 2 request đến gần như cùng lúc — xem migration `add_active_trade_partial_unique_index`). Service bắt lỗi Prisma `P2002` từ insert và dịch thành cùng mã lỗi `TRADE_EXISTS`.
+9. **1 listing chỉ có 1 trade chưa-cancelled** (`409 TRADE_EXISTS`). Ép ở **cả 2 tầng**: check sớm trong service (UX) + partial unique index `trades_one_active_per_listing` ở DB (tuyến phòng thủ cuối, chặn race condition khi 2 request đến gần như cùng lúc — xem migration `add_active_trade_partial_unique_index`). Service bắt lỗi Prisma `P2002` từ insert và dịch thành cùng mã lỗi `TRADE_EXISTS`. **Lưu ý (v0.19.0)**: listing KHÔNG còn chuyển `in_trade`/`closed`/`active` theo vòng đời trade — nó GIỮ `active` suốt quá trình để vẫn hiện + nhận thêm 購入希望 từ người khác; ràng buộc "1 trade" chỉ dựa vào index, không dựa vào trạng thái listing.
+9b. **Tin đăng chỉ đóng (`closed`) sau khi giao dịch chốt giá XONG *và* cả 2 đã đánh giá** (v0.19.0, theo quyết định chủ web — để người bán còn kết nối nhiều người trong lúc thương lượng). Mốc đóng duy nhất: rating thứ 2 trong rating-service (`closeListingIfActive`, chỉ đụng tin đang active). Hủy tin bị chặn khi có trade **pending** (`409 IN_TRADE`), không chặn khi trade đã chốt chờ đánh giá.
 10. **Giá hợp lệ**: 1 ~ 10.000.000 JPY.
 
 ## Uy tín & chống lạm dụng
