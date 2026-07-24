@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [0.21.2] — 2026-07-24 — Vá bảo mật: nâng Next.js 15.5.20 → 15.5.21
+
+### Bảo mật
+- GitHub/Dependabot báo **8 advisory (3 high, 5 moderate)** gom trong 1 lỗ hổng `next` (DoS App Router/Image Optimization SVG, SSRF Server Actions/rewrites, cache confusion, lộ endpoint Server Function…). Vá bằng `npm audit fix` (KHÔNG `--force`, không breaking) → `next@15.5.21` (chỉ đổi `package-lock.json`, range `^15.3.4` giữ nguyên). `npm audit` giờ **0 vulnerabilities**.
+- Verify: `tsc` sạch, **229 test pass**, `next build` thành công (exit 0). Không đổi code app, không migration.
+
 ## [0.21.1] — 2026-07-24 — Sửa lỗi: bên đối phương không xác nhận chốt giá được
 
 ### Sửa lỗi
