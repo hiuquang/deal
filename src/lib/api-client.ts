@@ -272,6 +272,9 @@ export const api = {
   }) => request<{ trade: TradeDto }>("/api/trades", json(data)),
   listTrades: () => request<{ trades: TradeDto[] }>("/api/trades"),
   getTrade: (id: string) => request<{ trade: TradeDto }>(`/api/trades/${id}`),
+  /** Trade còn sống của 1 conversation (null nếu chưa có) — panel trade poll để 2 bên đồng bộ. */
+  getActiveTrade: (conversationId: string) =>
+    request<{ trade: TradeDto | null }>(`/api/conversations/${conversationId}/active-trade`),
   confirmTrade: (id: string, finalPriceJpy: number, quantity?: number | null) =>
     request<{ trade: TradeDto }>(`/api/trades/${id}/confirm`, json({ finalPriceJpy, quantity })),
   cancelTrade: (id: string) =>

@@ -36,6 +36,10 @@ Người gọi = bên khởi tạo (được tính là đã xác nhận); buyer/
 
 ### GET /api/trades/:id → `{trade}` — `403`, `404`
 
+### GET /api/conversations/:id/active-trade → `{trade: TradeDto | null}`
+
+Trade còn sống (chưa cancelled) của 1 conversation, hoặc `null`. Panel trade **poll endpoint này mỗi ~6s** (chỉ khi tab hiển thị + trade chưa chốt) để 2 bên thấy nhau tạo/xác nhận/hủy gần realtime — trang chat không tự reload conversation khi trade đổi, nếu chỉ dựa `conversation.activeTradeId` tĩnh thì bên đối phương không biết trade vừa được tạo (bấm "Báo chốt giá" sẽ dính `TRADE_EXISTS`). Read thuần, không side-effect. Lỗi: `403` (không phải thành viên), `404` (không có conversation). `finalPriceJpy` vẫn ẩn với bên chưa xác nhận khi pending (như `GET /api/trades/:id`).
+
 ### POST /api/trades/:id/confirm
 
 ```json

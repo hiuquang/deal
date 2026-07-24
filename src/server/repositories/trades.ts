@@ -30,6 +30,17 @@ export function findPendingTradeByListing(listingId: string) {
   return prisma.trade.findFirst({ where: { listingId, status: "pending" } });
 }
 
+/** Trade "còn sống" (chưa cancelled) của 1 conversation — panel trade poll
+ *  hàm này để 2 bên thấy nhau tạo/xác nhận/hủy gần realtime (chat page không
+ *  reload conversation khi trạng thái trade đổi). Tối đa 1 theo index DB. */
+export function findActiveTradeByConversation(conversationId: string) {
+  return prisma.trade.findFirst({
+    where: { conversationId, status: { not: "cancelled" } },
+    include: tradeInclude,
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 export function listTradesForUser(userId: string) {
   return prisma.trade.findMany({
     where: { OR: [{ buyerId: userId }, { sellerId: userId }] },

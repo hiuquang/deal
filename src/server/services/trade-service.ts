@@ -143,6 +143,23 @@ export async function listMine(userId: string): Promise<TradeDto[]> {
   return trades.map((trade) => toTradeDto(trade, userId));
 }
 
+/**
+ * Trade còn sống của 1 conversation (hoặc null). Panel trade poll hàm này để
+ * 2 bên thấy nhau tạo/xác nhận/hủy gần realtime — chat page KHÔNG reload
+ * conversation khi trade đổi, nên nếu chỉ dựa vào conversation.activeTradeId
+ * thì bên đối phương không biết trade vừa được tạo (→ vẫn thấy form khai giá,
+ * bấm sẽ dính TRADE_EXISTS). Membership check qua getMembership (403 nếu không
+ * phải thành viên). Read thuần, không side-effect (poll dày).
+ */
+export async function getActiveForConversation(
+  userId: string,
+  conversationId: string
+): Promise<TradeDto | null> {
+  await getMembership(userId, conversationId);
+  const trade = await tradesRepo.findActiveTradeByConversation(conversationId);
+  return trade ? toTradeDto(trade, userId) : null;
+}
+
 export async function getById(userId: string, id: string): Promise<TradeDto> {
   await autoCloseExpiredThrottled();
   const trade = await tradesRepo.findTradeById(id);

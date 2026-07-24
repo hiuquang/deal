@@ -5,7 +5,7 @@
 // - listing: khai 1 giá thẻ (như cũ).
 // - buy_order (P9): khai ĐƠN GIÁ + số lượng + condition (tin gom không khai
 //   condition); bên xác nhận phải nhập lại đúng đơn giá VÀ số lượng.
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { api, ApiClientError } from "@/lib/api-client";
 import type { Condition, ConversationDto, TradeDto, UserProfileDto } from "@/lib/types";
@@ -13,6 +13,10 @@ import { BOX_CONDITION_KEYS, SINGLE_CONDITION_KEYS, formatDate, formatJpy } from
 import { ErrorBox, SafetyNote, TradeStatusBadge } from "@/components/ui";
 import { RatingSection } from "@/components/rating-section";
 import { useI18n, type MessageKey } from "@/lib/i18n";
+
+// Nhịp poll trạng thái trade. Thưa hơn poll chat (6s vs 5s) vì trade đổi trạng
+// thái hiếm hơn tin nhắn; chỉ chạy khi tab hiển thị + trade chưa chốt.
+const TRADE_POLL_MS = 6_000;
 
 interface Props {
   conversation: ConversationDto;
@@ -49,24 +53,57 @@ export function TradePanel({ conversation, myUserId, onTradeChange }: Props) {
     };
   }, [conversation.otherPartyId]);
 
+  // Trạng thái trade lấy THEO conversation (không dựa conversation.activeTradeId
+  // — chat page không reload conversation khi trade đổi, nên bên đối phương sẽ
+  // không biết trade vừa được tạo/xác nhận/hủy). tradeRef để vòng poll biết có
+  // cần theo dõi tiếp không mà không phải dựng lại timer mỗi lần state đổi.
+  const tradeRef = useRef<TradeDto | null>(null);
   const load = useCallback(async () => {
-    if (!conversation.activeTradeId) {
-      setTrade(null);
-      return;
-    }
     try {
-      const { trade } = await api.getTrade(conversation.activeTradeId);
+      const { trade } = await api.getActiveTrade(conversation.id);
+      tradeRef.current = trade;
       setTrade(trade);
     } catch {
-      setTrade(null);
+      // lỗi tạm thời → giữ nguyên trạng thái hiện tại, thử lại ở tick sau
     }
-  }, [conversation.activeTradeId]);
+  }, [conversation.id]);
 
   useEffect(() => {
     setError(null);
     setPrice("");
     setQty("");
+    tradeRef.current = null;
+    setTrade(null);
     void load();
+  }, [load]);
+
+  // Poll để 2 bên đồng bộ trạng thái chốt giá gần realtime (chat page không tự
+  // reload conversation khi trade đổi). Chỉ poll khi tab hiển thị; chỉ fetch khi
+  // CHƯA có trade hoặc trade còn pending (đã chốt = terminal, khỏi hỏi tiếp).
+  useEffect(() => {
+    let stopped = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const needsWatch = () => {
+      const cur = tradeRef.current;
+      return !cur || cur.status === "pending";
+    };
+    const tick = () => {
+      if (stopped) return;
+      timer = setTimeout(async () => {
+        if (document.visibilityState === "visible" && needsWatch()) await load();
+        tick();
+      }, TRADE_POLL_MS);
+    };
+    tick();
+    const onVisibility = () => {
+      if (document.visibilityState === "visible" && needsWatch()) void load();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      stopped = true;
+      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [load]);
 
   async function run(action: () => Promise<unknown>) {

@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [0.21.1] — 2026-07-24 — Sửa lỗi: bên đối phương không xác nhận chốt giá được
+
+### Sửa lỗi
+- **Bên đối phương không nhấn "Xác nhận chốt giá" được sau khi bên kia đã báo chốt.** Gốc: trang chat chỉ reload danh sách hội thoại lúc mở trang / sau hành động của chính mình; `ChatPanel` poll tin nhắn nhưng **trạng thái trade không được poll**, và việc tạo trade không sinh tin nhắn. Nên khi A tạo trade, `conversation.activeTradeId` của B không cập nhật → B vẫn thấy form "Báo chốt giá" (tạo mới), bấm vào bị `TRADE_EXISTS` (409). Kéo theo: trade không bao giờ chốt → **banner "Bắt buộc đánh giá" (vốn chỉ hiện sau khi trade chốt) cũng không xuất hiện** → tưởng đánh giá không bắt buộc.
+- **Sửa:** `TradePanel` giờ lấy trạng thái trade **theo `conversation.id`** (endpoint mới `GET /api/conversations/:id/active-trade`) và **poll mỗi 6s** (chỉ khi tab hiển thị + trade chưa chốt), thay vì dựa vào `conversation.activeTradeId` tĩnh. Hai bên thấy nhau tạo/xác nhận/hủy gần realtime; sau khi chốt, banner đánh giá bắt buộc hiện đúng cho cả 2 bên. Mức ép đánh giá giữ nguyên (nhắc dai trong khung trade + không đóng được tin cho tới khi đánh giá — không chặn toàn web, theo quyết định chủ web).
+- Kỹ thuật: repo `findActiveTradeByConversation`, service `getActiveForConversation` (membership check, read thuần), `api.getActiveTrade`. Không migration. +3 unit test — **229 pass**, tsc sạch. Verify: build sạch, endpoint 401 khi chưa đăng nhập (luồng 2 bên đã phủ unit test; E2E 2 tài khoản đăng nhập không mô phỏng được trong môi trường verify).
+
 ## [0.21.0] — 2026-07-24 — Giá tham khảo thị trường (nguồn ngoài) trên trang giá sản phẩm
 
 ### Tính năng

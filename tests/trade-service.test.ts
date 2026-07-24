@@ -4,11 +4,13 @@
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Prisma } from "@prisma/client";
+import { ApiError } from "@/server/errors";
 import { expectApiError } from "./helpers";
 
 vi.mock("@/server/repositories/trades", () => ({
   findTradeById: vi.fn(),
   findActiveTradeByListing: vi.fn(),
+  findActiveTradeByConversation: vi.fn(),
   createTrade: vi.fn(),
   closeTrade: vi.fn(),
   cancelTrade: vi.fn(),
@@ -214,6 +216,43 @@ describe("tradeService.cancel", () => {
       makeTrade({ status: "confirmed" }) as never
     );
     await expectApiError(tradeService.cancel("buyer1", "t1"), "INVALID_STATUS", 409);
+  });
+});
+
+describe("tradeService.getActiveForConversation", () => {
+  it("trả trade còn sống của conversation (đã map DTO)", async () => {
+    vi.mocked(getMembership).mockResolvedValue({ id: "cv1" } as never);
+    vi.mocked(tradesRepo.findActiveTradeByConversation).mockResolvedValue(
+      makeTrade({ status: "pending" }) as never
+    );
+
+    const result = await tradeService.getActiveForConversation("buyer1", "cv1");
+
+    expect(tradesRepo.findActiveTradeByConversation).toHaveBeenCalledWith("cv1");
+    expect(result?.id).toBe("t1");
+    expect(result?.status).toBe("pending");
+  });
+
+  it("trả null khi conversation chưa có trade còn sống", async () => {
+    vi.mocked(getMembership).mockResolvedValue({ id: "cv1" } as never);
+    vi.mocked(tradesRepo.findActiveTradeByConversation).mockResolvedValue(null);
+
+    const result = await tradeService.getActiveForConversation("buyer1", "cv1");
+
+    expect(result).toBeNull();
+  });
+
+  it("403 khi không phải thành viên (getMembership chặn) — không đụng repo", async () => {
+    vi.mocked(getMembership).mockRejectedValue(
+      new ApiError(403, "FORBIDDEN", "Bạn không tham gia đoạn chat này.")
+    );
+
+    await expectApiError(
+      tradeService.getActiveForConversation("stranger", "cv1"),
+      "FORBIDDEN",
+      403
+    );
+    expect(tradesRepo.findActiveTradeByConversation).not.toHaveBeenCalled();
   });
 });
 
