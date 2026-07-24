@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [0.21.0] — 2026-07-24 — Giá tham khảo thị trường (nguồn ngoài) trên trang giá sản phẩm
+
+### Tính năng
+- **Khu "Giá tham khảo thị trường" trên trang `/prices/:cardId`** — hiển thị giá chủ web tự thu thập từ nguồn NGOÀI platform (đầu tiên: sản phẩm One Piece "Round One", 8 điểm giá 23–24/7, 115 pack). Mục đích: tạo mặt bằng giá cho người mới xem khi web còn ít giao dịch thật → xây niềm tin, mà **không giả làm giao dịch trên DEAL**. Khu này viền teal, có nhãn nguồn + disclaimer rõ ("KHÔNG phải giao dịch trên DEAL"), gồm 4 stat tile (TB có trọng số theo số lượng / thấp nhất / cao nhất / số lần ghi nhận), biểu đồ đường và bảng chi tiết (thời điểm JST · số lượng pack · đơn giá).
+- **Công khai, KHÔNG gate give-to-get, KHÔNG cần đăng nhập**: khách chưa đăng ký cũng thấy được giá tham khảo (đúng mục tiêu tạo niềm tin), trong khi phần giá-giao-dịch-thật bên dưới vẫn khóa give-to-get như cũ. Trang trả kèm `card` từ endpoint tham khảo nên header + khu tham khảo hiện được ngay cả khi phần trade đang khóa.
+
+### Kỹ thuật
+- Bảng mới `reference_prices` (`ReferencePrice`), **TÁCH HẲN `price_records`** (giao dịch P2P thật, ẩn danh, gắn tradeId) — nguồn ngoài không được coi là dữ liệu đóng cho AI dự đoán giá. Migration `20260724150140_reference_prices` (additive) đã deploy Tokyo. Unique `(card_id, source, recorded_at)` để seed idempotent.
+- Đường đọc repo→service→route→DTO: `referencePrices.ts` → `reference-price-service.ts` (`weightedAverage` có trọng số theo số lượng) → `GET /api/reference-prices/:cardId` (public, cache như catalog) → `ReferencePriceDto`/`ReferencePriceStatsDto` → `api.getReferencePrices`. Chart riêng `reference-price-chart.tsx`.
+- Nhập/cập nhật dữ liệu: `npm run db:seed-reference-prices` (idempotent, chỉ chủ web chạy — không có admin UI, giống VIP/report). i18n `refprice.*` (vi/en). +6 unit test `weightedAverage` — **226 pass**, tsc sạch. Verify browser: khu tham khảo render đúng cho khách chưa đăng nhập, 0 lỗi console, phần trade vẫn khóa. Docs api/prices + data-model cập nhật.
+
 ## [0.20.0] — 2026-07-22 — Nút "Đã bán · đóng tin" cho chủ tin đăng
 
 ### Tính năng

@@ -19,6 +19,8 @@ import type {
   MessageDto,
   PriceRecordDto,
   PriceStatsDto,
+  ReferencePriceDto,
+  ReferencePriceStatsDto,
   PurchaseRequestDto,
   RatingDto,
   TradeDto,
@@ -295,5 +297,9 @@ export const api = {
   getPrices: (cardId: string, condition?: Condition) =>
     request<{ card: CardDto; records: PriceRecordDto[]; stats: PriceStatsDto }>(
       `/api/prices/${cardId}${condition ? `?condition=${condition}` : ""}`
+    ),
+  getReferencePrices: (cardId: string) =>
+    request<{ card: CardDto; records: ReferencePriceDto[]; stats: ReferencePriceStatsDto }>(
+      `/api/reference-prices/${cardId}`
     ),
 };

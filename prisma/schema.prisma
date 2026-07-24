@@ -130,10 +130,11 @@ model Card {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  listings     Listing[]
-  priceRecords PriceRecord[]
-  buyOrders    BuyOrder[]
-  trades       Trade[]
+  listings        Listing[]
+  priceRecords    PriceRecord[]
+  referencePrices ReferencePrice[]
+  buyOrders       BuyOrder[]
+  trades          Trade[]
 
   @@unique([game, setCode, cardNumber, language])
   @@map("cards")
@@ -413,6 +414,30 @@ model PriceRecord {
 
   @@index([cardId, condition, tradedAt])
   @@map("price_records")
+}
+
+// Giá THAM KHẢO từ nguồn NGOÀI platform (vd cửa hàng Round One), do chủ web
+// tự thu thập/nhập tay để có mặt bằng giá hiển thị khi web còn ít giao dịch thật.
+// TÁCH HẲN khỏi price_records (giao dịch P2P thật, ẩn danh, gắn tradeId) — không
+// bao giờ trộn chung: nguồn ngoài không được coi là dữ liệu đóng cho AI dự đoán
+// giá. quantity = số pack quan sát; priceJpy = đơn giá/pack tại recordedAt.
+model ReferencePrice {
+  id         String   @id @default(cuid())
+  cardId     String   @map("card_id")
+  source     String // nhãn nguồn hiển thị cho user, vd "Round One"
+  quantity   Int // số lượng (pack) quan sát tại thời điểm đó
+  priceJpy   Int      @map("price_jpy") // đơn giá / pack
+  note       String?
+  recordedAt DateTime @map("recorded_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  card Card @relation(fields: [cardId], references: [id])
+
+  // Dedupe idempotent cho seed script chạy lại: 1 điểm giá = (thẻ, nguồn, mốc).
+  @@unique([cardId, source, recordedAt])
+  @@index([cardId, recordedAt])
+  @@map("reference_prices")
 }
 
 // Bộ đếm rate limit (fixed window). Không có FK tới User — key là chuỗi tự do

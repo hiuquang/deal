@@ -23,3 +23,20 @@ Quy ước chung: [README.md](README.md). Bất biến: [business-rules.md](../b
 - `details.recordCount` trong lỗi 403 = teaser tạo động lực đóng góp.
 - Endpoint này cũng lazy-check auto-close trade quá hạn.
 - Dữ liệu giá BOX dùng chung pipeline này.
+
+### GET /api/reference-prices/:cardId (CÔNG KHAI — không auth, không gate)
+
+```json
+// 200 — giá THAM KHẢO từ nguồn NGOÀI platform (KHÔNG phải giao dịch trên DEAL)
+{ "card": {...},
+  "records": [ { "source": "Round One", "quantity": 50, "priceJpy": 15300,
+                 "note": null, "recordedAt": "2026-07-23T03:51:00.000Z" } ],
+  "stats": { "count": 8, "median": 14250, "min": 13000, "max": 15500,
+             "weightedAvg": 14587, "totalQuantity": 115 } }
+```
+
+- **Tách hẳn khỏi `/api/prices`**: nguồn ngoài do chủ web nhập tay (bảng `reference_prices`), KHÔNG trộn vào `price_records` (giao dịch P2P thật, ẩn danh) — không được coi là dữ liệu đóng cho AI.
+- KHÔNG gate give-to-get và KHÔNG cần đăng nhập: mục đích là cho người mới thấy mặt bằng giá khi web còn ít giao dịch → xây niềm tin. Cache như catalog (`PUBLIC_CATALOG_CACHE`).
+- `quantity` = số lượng (pack) quan sát; `priceJpy` = đơn giá/pack. `weightedAvg` = trung bình có trọng số theo `quantity`.
+- Trả kèm `card` để trang `/prices/:cardId` hiển thị được ngay cả khi phần giá-giao-dịch-thật đang bị khóa.
+- Nhập/cập nhật dữ liệu: `npm run db:seed-reference-prices` (idempotent, chỉ chủ web chạy — không có admin UI, giống VIP/report).

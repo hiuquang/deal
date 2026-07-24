@@ -82,6 +82,16 @@ price_records     id, trade_id(unique)→trades, card_id→cards, condition,
                      không phải join qua trades/listings — bảng an toàn để
                      public/export cho AI.
 
+reference_prices  id, card_id→cards, source, quantity, price_jpy, note?,
+                  recorded_at, created_at, updated_at
+                  unique(card_id, source, recorded_at) — dedupe seed idempotent
+                  index(card_id, recorded_at)
+                  ── Giá THAM KHẢO nguồn NGOÀI (vd Round One), chủ web nhập tay
+                     (npm run db:seed-reference-prices). TÁCH HẲN price_records:
+                     KHÔNG phải giao dịch trên DEAL, KHÔNG dùng làm dữ liệu đóng
+                     cho AI. Hiển thị công khai để tạo mặt bằng giá khi web còn
+                     ít giao dịch. quantity=số pack, price_jpy=đơn giá/pack.
+
 ratings (P2)      id, trade_id→trades, rater_id→users, ratee_id→users,
                   score(1–5), comment?, created_at, updated_at
                   unique(trade_id, rater_id) — mỗi bên 1 lần/trade

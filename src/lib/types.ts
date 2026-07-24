@@ -389,6 +389,25 @@ export interface PriceStatsDto {
   max: number | null;
 }
 
+/**
+ * Giá tham khảo từ nguồn ngoài (vd Round One) — KHÔNG phải giao dịch trên DEAL.
+ * quantity = số lượng (pack) quan sát; priceJpy = đơn giá/pack.
+ */
+export interface ReferencePriceDto {
+  source: string;
+  quantity: number;
+  priceJpy: number;
+  note: string | null;
+  recordedAt: string;
+}
+
+export interface ReferencePriceStatsDto extends PriceStatsDto {
+  /** Trung bình có trọng số theo quantity (¥/pack) */
+  weightedAvg: number | null;
+  /** Tổng số lượng (pack) trên tất cả điểm giá */
+  totalQuantity: number;
+}
+
 export interface ApiErrorBody {
   error: { code: string; message: string; details?: unknown };
 }

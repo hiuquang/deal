@@ -355,6 +355,24 @@ export const MESSAGES = {
   "lock.ctaBrowse": { vi: "Tìm tin đăng và bắt đầu giao dịch", en: "Browse listings and start trading" },
   "lock.ctaRegister": { vi: "Đăng ký miễn phí để bắt đầu", en: "Sign up free to get started" },
 
+  // ---- Giá tham khảo (nguồn ngoài) ----
+  "refprice.title": { vi: "Giá tham khảo thị trường", en: "Market reference prices" },
+  "refprice.source": { vi: "Nguồn: {source}", en: "Source: {source}" },
+  "refprice.disclaimer": {
+    vi: "※ Giá tham khảo do DEAL thu thập từ nguồn ngoài, KHÔNG phải giao dịch trên DEAL. Chỉ để tham khảo mặt bằng giá.",
+    en: "※ Reference prices collected by DEAL from external sources — NOT trades on DEAL. For price-level reference only.",
+  },
+  "refprice.count": { vi: "Số lần ghi nhận", en: "Data points" },
+  "refprice.weightedAvg": { vi: "TB có trọng số", en: "Weighted avg" },
+  "refprice.totalQty": { vi: "Tổng số lượng", en: "Total quantity" },
+  "refprice.thDate": { vi: "Thời điểm", en: "Recorded" },
+  "refprice.thQuantity": { vi: "Số lượng", en: "Quantity" },
+  "refprice.thPrice": { vi: "Đơn giá", en: "Unit price" },
+  "refprice.thNote": { vi: "Ghi chú", en: "Note" },
+  "refprice.unit": { vi: "{n} pack", en: "{n} packs" },
+  "refprice.noData": { vi: "Chưa có giá tham khảo cho sản phẩm này.", en: "No reference prices for this item yet." },
+  "refprice.chartAria": { vi: "Biểu đồ giá tham khảo", en: "Reference price trend chart" },
+
   // ---- Trang cá nhân ----
   "me.loginPrompt": { vi: "Cần đăng nhập để xem trang cá nhân.", en: "Log in to view your page." },
   "me.contribution": { vi: "Số lần đóng góp dữ liệu", en: "Data contributions" },
