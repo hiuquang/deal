@@ -8,18 +8,31 @@ import { useI18n, type MessageKey } from "@/lib/i18n";
 
 export function ListingCard({ listing }: { listing: ListingDto }) {
   const { t } = useI18n();
+  // Tin ĐÃ BÁN vẫn nằm trên bảng tin trong chế độ trưng bày (chợ còn ít tin) —
+  // phải nhìn phát biết ngay là không mua được nữa: ảnh xám + băng chéo đỏ.
+  const daBan = listing.status === "closed";
   return (
     <Link
       href={`/listings/${listing.id}`}
-      className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:-translate-y-0.5 hover:shadow-md"
+      className={`group flex flex-col overflow-hidden rounded-xl border bg-white transition hover:-translate-y-0.5 hover:shadow-md ${
+        daBan ? "border-slate-300" : "border-slate-200"
+      }`}
     >
-      <div className="relative aspect-[3/4] bg-slate-100">
+      <div className="relative aspect-[3/4] overflow-hidden bg-slate-100">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={listing.imageUrl}
           alt={t("detail.photoAlt", { name: listing.card.nameJa })}
-          className="h-full w-full object-cover"
+          className={`h-full w-full object-cover ${daBan ? "opacity-50 grayscale" : ""}`}
         />
+        {daBan && (
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute left-1/2 top-1/2 w-[160%] -translate-x-1/2 -translate-y-1/2 -rotate-[20deg] bg-red-600/90 py-1 text-center text-sm font-black tracking-[0.3em] text-white shadow"
+          >
+            SOLD
+          </span>
+        )}
         <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">
           {t(`game.${listing.card.game}` as MessageKey)}
         </span>

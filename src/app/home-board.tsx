@@ -91,12 +91,27 @@ function HomeContent({ initial }: { initial: InitialBoard | null }) {
   // Trộn 2 nguồn thành 1 dòng thời gian, mới nhất trước — nếu xếp hết tin bán
   // rồi mới tới tin mua thì tin đăng mua luôn nằm đáy, coi như vẫn bị giấu,
   // đúng thứ lần gộp này muốn bỏ. createdAt là ISO nên so sánh chuỗi = so thời gian.
+  //
+  // Ngoại lệ: tin ĐÃ BÁN (chế độ trưng bày) luôn dồn xuống CUỐI — chúng chỉ để
+  // trang đỡ trống, không được đẩy hàng còn mua được xuống dưới.
   const items = useMemo(() => {
     const merged = [
-      ...listings.map((l) => ({ kind: "listing" as const, at: l.createdAt, data: l })),
-      ...buyOrders.map((b) => ({ kind: "buy_order" as const, at: b.createdAt, data: b })),
+      ...listings.map((l) => ({
+        kind: "listing" as const,
+        at: l.createdAt,
+        daBan: l.status === "closed",
+        data: l,
+      })),
+      ...buyOrders.map((b) => ({
+        kind: "buy_order" as const,
+        at: b.createdAt,
+        daBan: false,
+        data: b,
+      })),
     ];
-    return merged.sort((a, b) => b.at.localeCompare(a.at));
+    return merged.sort(
+      (a, b) => Number(a.daBan) - Number(b.daBan) || b.at.localeCompare(a.at)
+    );
   }, [listings, buyOrders]);
 
   return (

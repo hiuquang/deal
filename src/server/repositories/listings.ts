@@ -18,6 +18,11 @@ export async function listListings(filter: {
   category?: string;
   cardId?: string;
   status?: string;
+  /**
+   * Nhiều trạng thái cùng lúc — bảng tin công khai dùng khi bật chế độ trưng
+   * bày tin đã bán (active + closed). Bỏ qua nếu `status` đơn đã được truyền.
+   */
+  statuses?: string[];
   sellerId?: string;
   page: number;
 }) {
@@ -42,7 +47,11 @@ export async function listListings(filter: {
     : {};
   const where: Prisma.ListingWhereInput = {
     ...(filter.cardId ? { cardId: filter.cardId } : {}),
-    ...(filter.status ? { status: filter.status } : {}),
+    ...(filter.status
+      ? { status: filter.status }
+      : filter.statuses?.length
+        ? { status: { in: filter.statuses } }
+        : {}),
     ...(filter.sellerId ? { sellerId: filter.sellerId } : {}),
     ...(Object.keys(cardFilter).length ? { card: cardFilter } : {}),
     ...searchFilter,

@@ -2,6 +2,7 @@ import { listListingsSchema } from "@/server/validation";
 import * as listingService from "@/server/services/listing-service";
 import * as buyOrderService from "@/server/services/buy-order-service";
 import { boardKey, parseBoardType } from "@/lib/board";
+import { trangThaiHienTrenCho } from "@/server/showcase";
 import { HomeBoard, type InitialBoard } from "./home-board";
 
 // Trang chủ server-render lượt tải đầu (đọc searchParams → luôn dynamic):
@@ -33,7 +34,7 @@ export default async function HomePage({
     const [listingRes, buyOrderRes] = await Promise.all([
       boardType === "buy"
         ? Promise.resolve({ listings: [], total: 0 })
-        : listingService.list({ ...input, status: "active" }),
+        : listingService.list({ ...input, statuses: trangThaiHienTrenCho() }),
       boardType === "sell"
         ? Promise.resolve({ buyOrders: [], total: 0 })
         : buyOrderService.list({ ...input, status: "active" }),

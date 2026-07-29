@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [0.26.0] — 2026-07-30 — Trưng bày tin đã bán (xám + băng chéo "SOLD")
+
+### Tính năng
+- **Tin ĐÃ BÁN không biến mất nữa** — vẫn nằm trên bảng tin với ảnh xám + băng chéo đỏ "SOLD", **dồn xuống cuối** sau tin đang bán và tin đăng mua. Theo yêu cầu chủ web: web còn ít người dùng, tin bán xong biến mất ngay làm chợ trông trống trơn như đã chết; giữ lại vừa lấp trang vừa chứng minh ở đây có giao dịch thật.
+- **Bật/tắt bằng env `SHOW_SOLD_LISTINGS`** — chủ web tự đổi trong dashboard Vercel rồi redeploy, không cần đụng code. Mặc định BẬT. Cố ý **không tự tắt theo số người dùng** (chủ web chốt: chỉ tắt khi ra lệnh).
+- Trang chi tiết tin đã bán vẫn mở được (ảnh, giá chốt, bình luận) nhưng **không mua được**.
+
+### Kỹ thuật
+- `src/server/showcase.ts` là nguồn sự thật duy nhất; API route và SSR trang chủ **cùng gọi `trangThaiHienTrenCho()`** — lệch nhau sẽ gây nhảy nội dung giữa SSR và client fetch. Repo `listListings` nhận thêm `statuses?: string[]`.
+- **CHỈ `closed`, KHÔNG BAO GIỜ `cancelled`** (chủ tin tự gỡ, không hề bán được) — dán SOLD lên tin bị gỡ là nói sai sự thật về thị trường. Có test khóa lại. Giá trị env lạ cũng **không** tắt tính năng (tránh gõ nhầm làm mất tính năng trong im lặng).
+- **Lỗi latent lộ ra nhờ tính năng này:** khách chưa đăng nhập xem tin đã bán vẫn thấy lời mời *"Để gửi yêu cầu mua, hãy đăng nhập"* — nhánh `!me` trong `PurchasePanel` được kiểm TRƯỚC khi xét trạng thái tin. Trước đây tin đã bán không nằm trên chợ nên hiếm ai vào; giờ trưng bày lên thì khách bấm vào thật và lời mời sai này thành nổi bật. Đã chặn: tin không còn `active` thì ẩn hẳn panel mua, kể cả với khách.
+- +15 unit test (**265 pass**), tsc + build sạch. Verify trên DB thật: 11 tin đã bán hiện đúng với 11 băng SOLD + 11 ảnh xám, tin đăng mua xếp trước, **tin `cancelled` không hiện**; tắt env → 0 tin đã bán; bật lại → về như cũ. Không migration.
+
 ## [0.25.0] — 2026-07-30 — Kéo xuống để tải lại (cho PWA trên điện thoại)
 
 ### Tính năng

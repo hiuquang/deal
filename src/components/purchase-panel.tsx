@@ -56,6 +56,10 @@ export function PurchasePanel({ listing }: { listing: ListingDto }) {
   }
 
   if (!me) {
+    // Tin đã kết thúc thì đừng mời khách đăng nhập để mua — không còn gì để
+    // mua cả. Quan trọng từ khi tin ĐÃ BÁN được trưng bày lại trên chợ
+    // (v0.26.0): khách bấm vào thật, lời mời sai này thành nổi bật.
+    if (listing.status !== "active") return null;
     return (
       <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-center text-sm">
         {t("buy.loginPrompt")}{" "}

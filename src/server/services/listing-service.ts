@@ -12,6 +12,7 @@ export async function list(filter: {
   category?: string;
   cardId?: string;
   status?: string;
+  statuses?: string[];
   sellerId?: string;
   page: number;
 }): Promise<{ listings: ListingDto[]; total: number }> {
