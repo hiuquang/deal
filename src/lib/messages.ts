@@ -75,6 +75,10 @@ export const MESSAGES = {
   "home.tabSingle": { vi: "Thẻ lẻ", en: "Singles" },
   "home.tabBox": { vi: "BOX", en: "Boxes" },
   "home.count": { vi: "{n} tin đăng", en: "{n} listings" },
+  // Kéo xuống để tải lại — chỉ hiện trong PWA đã cài (không có thanh địa chỉ).
+  "ptr.pull": { vi: "Kéo xuống để tải lại", en: "Pull down to refresh" },
+  "ptr.release": { vi: "Thả ra để tải lại", en: "Release to refresh" },
+  "ptr.refreshing": { vi: "Đang tải lại…", en: "Refreshing…" },
   // Lọc theo LOẠI tin: trang tìm kiếm giờ gộp cả tin bán lẫn tin đăng mua.
   "home.tabTypeSell": { vi: "Đang bán", en: "For sale" },
   "home.tabTypeBuy": { vi: "Đăng mua", en: "Wanted" },

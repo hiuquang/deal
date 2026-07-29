@@ -18,6 +18,7 @@ import { VerifyBanner } from "@/components/verify-banner";
 import { TermsGate } from "@/components/terms-gate";
 import { SiteFooter } from "@/components/site-footer";
 import { BackBar } from "@/components/back-bar";
+import { PullToRefresh } from "@/components/pull-to-refresh";
 
 export const metadata: Metadata = {
   title: "DEAL — Trade thẻ TCG phí 0%",
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <I18nProvider>
           <AuthProvider>
             <FavoritesProvider>
+              <PullToRefresh />
               <NavBar />
               <VerifyBanner />
               <TermsGate />

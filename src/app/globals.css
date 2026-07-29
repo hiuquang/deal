@@ -21,3 +21,12 @@ body {
     font-size: 1rem;
   }
 }
+
+/* PWA đã cài (standalone): chặn nảy trang của iOS để chỉ báo "kéo xuống để
+   tải lại" không bị giật theo. Chỉ áp ở standalone — trong tab trình duyệt,
+   nảy trang là hành vi gốc của cử chỉ kéo-để-làm-mới, đừng đụng vào. */
+@media (display-mode: standalone) {
+  body {
+    overscroll-behavior-y: contain;
+  }
+}

@@ -88,3 +88,12 @@ Chốt giá / nhắc đánh giá **cố ý chưa có** — chủ web chọn 3 nh
 - **Không test được bằng browser tự động**: quyền thông báo bị từ chối mặc định trong môi trường headless/automation. Round-trip thật phải thử trên máy/điện thoại thật.
 - iOS chỉ hiện lời mời "Thêm vào MH chính" trong **Safari** — Chrome trên iPhone không cài PWA được.
 - Next 15 phát thẻ chuẩn mới `mobile-web-app-capable`; layout khai thêm tay `apple-mobile-web-app-capable` cho iOS đời cũ (thiếu nó, icon màn hình chính mở ra tab Safari thường → không nhận được push).
+
+## Kéo xuống để tải lại (v0.25.0)
+
+PWA chạy standalone **không có thanh địa chỉ** → mất luôn nút tải lại lẫn cử chỉ kéo-để-làm-mới của trình duyệt; người dùng kẹt với nội dung cũ. `components/pull-to-refresh.tsx` bù lại phần đó.
+
+- **CHỈ bật ở standalone.** Trong tab trình duyệt đã có sẵn cử chỉ này — bật thêm là hai cử chỉ chồng nhau.
+- Trạng thái standalone đọc **ngay lúc chạm**, không phải lúc mount: user có thể cài app rồi mở lại mà component không remount, và cách này kiểm thử được bằng cách giả lập `matchMedia`.
+- Không cướp cử chỉ khi: trang chưa ở đỉnh, hoặc có khung cuộn cha chưa ở đỉnh, hoặc khung cha khai `overscroll-behavior: contain/none` (khung tin nhắn chat đang dùng đúng cái này — **giữ nguyên nếu thêm khung cuộn mới nào không muốn bị cướp**).
+- Ngưỡng 70px sau giảm chấn 0.5, trần 110px. `overscroll-behavior-y: contain` trên body chỉ áp trong `@media (display-mode: standalone)`.

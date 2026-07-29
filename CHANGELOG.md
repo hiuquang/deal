@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [0.25.0] — 2026-07-30 — Kéo xuống để tải lại (cho PWA trên điện thoại)
+
+### Tính năng
+- **Kéo xuống hết cỡ ở đầu trang để tải lại** — theo yêu cầu chủ web. PWA đã cài ra màn hình chính chạy standalone nên **không còn thanh địa chỉ**, mất luôn cả nút tải lại lẫn cử chỉ kéo-để-làm-mới của Safari; trước đó muốn làm mới phải thoát hẳn app. Có chỉ báo 3 mức: "Kéo xuống để tải lại" → "Thả ra để tải lại" → "Đang tải lại…".
+
+### Kỹ thuật
+- **Chỉ bật ở chế độ standalone.** Trong tab trình duyệt (Safari/Chrome) cử chỉ này đã có sẵn — bật thêm là hai cử chỉ chồng nhau. Đã verify: trong tab thường không kích hoạt.
+- Trạng thái standalone đọc **ngay lúc chạm**, không phải lúc mount: user có thể cài app rồi mở lại mà component không remount. Đồng thời khiến đường code thật kiểm thử được bằng cách giả lập `matchMedia` + bắn sự kiện chạm.
+- **Không cướp cử chỉ** khi trang chưa ở đỉnh, khi có khung cuộn cha chưa ở đỉnh, hoặc khi khung cha khai `overscroll-behavior: contain/none` — khung tin nhắn chat vốn đã dùng đúng cái này nên tự động miễn nhiễm, kéo trong chat không bị reload mất chỗ đang đọc.
+- Ngưỡng 70px sau giảm chấn 0.5, trần 110px. `overscroll-behavior-y: contain` trên body chỉ áp trong `@media (display-mode: standalone)` — trong tab thường, nảy trang là hành vi gốc của cử chỉ, không đụng vào.
+- Verify 5 ca bằng sự kiện chạm giả lập: tab thường không kích hoạt · kéo nhẹ hiện đúng nhãn · kéo mạnh đổi sang "thả ra" · thả dưới ngưỡng không tải lại · thả trên ngưỡng **`navigation.type === "reload"`** (tải lại thật). Tab mới 0 lỗi console. 250 test pass, tsc + build sạch.
+
 ## [0.24.1] — 2026-07-30 — Sửa lỗi: tin ở trạng thái `in_trade` legacy bị kẹt vĩnh viễn
 
 ### Sửa lỗi
