@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## [0.22.0] — 2026-07-29 — Thông báo đẩy lên màn hình điện thoại (Web Push + PWA)
+
+### Tính năng
+- **Thông báo hiện thẳng trên màn hình điện thoại kể cả khi không mở web.** Mục "🔔 Thông báo trên điện thoại" ở trang cá nhân để bật/tắt — cài đặt áp dụng cho **riêng thiết bị đang dùng** (1 người nhiều máy thì bật từng máy).
+- Có push cho **3 nhóm sự kiện** (chủ web chọn, cố ý không phủ hết để tránh làm phiền): tin nhắn chat mới → bên còn lại; 購入希望 → chủ tin đăng; chào bán tin gom → chủ tin gom; bình luận vào tin → chủ tin (bỏ qua khi tự bình luận). Bấm vào thông báo mở thẳng đúng trang. **Chốt giá / nhắc đánh giá chưa có push.**
+- **Web giờ cài được ra màn hình chính (PWA)**: manifest + bộ icon (192/512/maskable/apple-touch, cắt từ logo ngựa). Trên Android là tiện thêm; trên **iPhone là BẮT BUỘC** — Apple chỉ cho phép thông báo khi web đã được "Thêm vào MH chính" (iOS 16.4+), trong tab Safari thường thì `PushManager` không tồn tại. UI nhận diện ca này và hiện hướng dẫn cài từng bước thay vì một cái nút bấm không ăn.
+
+### Kỹ thuật
+- Bảng mới `push_subscriptions` (**1 bản ghi = 1 THIẾT BỊ**, không phải 1 user), `endpoint` unique làm key upsert. Migration `20260729211327_push_subscriptions` (additive) **đã deploy Tokyo**. Client gửi lại subscription mỗi lần mount để "nhận lại" endpoint về tài khoản đang đăng nhập → xử lý ca đổi tài khoản trên cùng máy.
+- Đường đi: `push-subscriptions.ts` (repo) → `push-service.ts` → `GET /api/push/public-key`, `POST/DELETE /api/push/subscribe` → `PushToggle` + `public/sw.js`. Thư viện `web-push`, xác thực VAPID.
+- **Bất biến mới: push không bao giờ được làm hỏng hành động chính.** `notify()` nhận **hàm dựng payload** chứ không phải object — nội dung thông báo đọc field lồng nhau (`listing.card.nameJa`), nếu dựng payload ném lỗi ngay tại điểm gọi thì cả việc gửi tin nhắn sập theo. (Chính test bắt được lỗi này trước khi lên production.) Mọi lỗi gửi đều nuốt + log, không `await`.
+- Endpoint trả 404/410 (gỡ app) → **tự xoá bản ghi**; lỗi 5xx thì giữ lại (có thể tạm thời). `tag` gộp theo nguồn để 10 tin nhắn liên tiếp chỉ hiện 1 dòng.
+- **Thiếu khoá VAPID → tính năng tự tắt êm** (`/api/push/public-key` trả `null`, UI ẩn mục, server không gửi gì), web chạy bình thường — quan trọng cho môi trường dev chưa sinh khoá.
+- `sw.js` **chỉ phục vụ push, KHÔNG cache** (tránh sinh trạng thái cũ khó gỡ, web đã dựa vào SSR/ISR của Next). CSP nới `worker-src`/`manifest-src`. Layout khai thêm tay `apple-mobile-web-app-capable` — Next 15 chỉ phát thẻ chuẩn mới `mobile-web-app-capable`, iOS đời cũ không đọc.
+- +14 unit test — **243 pass**, tsc sạch, `next build` sạch, `npm audit` 0 vuln. Verify browser: manifest/sw/icon/API đều 200, service worker đăng ký được (CSP không chặn), endpoint đúng 401 khi chưa đăng nhập, cặp VAPID ký JWT hợp lệ. **Round-trip thật tới điện thoại chưa verify được** — môi trường tự động luôn từ chối quyền thông báo; cần thử trên iPhone thật. Docs mới `docs/push.md`.
+
 ## [0.21.2] — 2026-07-24 — Vá bảo mật: nâng Next.js 15.5.20 → 15.5.21
 
 ### Bảo mật

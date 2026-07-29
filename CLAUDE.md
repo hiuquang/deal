@@ -12,6 +12,7 @@ Web P2P trade thẻ TCG (Pokémon / One Piece / mục "Khác" cho sản phẩm k
 | Đụng vào logic giá, trade, rating, gate | [docs/business-rules.md](docs/business-rules.md) — **các bất biến KHÔNG được phá** |
 | Thêm/sửa chuỗi UI, ngôn ngữ, font | [docs/i18n.md](docs/i18n.md) |
 | Email xác nhận / reset mật khẩu / SMTP | [docs/email.md](docs/email.md) |
+| Thông báo đẩy lên điện thoại / PWA / service worker | [docs/push.md](docs/push.md) |
 | Chạy dev, biến env, lỗi 500 lạ | [docs/environment.md](docs/environment.md) |
 | Deploy production (Vercel + Supabase) | [docs/deploy.md](docs/deploy.md) |
 | Tính năng tương lai / việc chưa làm | [docs/roadmap.md](docs/roadmap.md) |

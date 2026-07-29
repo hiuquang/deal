@@ -14,6 +14,7 @@ import { formatDate, formatDateTime, formatJpy } from "@/lib/labels";
 import { useAuth } from "@/components/auth-context";
 import { useFavorites } from "@/components/favorites-context";
 import { Empty, Loading, TradeStatusBadge, VipBadge, VipName } from "@/components/ui";
+import { PushToggle } from "@/components/push-toggle";
 import { UNREAD_EVENT } from "@/components/nav-bar";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 
@@ -114,6 +115,8 @@ export default function MePage() {
           </p>
         </div>
       </section>
+
+      <PushToggle />
 
       <section className="space-y-3">
         <h2 className="font-bold">

@@ -1,6 +1,7 @@
 import { ApiError } from "@/server/errors";
 import * as commentsRepo from "@/server/repositories/comments";
 import * as listingsRepo from "@/server/repositories/listings";
+import * as pushService from "@/server/services/push-service";
 import type { CommentDto } from "@/lib/types";
 
 type CommentWithUser = Awaited<ReturnType<typeof commentsRepo.createComment>>;
@@ -38,5 +39,17 @@ export async function create(
     throw new ApiError(404, "NOT_FOUND", "Không tìm thấy tin đăng.");
   }
   const comment = await commentsRepo.createComment(listingId, userId, body);
+
+  // Báo chủ tin có bình luận mới — trừ khi chính chủ tự bình luận vào tin mình
+  // (tự nhận thông báo của chính mình là vô nghĩa và gây khó chịu).
+  if (listing.sellerId !== userId) {
+    pushService.notify(listing.sellerId, () => ({
+      title: `${comment.user.displayName} bình luận`,
+      body: pushService.preview(body),
+      url: `/listings/${listingId}`,
+      tag: `comment-${listingId}`,
+    }));
+  }
+
   return toCommentDto(comment);
 }

@@ -1,6 +1,6 @@
 {
   "name": "deal",
-  "version": "0.21.2",
+  "version": "0.22.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -24,6 +24,7 @@
     "nodemailer": "^9.0.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "web-push": "^3.6.7",
     "zod": "^3.25.0"
   },
   "overrides": {
@@ -36,6 +37,7 @@
     "@types/nodemailer": "^8.0.1",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
+    "@types/web-push": "^3.6.4",
     "prisma": "^6.10.0",
     "tailwindcss": "^4.1.10",
     "tsx": "^4.20.0",

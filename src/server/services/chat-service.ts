@@ -1,5 +1,6 @@
 import { ApiError } from "@/server/errors";
 import * as conversations from "@/server/repositories/conversations";
+import * as pushService from "@/server/services/push-service";
 import { toCardDto, toListingDto, toMessageDto } from "@/server/serializers";
 import type { ConversationDto, MessageDto } from "@/lib/types";
 import type { ConversationWithRelations } from "@/server/repositories/conversations";
@@ -173,6 +174,20 @@ export async function sendMessage(
   // Người gửi coi như đã đọc tới thời điểm này (không tự tính tin mình gửi).
   const role = conversation.buyerId === userId ? "buyer" : "seller";
   await conversations.markConversationRead(conversationId, role);
+
+  // Đẩy thông báo cho bên kia — fire-and-forget: push hỏng không được làm hỏng
+  // việc gửi tin. `tag` theo hội thoại → nhiều tin liên tiếp đè lên nhau thành
+  // 1 dòng thay vì dội hàng chục thông báo.
+  const isBuyer = conversation.buyerId === userId;
+  const sender = isBuyer ? conversation.buyer : conversation.seller;
+  const recipientId = isBuyer ? conversation.sellerId : conversation.buyerId;
+  pushService.notify(recipientId, () => ({
+    title: sender.displayName,
+    body: pushService.preview(body),
+    url: `/chat?c=${conversationId}`,
+    tag: `chat-${conversationId}`,
+  }));
+
   return toMessageDto(message);
 }
 

@@ -3,6 +3,7 @@ import * as requestsRepo from "@/server/repositories/requests";
 import * as listingsRepo from "@/server/repositories/listings";
 import * as conversationsRepo from "@/server/repositories/conversations";
 import { getUserSummary } from "@/server/services/rating-service";
+import * as pushService from "@/server/services/push-service";
 import type { PurchaseRequestDto, PurchaseRequestStatus } from "@/lib/types";
 import type { RequestWithRelations } from "@/server/repositories/requests";
 
@@ -49,6 +50,18 @@ export async function create(userId: string, listingId: string): Promise<Purchas
   }
   const request = await requestsRepo.createRequest(listingId, userId);
   console.log(`[request] ${userId} wants to buy listing ${listingId}`);
+
+  // Báo chủ tin có người muốn mua. `tag` theo tin đăng: nhiều người cùng gửi
+  // 購入希望 cho 1 tin thì thông báo mới đè lên cũ, không dội liên tục.
+  pushService.notify(listing.sellerId, () => ({
+    title: "Có người muốn mua",
+    body: pushService.preview(
+      `${request.buyer.displayName} gửi yêu cầu mua "${listing.card.nameJa}".`
+    ),
+    url: `/listings/${listingId}`,
+    tag: `request-${listingId}`,
+  }));
+
   return toRequestDto(request);
 }
 

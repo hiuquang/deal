@@ -296,6 +296,17 @@ export const api = {
   reportUser: (data: { reportedUserId: string; listingId?: string | null; reason: string }) =>
     request<{ ok: boolean }>("/api/reports", json(data)),
 
+  // ---- push (thông báo đẩy) ----
+  /** Khoá VAPID công khai; null = chủ web chưa cấu hình → UI ẩn tính năng. */
+  getPushPublicKey: () => request<{ publicKey: string | null }>("/api/push/public-key"),
+  subscribePush: (subscription: { endpoint: string; keys: { p256dh: string; auth: string } }) =>
+    request<{ ok: boolean }>("/api/push/subscribe", json(subscription)),
+  unsubscribePush: (endpoint: string) =>
+    request<{ ok: boolean }>("/api/push/subscribe", {
+      method: "DELETE",
+      body: JSON.stringify({ endpoint }),
+    }),
+
   // ---- prices ----
   getPrices: (cardId: string, condition?: Condition) =>
     request<{ card: CardDto; records: PriceRecordDto[]; stats: PriceStatsDto }>(

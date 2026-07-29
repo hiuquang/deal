@@ -412,6 +412,40 @@ export const MESSAGES = {
     en: "offered {n} for your buy order “{card}”",
   },
   "me.actNew": { vi: "Mới", en: "New" },
+
+  // ---- Thông báo đẩy (Web Push) ----
+  "push.title": { vi: "Thông báo trên điện thoại", en: "Phone notifications" },
+  "push.hint": {
+    vi: "Nhận thông báo tin nhắn và hoạt động ngay trên màn hình điện thoại, kể cả khi không mở web.",
+    en: "Get message and activity alerts on your phone screen, even when the site is closed.",
+  },
+  "push.enable": { vi: "Bật thông báo", en: "Enable notifications" },
+  "push.disable": { vi: "Tắt thông báo", en: "Disable notifications" },
+  "push.enabled": { vi: "✓ Đang bật trên thiết bị này", en: "✓ On for this device" },
+  "push.working": { vi: "Đang xử lý…", en: "Working…" },
+  "push.perDevice": {
+    vi: "Cài đặt này áp dụng cho riêng thiết bị bạn đang dùng.",
+    en: "This setting applies to the device you're using now.",
+  },
+  "push.denied": {
+    vi: "Bạn đã chặn thông báo cho trang này. Mở Cài đặt của trình duyệt và cho phép thông báo với DEAL, rồi thử lại.",
+    en: "You've blocked notifications for this site. Allow notifications for DEAL in your browser settings, then try again.",
+  },
+  "push.failed": {
+    vi: "Không bật được thông báo. Vui lòng thử lại.",
+    en: "Couldn't enable notifications. Please try again.",
+  },
+  "push.unsupported": {
+    vi: "Trình duyệt này không hỗ trợ thông báo đẩy.",
+    en: "This browser doesn't support push notifications.",
+  },
+  // iOS: Apple CHỈ cho phép push khi web đã được cài ra màn hình chính.
+  "push.iosTitle": { vi: "Cần thêm 1 bước trên iPhone", en: "One extra step on iPhone" },
+  "push.iosHint": {
+    vi: "iPhone chỉ cho phép thông báo khi DEAL được cài vào màn hình chính. Ở Safari, bấm nút Chia sẻ (ô vuông có mũi tên) → “Thêm vào MH chính” → mở DEAL từ biểu tượng vừa tạo, rồi quay lại đây bật thông báo.",
+    en: "iPhone only allows notifications once DEAL is added to your home screen. In Safari, tap Share (square with an arrow) → “Add to Home Screen” → open DEAL from the new icon, then come back here to enable.",
+  },
+
   "me.trades": { vi: "Lịch sử giao dịch", en: "Trade history" },
   "me.noTrades": { vi: "Chưa có giao dịch nào.", en: "No trades yet." },
   "me.listings": { vi: "Tin đăng của tôi", en: "My listings" },

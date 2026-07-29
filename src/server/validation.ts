@@ -222,3 +222,17 @@ export const createReportSchema = z.object({
     .min(10, "Lý do báo cáo cần tối thiểu 10 ký tự")
     .max(500, "Lý do báo cáo tối đa 500 ký tự"),
 });
+
+// Đăng ký nhận thông báo đẩy. `endpoint` do trình duyệt cấp (URL của dịch vụ
+// push Apple/Google) — giới hạn độ dài để không ai nhồi rác vào bảng.
+export const pushSubscribeSchema = z.object({
+  endpoint: z.string().url("Endpoint không hợp lệ").max(1000),
+  keys: z.object({
+    p256dh: z.string().min(1).max(255),
+    auth: z.string().min(1).max(255),
+  }),
+});
+
+export const pushUnsubscribeSchema = z.object({
+  endpoint: z.string().url("Endpoint không hợp lệ").max(1000),
+});

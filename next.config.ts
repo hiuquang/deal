@@ -17,6 +17,11 @@ const csp = [
   "img-src 'self' data: blob: https://*.supabase.co",
   "font-src 'self' data:",
   `connect-src 'self'${isDev ? " ws:" : ""}`,
+  // Service worker thông báo đẩy (/sw.js) + manifest PWA. worker-src fallback
+  // về script-src nên vẫn chạy nếu thiếu, nhưng khai rõ để không vỡ khi sau này
+  // siết script-src.
+  "worker-src 'self'",
+  "manifest-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

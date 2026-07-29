@@ -3,6 +3,7 @@ import * as offersRepo from "@/server/repositories/buy-order-offers";
 import * as buyOrdersRepo from "@/server/repositories/buy-orders";
 import * as conversationsRepo from "@/server/repositories/conversations";
 import { getUserSummaries, getUserSummary } from "@/server/services/rating-service";
+import * as pushService from "@/server/services/push-service";
 import type { BuyOrderOfferDto, BuyOrderOfferStatus, UserSummaryDto } from "@/lib/types";
 import type { OfferWithRelations } from "@/server/repositories/buy-order-offers";
 
@@ -95,6 +96,17 @@ export async function create(
     message: input.message?.trim() || null,
   });
   console.log(`[buy-order] ${sellerId} offered on ${buyOrderId} (x${input.quantity})`);
+
+  // Báo chủ tin gom có người chào bán (fire-and-forget, xem push-service).
+  pushService.notify(order.buyerId, () => ({
+    title: "Có người chào bán",
+    body: pushService.preview(
+      `${offer.seller.displayName} chào bán ${input.quantity} cho tin gom "${order.card.nameJa}".`
+    ),
+    url: `/buy-orders/${buyOrderId}`,
+    tag: `offer-${buyOrderId}`,
+  }));
+
   return toOfferDto(offer);
 }
 

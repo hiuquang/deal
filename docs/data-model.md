@@ -113,6 +113,11 @@ favorites         id, user_id→users (cascade), listing_id?→listings (cascade
                   listing/buy_order khác null. Unique (user,listing)+(user,buy_order).
                   Tin đã lưu ❤️ — xem [api/favorites.md](api/favorites.md).
 
+push_subscriptions id, user_id→users (cascade), endpoint(unique), p256dh, auth,
+                  user_agent?, created_at. **1 bản ghi = 1 THIẾT BỊ**, không phải
+                  1 user (1 người có nhiều máy). endpoint do trình duyệt cấp, là
+                  key upsert. Xoá tự động khi push trả 404/410 — xem [push.md](push.md).
+
 purchase_requests id, listing_id→listings, buyer_id→users,
 (P3)              status(pending|connected), created_at, updated_at
                   unique(listing_id, buyer_id)

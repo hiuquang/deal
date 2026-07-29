@@ -46,6 +46,7 @@ model User {
   buyOrderOffers   BuyOrderOffer[]
   emailTokens      EmailToken[]
   favorites        Favorite[]
+  pushSubscriptions PushSubscription[]
 
   @@map("users")
 }
@@ -71,6 +72,28 @@ model Favorite {
   @@unique([userId, buyOrderId])
   @@index([userId, createdAt])
   @@map("favorites")
+}
+
+// Đăng ký nhận thông báo đẩy (Web Push) của MỘT thiết bị/trình duyệt. Một user
+// có nhiều bản ghi (điện thoại, máy tính...). `endpoint` do trình duyệt cấp và
+// là định danh duy nhất của thiết bị → unique, dùng làm key upsert khi user bật
+// lại trên cùng máy. Bị Apple/Google trả 404/410 (gỡ app, hết hạn) thì service
+// tự xóa bản ghi — xem push-service.
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  endpoint  String   @unique
+  // Khóa mã hóa payload do trình duyệt sinh; không có thì không gửi được.
+  p256dh    String
+  auth      String
+  // Ghi lại để chủ web nhìn ra thiết bị nào khi debug (không dùng cho logic).
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_subscriptions")
 }
 
 // Token xác nhận email / đặt lại mật khẩu — dùng 1 lần, có hạn.

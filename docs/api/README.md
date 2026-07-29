@@ -26,6 +26,7 @@ Base URL: `http://localhost:3000`. Auth qua session cookie `deal_session` (httpO
 | Tin gom số lượng lớn (まとめ買い) | [buy-orders.md](buy-orders.md) | `/api/buy-orders*`, `/api/buy-orders/offers/:id/connect` |
 | Chat + thông báo hoạt động | [chat.md](chat.md) | `/api/conversations*`, `/api/activity*` |
 | Tin đã lưu (❤️ favorites) | [favorites.md](favorites.md) | `/api/favorites*` |
+| Thông báo đẩy lên điện thoại | [../push.md](../push.md) | `/api/push/*` |
 | Trade (trái tim của app) | [trades.md](trades.md) | `/api/trades*` (trừ rating) |
 | Rating, report, hồ sơ user | [ratings-reports-users.md](ratings-reports-users.md) | `/api/trades/:id/rating`, `/api/reports`, `/api/users/:id/summary` |
 | Dữ liệu giá (give-to-get gate) | [prices.md](prices.md) | `/api/prices/:cardId` |
