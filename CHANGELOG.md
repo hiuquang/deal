@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [0.22.1] — 2026-07-29 — Sửa lỗi: thông báo trên tin đã bán vẫn hiện mãi
+
+### Sửa lỗi
+- **Mục 🔔 Hoạt động ở trang cá nhân hiện thông báo về tin đã giao dịch xong, không bao giờ mất.** User báo trên tài khoản `Hieu`: tin BOX "Hiroshima" đã bán (`closed`) mà bình luận trên đó vẫn nằm trong danh sách thông báo.
+- **Gốc:** 3 truy vấn trong `repositories/activity.ts` chỉ lọc theo *chủ tin* và trạng thái của **bình luận/yêu cầu**, KHÔNG hề xét trạng thái của **tin đăng**. Tin `closed`/`cancelled` vẫn kéo theo bình luận + 購入希望 pending cũ hiện vĩnh viễn. Badge đỏ ở nav thì có lọc `createdAt > activitySeenAt` nên tự tắt — chỉ danh sách là kẹt lại, nên lỗi trông như "thông báo ma".
+- **Sửa:** cả 3 truy vấn (+ `countNewActivity` để badge đếm đúng cùng tập với danh sách, tránh badge "1" mà mở ra rỗng) giờ loại tin đã kết thúc. Dùng `status: { notIn: ["closed","cancelled"] }` **chứ không phải `status: "active"`**: `in_trade` là trạng thái legacy (không còn set từ v0.19.0) nhưng nếu còn bản ghi cũ thì đó vẫn là việc đang diễn ra, phải hiện — kiểm chứng trên DB thật thấy đúng 2 bình luận trên tin `in_trade` của `Ninh` sẽ bị mất oan nếu lọc bằng `"active"`.
+- Không migration, không đổi API. Verify trên DB production (chỉ đọc): trước sửa Hieu có 1 mục ma, sau sửa còn 0 và badge khớp danh sách; đối chiếu toàn bộ 3 bình luận trong DB — chỉ đúng mục trên tin `closed` bị ẩn. 243 test pass, tsc sạch.
+
 ## [0.22.0] — 2026-07-29 — Thông báo đẩy lên màn hình điện thoại (Web Push + PWA)
 
 ### Tính năng
