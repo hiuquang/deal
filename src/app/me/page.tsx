@@ -137,7 +137,7 @@ export default function MePage() {
               <li key={`${item.kind}-${item.targetId}-${i}`}>
                 <Link
                   href={
-                    item.kind === "offer"
+                    item.targetKind === "buy_order"
                       ? `/buy-orders/${item.targetId}`
                       : `/listings/${item.targetId}`
                   }

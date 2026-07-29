@@ -9,6 +9,7 @@ import { ErrorBox, Loading } from "@/components/ui";
 import { HeartButton } from "@/components/heart-button";
 import { SellerSummary } from "@/components/seller-summary";
 import { OfferPanel } from "@/components/offer-panel";
+import { CommentsSection } from "@/components/comments-section";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 
 export default function BuyOrderDetailPage({
@@ -127,6 +128,9 @@ export default function BuyOrderDetailPage({
       </div>
 
       <OfferPanel order={order} />
+
+      {/* Hỏi đáp công khai TRƯỚC khi chào bán / kết nối — đối xứng với tin bán. */}
+      <CommentsSection target={{ kind: "buy_order", id: order.id }} />
     </div>
   );
 }

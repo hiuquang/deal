@@ -50,3 +50,19 @@ Body: `{ quantity (1..999), message? (≤300) }` → `201 {offer}`. Lỗi: `409 
 ### POST /api/buy-orders/offers/:offerId/connect (CHỈ chủ tin, idempotent)
 
 → `{offer, conversationId}` — tạo/mở conversation riêng (unique buyOrder+seller), offer → `connected`. Lỗi: `403 FORBIDDEN`, `404`.
+
+## Bình luận công khai (v0.24.0)
+
+Đối xứng hoàn toàn với bình luận trên tin bán — hỏi đáp **trước** khi chào bán / kết nối, ai cũng đọc được.
+
+### GET /api/buy-orders/:id/comments (công khai, không cần đăng nhập)
+
+→ `{comments: CommentDto[]}` — cũ → mới, tối đa 200. Lỗi: `404` (tin đăng mua không tồn tại).
+
+### POST /api/buy-orders/:id/comments (cần đăng nhập + đã xác nhận email)
+
+Body: `{ body (1..500) }` → `201 {comment}`. Lỗi: `401`, `403` (chưa xác nhận email / chưa đồng ý điều khoản), `404`.
+
+Gửi push cho **chủ tin đăng mua** = `buy_orders.buyer_id` (luồng đảo chiều — KHÔNG phải seller), bỏ qua khi chủ tin tự bình luận. Bình luận cũng vào mục 🔔 hoạt động của chủ tin; `ActivityItemDto.targetKind` cho biết dựng link `/listings/` hay `/buy-orders/`.
+
+`CommentDto` có **cả `listingId` lẫn `buyOrderId`, đúng 1 khác null** — xem [../data-model.md](../data-model.md).

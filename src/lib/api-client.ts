@@ -29,6 +29,7 @@ import type {
   UserProfileDto,
   UserSummaryDto,
 } from "@/lib/types";
+import type { CommentTarget } from "@/lib/comment-target";
 
 export class ApiClientError extends Error {
   constructor(
@@ -71,6 +72,12 @@ const json = (data: unknown): RequestInit => ({
   method: "POST",
   body: JSON.stringify(data),
 });
+
+/** 2 endpoint bình luận đối xứng nhau, chỉ khác gốc đường dẫn. */
+const commentsPath = (target: CommentTarget) =>
+  target.kind === "listing"
+    ? `/api/listings/${target.id}/comments`
+    : `/api/buy-orders/${target.id}/comments`;
 
 export const api = {
   // ---- auth ----
@@ -210,10 +217,11 @@ export const api = {
     ),
 
   // ---- comments (bình luận công khai dưới listing) ----
-  listComments: (listingId: string) =>
-    request<{ comments: CommentDto[] }>(`/api/listings/${listingId}/comments`),
-  postComment: (listingId: string, body: string) =>
-    request<{ comment: CommentDto }>(`/api/listings/${listingId}/comments`, json({ body })),
+  // Bình luận công khai — dùng chung cho tin bán và tin đăng mua (v0.24.0).
+  listComments: (target: CommentTarget) =>
+    request<{ comments: CommentDto[] }>(commentsPath(target)),
+  postComment: (target: CommentTarget, body: string) =>
+    request<{ comment: CommentDto }>(commentsPath(target), json({ body })),
 
   // ---- purchase requests (luồng mua: 購入希望 → seller 連携) ----
   sendPurchaseRequest: (listingId: string) =>

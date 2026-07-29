@@ -105,8 +105,11 @@ reports (P2)      id, reporter_id→users, reported_user_id→users,
                      ≥2 NGƯỜI KHÁC NHAU đang pending (chống report bẩn).
                      Chưa có admin UI — duyệt tạm bằng tay ở DB.
 
-comments (P3)     id, listing_id→listings, user_id→users, body(1–500 ký tự),
-                  created_at, updated_at
+comments (P3)     id, listing_id?→listings (cascade), buy_order_id?→buy_orders
+                  (cascade), user_id→users, body(1–500 ký tự), created_at,
+                  updated_at. **Đúng 1 trong 2 FK khác null** (enforce ở service,
+                  cùng lối với favorites) — bình luận công khai gắn tin BÁN hoặc
+                  tin ĐĂNG MUA (v0.24.0; trước đó chỉ có listing_id NOT NULL).
 
 favorites         id, user_id→users (cascade), listing_id?→listings (cascade),
                   buy_order_id?→buy_orders (cascade), created_at. Đúng 1 FK

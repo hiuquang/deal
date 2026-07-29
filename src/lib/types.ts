@@ -1,6 +1,8 @@
 // DTO dùng chung giữa backend (serialize) và frontend (type response API).
 // Đây là hình dạng dữ liệu đúng theo API CONTRACT trong design.md mục 5.
 
+import type { CommentTargetKind } from "@/lib/comment-target";
+
 export type Game = "pokemon" | "onepiece" | "other";
 export type Category = "single" | "box";
 export type Condition =
@@ -49,7 +51,9 @@ export interface CardDto {
 
 export interface CommentDto {
   id: string;
-  listingId: string;
+  /** Đúng 1 trong 2 khác null: bình luận gắn tin bán HOẶC tin đăng mua (v0.24.0). */
+  listingId: string | null;
+  buyOrderId: string | null;
   userId: string;
   userDisplayName: string;
   userIsVip: boolean;
@@ -334,8 +338,15 @@ export type ActivityKind = "comment" | "request" | "offer";
  */
 export interface ActivityItemDto {
   kind: ActivityKind;
-  /** id để dựng link đích: listingId (comment/request) hoặc buyOrderId (offer) */
+  /** id để dựng link đích */
   targetId: string;
+  /**
+   * Loại tin của `targetId` — quyết định link đi `/listings/` hay `/buy-orders/`.
+   * BẮT BUỘC có từ v0.24.0: trước đây UI suy từ `kind === "offer"`, nhưng giờ
+   * `kind === "comment"` có thể thuộc CẢ HAI loại tin (bình luận trên tin đăng
+   * mua) → suy kiểu cũ sẽ dựng `/listings/<buyOrderId>` và ra 404.
+   */
+  targetKind: CommentTargetKind;
   cardNameJa: string;
   actorName: string;
   actorIsVip: boolean;

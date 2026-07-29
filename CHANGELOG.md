@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [0.24.0] — 2026-07-30 — Bình luận công khai trên tin Đăng mua
+
+### Tính năng
+- **Tin đăng mua giờ có khu bình luận công khai** như tin bán — mọi người hỏi đáp **trước** khi chào bán hoặc kết nối (theo yêu cầu chủ web). Ai cũng đọc được; viết thì cần đăng nhập + đã xác nhận email, giống hệt bình luận tin bán.
+- Chủ tin đăng mua nhận **push** khi có bình luận mới (bỏ qua khi tự bình luận), và bình luận vào **mục 🔔 hoạt động** ở trang cá nhân.
+
+### Kỹ thuật
+- Bảng `comments` mở rộng theo đúng lối bảng `favorites`: `listing_id` nới thành **nullable**, thêm `buy_order_id` nullable + index + FK cascade, **đúng 1 trong 2 khác null** (enforce ở service). Migration `20260730004018_comments_on_buy_orders` — chỉ thêm cột + nới NOT NULL, **không mất dữ liệu, không cần backfill** (hàng cũ giữ `listing_id`). Đã deploy Tokyo.
+- Repo/service/route/api-client/UI đều nhận `CommentTarget = {kind:"listing"|"buy_order", id}` thay vì `listingId` trần → một đường code cho cả hai loại tin, không nhân bản. `CommentTarget` để ở `src/lib/comment-target.ts` (module trung lập, không `"use client"` — cùng bài học v0.23.0). Route mới `/api/buy-orders/:id/comments` đối xứng với route tin bán. `CommentsSection` dùng chung.
+- Chủ tin đăng mua là **`buyer_id`** (luồng đảo chiều) — push và quyền phải bám field này, không phải `sellerId`. Có test riêng cho chỗ dễ nhầm này.
+- **Bẫy chặn được trước khi lên production:** `/me` đang dựng link thông báo bằng `kind === "offer" ? /buy-orders/ : /listings/`. Thêm bình luận trên tin đăng mua thì `kind === "comment"` thuộc **cả hai** loại tin → link sẽ thành `/listings/<buyOrderId>` và ra **404**. Đã thêm `ActivityItemDto.targetKind` làm nguồn sự thật cho việc dựng link, thay vì suy từ `kind`.
+- Activity (danh sách + `countNewActivity` cho badge) giờ gồm bình luận trên **cả** tin bán lẫn tin đăng mua của mình, vẫn giữ bộ lọc "tin còn sống" của v0.22.1.
+- +5 unit test (**248 pass**), tsc + `next build` sạch. Verify trên DB production (tạo → đọc → kiểm thông báo → **xoá sạch**): bình luận vào đúng `buy_order_id`, hiện trong thông báo của chủ tin với `targetKind: "buy_order"`, **link dựng ra `/buy-orders/<id>` đúng**. API: GET công khai 200, POST chưa đăng nhập 401, tin không tồn tại 404.
+
 ## [0.23.0] — 2026-07-30 — Đổi tên "Đăng mua" + gộp tin đăng mua vào trang tìm kiếm
 
 ### Thay đổi

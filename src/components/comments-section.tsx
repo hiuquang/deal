@@ -1,16 +1,18 @@
 "use client";
 
-// Bình luận công khai dưới listing: ai cũng đọc, đăng nhập mới viết.
+// Bình luận công khai dưới tin BÁN hoặc tin ĐĂNG MUA (v0.24.0): ai cũng đọc,
+// đăng nhập mới viết. Cùng một component, chỉ khác target truyền vào.
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { api, ApiClientError } from "@/lib/api-client";
 import type { CommentDto } from "@/lib/types";
+import type { CommentTarget } from "@/lib/comment-target";
 import { formatDateTime } from "@/lib/labels";
 import { useAuth } from "@/components/auth-context";
 import { ErrorBox, VipName } from "@/components/ui";
 import { useI18n } from "@/lib/i18n";
 
-export function CommentsSection({ listingId }: { listingId: string }) {
+export function CommentsSection({ target }: { target: CommentTarget }) {
   const { me } = useAuth();
   const { t } = useI18n();
   const [comments, setComments] = useState<CommentDto[]>([]);
@@ -20,12 +22,12 @@ export function CommentsSection({ listingId }: { listingId: string }) {
 
   const load = useCallback(async () => {
     try {
-      const { comments } = await api.listComments(listingId);
+      const { comments } = await api.listComments(target);
       setComments(comments);
     } catch {
       // lỗi tải tạm thời — giữ danh sách cũ
     }
-  }, [listingId]);
+  }, [target.kind, target.id]);
 
   useEffect(() => {
     void load();
@@ -37,7 +39,7 @@ export function CommentsSection({ listingId }: { listingId: string }) {
     setBusy(true);
     setError(null);
     try {
-      await api.postComment(listingId, draft.trim());
+      await api.postComment(target, draft.trim());
       setDraft("");
       await load();
     } catch (err) {

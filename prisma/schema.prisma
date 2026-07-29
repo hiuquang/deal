@@ -197,18 +197,25 @@ model Listing {
 }
 
 // Bình luận công khai dưới listing: ai cũng đọc, đăng nhập mới viết.
+// Bình luận công khai. Từ v0.24.0 gắn được vào tin BÁN hoặc tin ĐĂNG MUA
+// (người quan tâm hỏi đáp trước khi chào bán / kết nối) → đúng 1 trong 2 FK
+// khác null, enforce ở service như bảng Favorite. `listing_id` phải nới thành
+// nullable; hàng cũ giữ nguyên listing_id nên không cần backfill.
 model Comment {
-  id        String   @id @default(cuid())
-  listingId String   @map("listing_id")
-  userId    String   @map("user_id")
-  body      String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id         String   @id @default(cuid())
+  listingId  String?  @map("listing_id")
+  buyOrderId String?  @map("buy_order_id")
+  userId     String   @map("user_id")
+  body       String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
-  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id])
+  listing  Listing?  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  buyOrder BuyOrder? @relation(fields: [buyOrderId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id])
 
   @@index([listingId, createdAt])
+  @@index([buyOrderId, createdAt])
   @@map("comments")
 }
 
@@ -288,6 +295,7 @@ model BuyOrder {
   buyer         User            @relation(fields: [buyerId], references: [id])
   card          Card            @relation(fields: [cardId], references: [id])
   offers        BuyOrderOffer[]
+  comments      Comment[]
   conversations Conversation[]
   trades        Trade[]
   favorites     Favorite[]

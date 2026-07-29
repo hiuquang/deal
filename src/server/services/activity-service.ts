@@ -24,22 +24,27 @@ export async function getActivity(user: User): Promise<ActivityDto> {
   const since = seenAt(user).getTime();
 
   const items: ActivityItemDto[] = [
-    ...comments.map(
-      (c): ActivityItemDto => ({
+    ...comments.map((c): ActivityItemDto => {
+      // Bình luận gắn tin bán HOẶC tin đăng mua — repo lọc theo đúng 1 trong 2
+      // nên luôn có một nhánh khác null.
+      const on = c.listing ?? c.buyOrder!;
+      return {
         kind: "comment",
-        targetId: c.listing.id,
-        cardNameJa: c.listing.card.nameJa,
+        targetKind: c.listing ? "listing" : "buy_order",
+        targetId: on.id,
+        cardNameJa: on.card.nameJa,
         actorName: c.user.displayName,
         actorIsVip: c.user.isVip,
         body: c.body,
         quantity: null,
         isNew: c.createdAt.getTime() > since,
         createdAt: c.createdAt.toISOString(),
-      })
-    ),
+      };
+    }),
     ...requests.map(
       (r): ActivityItemDto => ({
         kind: "request",
+        targetKind: "listing",
         targetId: r.listing.id,
         cardNameJa: r.listing.card.nameJa,
         actorName: r.buyer.displayName,
@@ -53,6 +58,7 @@ export async function getActivity(user: User): Promise<ActivityDto> {
     ...offers.map(
       (o): ActivityItemDto => ({
         kind: "offer",
+        targetKind: "buy_order",
         targetId: o.buyOrder.id,
         cardNameJa: o.buyOrder.card.nameJa,
         actorName: o.seller.displayName,

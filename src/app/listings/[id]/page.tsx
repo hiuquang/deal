@@ -243,7 +243,7 @@ export default function ListingDetailPage({
         </div>
       </div>
 
-      <CommentsSection listingId={listing.id} />
+      <CommentsSection target={{ kind: "listing", id: listing.id }} />
     </div>
   );
 }

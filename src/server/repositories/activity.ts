@@ -23,16 +23,24 @@ const LISTING_CON_SONG = { status: { notIn: ["closed", "cancelled"] } };
 /** Tin gom chỉ có active | cancelled. */
 const BUY_ORDER_CON_SONG = { status: "active" };
 
-/** Bình luận của NGƯỜI KHÁC vào tin mình đăng (còn sống), mới nhất trước. */
+/**
+ * Bình luận của NGƯỜI KHÁC vào tin mình đăng (còn sống), mới nhất trước.
+ * Từ v0.24.0 gồm CẢ tin bán lẫn tin đăng mua — bình luận trên tin đăng mua
+ * cũng cần chủ tin thấy, nếu không hỏi xong không ai trả lời.
+ */
 export function listCommentsOnMyListings(userId: string, limit = 20) {
   return prisma.comment.findMany({
     where: {
-      listing: { sellerId: userId, ...LISTING_CON_SONG },
       userId: { not: userId },
+      OR: [
+        { listing: { sellerId: userId, ...LISTING_CON_SONG } },
+        { buyOrder: { buyerId: userId, ...BUY_ORDER_CON_SONG } },
+      ],
     },
     include: {
       user: ACTOR_SELECT,
       listing: { select: { id: true, card: { select: { nameJa: true } } } },
+      buyOrder: { select: { id: true, card: { select: { nameJa: true } } } },
     },
     orderBy: { createdAt: "desc" },
     take: limit,
@@ -77,9 +85,12 @@ export async function countNewActivity(userId: string, since: Date): Promise<num
   const [comments, requests, offers] = await Promise.all([
     prisma.comment.count({
       where: {
-        listing: { sellerId: userId, ...LISTING_CON_SONG },
         userId: { not: userId },
         createdAt: { gt: since },
+        OR: [
+          { listing: { sellerId: userId, ...LISTING_CON_SONG } },
+          { buyOrder: { buyerId: userId, ...BUY_ORDER_CON_SONG } },
+        ],
       },
     }),
     prisma.purchaseRequest.count({
