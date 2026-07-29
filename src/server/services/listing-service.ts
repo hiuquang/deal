@@ -62,10 +62,18 @@ export async function getById(id: string): Promise<ListingDto> {
 
 /**
  * Guard chung cho 2 thao tác kết thúc tin của chủ (gỡ tin = cancelled, đánh
- * dấu đã bán = closed): chỉ chủ tin, chỉ khi đang active, và chặn khi còn
- * trade đang thương lượng (pending) — tin giữ active suốt quá trình trade nên
- * không dựa vào trạng thái in_trade cũ. Trade đã chốt chờ đánh giá thì cho qua.
+ * dấu đã bán = closed): chỉ chủ tin, tin chưa kết thúc, và chặn khi còn trade
+ * đang thương lượng (pending) — tin giữ active suốt quá trình trade nên không
+ * dựa vào trạng thái in_trade cũ. Trade đã chốt chờ đánh giá thì cho qua.
+ *
+ * Chỉ chặn theo trạng thái ĐÃ KẾT THÚC (`closed`/`cancelled`), KHÔNG phải
+ * `!== "active"`: hàng `in_trade` legacy (không còn được gán từ v0.19.0, cũng
+ * không có code nào đưa nó ra) sẽ kẹt vĩnh viễn — vừa vô hình trên chợ (chợ chỉ
+ * lấy active) vừa không cho chủ tin đóng hay gỡ. Đã dính đúng ca này với 1 tin
+ * thật ngày 2026-07-30.
  */
+const TRANG_THAI_DA_KET_THUC = ["closed", "cancelled"];
+
 async function assertOwnerCanEnd(userId: string, id: string) {
   const listing = await listings.findListingById(id);
   if (!listing) {
@@ -74,7 +82,7 @@ async function assertOwnerCanEnd(userId: string, id: string) {
   if (listing.sellerId !== userId) {
     throw new ApiError(403, "FORBIDDEN", "Bạn chỉ thao tác được trên tin đăng của mình.");
   }
-  if (listing.status !== "active") {
+  if (TRANG_THAI_DA_KET_THUC.includes(listing.status)) {
     throw new ApiError(409, "INVALID_STATUS", "Tin đăng này đã kết thúc.");
   }
   const pending = await tradesRepo.findPendingTradeByListing(id);

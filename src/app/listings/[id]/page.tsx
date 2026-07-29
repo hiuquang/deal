@@ -215,7 +215,10 @@ export default function ListingDetailPage({
           <PurchasePanel listing={listing} />
 
           <div className="space-y-2">
-            {isOwner && listing.status === "active" && (
+            {/* Khớp guard assertOwnerCanEnd ở service: hiện nút cho cả trạng
+                thái `in_trade` legacy — gate theo "active" thì tin legacy vừa
+                vô hình trên chợ vừa không ai đóng được. */}
+            {isOwner && listing.status !== "closed" && listing.status !== "cancelled" && (
               <>
                 <button
                   onClick={handleMarkSold}

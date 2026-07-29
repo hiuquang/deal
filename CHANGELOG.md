@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [0.24.1] — 2026-07-30 — Sửa lỗi: tin ở trạng thái `in_trade` legacy bị kẹt vĩnh viễn
+
+### Sửa lỗi
+- **Tin đăng ở trạng thái `in_trade` bị kẹt không lối ra.** `in_trade` là trạng thái LEGACY (không còn được gán từ v0.19.0, cũng không có code nào đưa nó ra: `closeListingIfActive` chỉ `updateMany where status=active`). Hậu quả kép: tin **vô hình trên chợ** (bảng tin chỉ lấy `active`) mà chủ tin **cũng không đóng/gỡ được** — guard `assertOwnerCanEnd` chặn mọi trạng thái `!== "active"`. Nút "Đã bán · đóng tin" của v0.20.0 vốn sinh ra để cứu đúng ca này lại không dùng được.
+- Phát hiện qua dữ liệu thật: tin BOX ¥22,500 của `Ninh` (trade đã `self_reported`) nằm im từ 22/7, không ai mua được cũng không ai đóng được.
+- **Sửa:** guard chuyển từ "chỉ cho `active`" sang **chặn theo trạng thái ĐÃ KẾT THÚC** (`closed`/`cancelled`) — hàng legacy `in_trade` giờ đóng/gỡ được. Sửa cả điều kiện hiện nút ở trang chi tiết cho khớp; nếu chỉ sửa service thì nút vẫn không hiện và fix thành vô nghĩa.
+- **Test cũ lộ ra là rỗng nghĩa:** ca "409 khi tin đã kết thúc" dùng `status: "sold"` — giá trị **không tồn tại** trong schema (`active|in_trade|closed|cancelled`); nó xanh chỉ vì `"sold" !== "active"`. Đã đổi sang trạng thái có thật + thêm 2 test khoá hành vi legacy.
+- Tin của Ninh đã đóng (`closed`) **qua đúng đường service vừa sửa** (không update thẳng DB) — cũng là bằng chứng fix chạy: trước đó lệnh này ném `INVALID_STATUS`. Không còn tin nào kẹt ở `in_trade`.
+- 250 test pass, tsc + build sạch. Không migration.
+
 ## [0.24.0] — 2026-07-30 — Bình luận công khai trên tin Đăng mua
 
 ### Tính năng

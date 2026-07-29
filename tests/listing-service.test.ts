@@ -130,8 +130,21 @@ describe("listingService.cancel", () => {
   });
 
   it("409 INVALID_STATUS khi tin đã kết thúc", async () => {
-    vi.mocked(listingsRepo.findListingById).mockResolvedValue(makeListing({ status: "sold" }));
+    // "cancelled" — trạng thái CÓ THẬT trong schema (active|in_trade|closed|
+    // cancelled). Trước đây test này dùng "sold" (không tồn tại) và vẫn xanh vì
+    // guard chỉ so !== "active"; giữ nguyên là test rỗng nghĩa.
+    vi.mocked(listingsRepo.findListingById).mockResolvedValue(makeListing({ status: "cancelled" }));
     await expectApiError(listingService.cancel("seller1", "l1"), "INVALID_STATUS");
+  });
+
+  it("tin ở trạng thái in_trade LEGACY vẫn gỡ được (không để kẹt vĩnh viễn)", async () => {
+    vi.mocked(listingsRepo.findListingById).mockResolvedValue(makeListing({ status: "in_trade" }));
+    vi.mocked(tradesRepo.findPendingTradeByListing).mockResolvedValue(null);
+    vi.mocked(listingsRepo.updateListingStatus).mockResolvedValue(
+      makeListing({ status: "cancelled" })
+    );
+    const dto = await listingService.cancel("seller1", "l1");
+    expect(dto.status).toBe("cancelled");
   });
 
   it("chủ tin hủy tin active (không có trade pending) → cập nhật status cancelled", async () => {
@@ -159,6 +172,17 @@ describe("listingService.markSold", () => {
   it("409 INVALID_STATUS khi tin đã kết thúc", async () => {
     vi.mocked(listingsRepo.findListingById).mockResolvedValue(makeListing({ status: "closed" }));
     await expectApiError(listingService.markSold("seller1", "l1"), "INVALID_STATUS");
+  });
+
+  it("tin ở trạng thái in_trade LEGACY vẫn đóng được (không để kẹt vĩnh viễn)", async () => {
+    // Ca thật gặp 2026-07-30: hàng in_trade cũ vừa vô hình trên chợ (chợ chỉ
+    // lấy active) vừa không chủ tin nào đóng được → kẹt mãi.
+    vi.mocked(listingsRepo.findListingById).mockResolvedValue(makeListing({ status: "in_trade" }));
+    vi.mocked(tradesRepo.findPendingTradeByListing).mockResolvedValue(null);
+    vi.mocked(listingsRepo.updateListingStatus).mockResolvedValue(makeListing({ status: "closed" }));
+    const dto = await listingService.markSold("seller1", "l1");
+    expect(listingsRepo.updateListingStatus).toHaveBeenCalledWith("l1", "closed");
+    expect(dto.status).toBe("closed");
   });
 
   it("chủ tin đánh dấu đã bán tin active → cập nhật status closed", async () => {
