@@ -1,10 +1,12 @@
 "use client";
 
-// Bộ lọc dùng chung cho các trang "bảng tin" (trang chủ, まとめ買い):
+// Bộ lọc của bảng tin tìm kiếm (trang chủ — từ v0.23.0 gộp cả tin bán lẫn
+// tin đăng mua; trang /buy-orders riêng đã bỏ, chỉ còn redirect):
 // tìm kiếm debounce + lọc game/category, trạng thái đồng bộ lên URL.
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Category, Game } from "@/lib/types";
+import { parseBoardType, type BoardType } from "@/lib/board";
 import { useI18n } from "@/lib/i18n";
 
 /**
@@ -15,6 +17,9 @@ import { useI18n } from "@/lib/i18n";
 export function useBoardFilters(basePath: string) {
   const searchParams = useSearchParams();
   const [game, setGame] = useState<Game | "">((searchParams.get("game") as Game) || "");
+  const [boardType, setBoardType] = useState<BoardType>(
+    parseBoardType(searchParams.get("type"))
+  );
   const [category, setCategory] = useState<Category | "">(
     (searchParams.get("category") as Category) || ""
   );
@@ -31,14 +36,65 @@ export function useBoardFilters(basePath: string) {
     if (debouncedQuery) params.set("q", debouncedQuery);
     if (game) params.set("game", game);
     if (category) params.set("category", category);
+    if (boardType) params.set("type", boardType);
     const qs = params.toString();
     // replaceState thay vì router.replace: chỉ cần URL chia sẻ được — router.replace
     // còn kéo theo một vòng RSC (trang chủ giờ dynamic → chạy lại query DB thừa
     // mỗi lần đổi bộ lọc). Next ≥14.1 đồng bộ useSearchParams với History API.
     window.history.replaceState(null, "", qs ? `${basePath}?${qs}` : basePath);
-  }, [debouncedQuery, game, category, basePath]);
+  }, [debouncedQuery, game, category, boardType, basePath]);
 
-  return { query, setQuery, debouncedQuery, game, setGame, category, setCategory };
+  return {
+    query,
+    setQuery,
+    debouncedQuery,
+    game,
+    setGame,
+    category,
+    setCategory,
+    boardType,
+    setBoardType,
+  };
+}
+
+/**
+ * Hàng lọc LOẠI tin (bán / đăng mua) — tách riêng khỏi FilterTabs và đặt phía
+ * trên vì đây là trục phân loại chính; nhồi chung sẽ thành 10 nút pill cùng
+ * hàng, vỡ layout trên điện thoại.
+ */
+export function BoardTypeTabs({
+  value,
+  onChange,
+}: {
+  value: BoardType;
+  onChange: (value: BoardType) => void;
+}) {
+  const { t } = useI18n();
+  const tabs: { value: BoardType; label: string; active: string }[] = [
+    { value: "", label: t("home.tabAll"), active: "bg-slate-800 text-white" },
+    { value: "sell", label: t("home.tabTypeSell"), active: "bg-indigo-600 text-white" },
+    { value: "buy", label: t("home.tabTypeBuy"), active: "bg-amber-600 text-white" },
+  ];
+  return (
+    <div className="flex items-center gap-2" role="tablist">
+      {tabs.map((tab) => (
+        <button
+          key={`t-${tab.value}`}
+          type="button"
+          role="tab"
+          aria-selected={value === tab.value}
+          onClick={() => onChange(tab.value)}
+          className={`rounded-full px-4 py-1.5 text-sm font-semibold transition ${
+            value === tab.value
+              ? tab.active
+              : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-100"
+          }`}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 interface FilterTabsProps {

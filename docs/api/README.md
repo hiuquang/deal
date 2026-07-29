@@ -23,7 +23,7 @@ Base URL: `http://localhost:3000`. Auth qua session cookie `deal_session` (httpO
 | Catalog thẻ + upload ảnh | [cards-uploads.md](cards-uploads.md) | `/api/cards*`, `/api/uploads` |
 | Listing + bình luận công khai | [listings.md](listings.md) | `/api/listings*`, `/api/listings/:id/comments` |
 | Luồng mua 購入希望 → 連携 | [purchase-requests.md](purchase-requests.md) | `/api/listings/:id/requests*`, `/api/requests/:id/connect` |
-| Tin gom số lượng lớn (まとめ買い) | [buy-orders.md](buy-orders.md) | `/api/buy-orders*`, `/api/buy-orders/offers/:id/connect` |
+| Đăng mua (buy orders) | [buy-orders.md](buy-orders.md) | `/api/buy-orders*`, `/api/buy-orders/offers/:id/connect` |
 | Chat + thông báo hoạt động | [chat.md](chat.md) | `/api/conversations*`, `/api/activity*` |
 | Tin đã lưu (❤️ favorites) | [favorites.md](favorites.md) | `/api/favorites*` |
 | Thông báo đẩy lên điện thoại | [../push.md](../push.md) | `/api/push/*` |

@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [0.23.0] — 2026-07-30 — Đổi tên "Đăng mua" + gộp tin đăng mua vào trang tìm kiếm
+
+### Thay đổi
+- **Đổi tên toàn bộ "tin gom số lượng lớn / まとめ買い" → "Đăng mua"** (19 chuỗi UI, vi + en). Menu "Gom số lượng" → **"Đăng mua"** và giờ trỏ thẳng vào form đăng tin (`/buy-orders/new`) — **cân xứng với "Đăng bán"**; trước đây nó trỏ vào trang danh sách nên 2 mục cạnh nhau hành xử khác hẳn nhau.
+- **Tin đăng mua giờ nằm CHUNG trang tìm kiếm với tin bán** (theo yêu cầu chủ web). Mặc định thấy cả hai, trộn theo một dòng thời gian mới-nhất-trước; thêm hàng tab **"Tất cả / Đang bán / Đăng mua"** để lọc, đồng bộ lên URL (`?type=buy`) nên link chia sẻ và nút back đều giữ đúng bộ lọc. Ô tìm kiếm + lọc game/loại giờ áp cho **cả hai** nguồn — tìm "Thịt bò" ra được cả tin đăng mua, thứ trước đây bị giấu ở trang riêng.
+- **Trang `/buy-orders` riêng đã bỏ**, thay bằng redirect 307 sang `/?type=buy` (giữ nguyên `q`/`game`/`category`) — link đã chia sẻ, bookmark và lịch sử trình duyệt của user vẫn chạy, không trả 404.
+
+### Kỹ thuật
+- `BuyOrderCard` dựng lại theo đúng khung `ListingCard` (khối ảnh 3/4 + khối chữ) để 2 loại thẻ đứng chung lưới không so le; phân biệt bằng viền/nhãn hổ phách "Đăng mua" + badge "Cần {n} bản", không phải bằng kích thước. Tin đăng mua không có ảnh (ảnh là tùy chọn) → khối giữ chỗ, không để sập chiều cao.
+- Tab "Tất cả" gọi song song 2 endpoint rồi trộn ở client, **cố ý KHÔNG gộp thành 1 endpoint SQL**: listing và buy_order là 2 bảng khác nhau, gộp ở tầng SQL kéo theo phân trang chung phức tạp mà bảng tin hiện chưa hề phân trang.
+- `BoardType`/`parseBoardType`/`boardKey` đặt ở `src/lib/board.ts` — module **trung lập**, không `"use client"`.
+- **Bug bắt được lúc verify:** ban đầu để `boardKey` trong `home-board.tsx` (`"use client"`) rồi gọi từ `page.tsx` (server component) → runtime ném `Attempted to call boardKey() from the server`, bị `catch` của SSR nuốt → `initial = null` → **SSR trang chủ chết âm thầm**, trang vẫn đầy đủ tin nhờ client fetch nên nhìn ngoài y hệt lúc chạy tốt. `tsc` KHÔNG bắt được. Đã sửa + thêm `console.error` vào nhánh catch để lần sau lộ ra ngay thay vì im lặng.
+- Verify: SSR trả đúng tập cho `/`, `?type=sell`, `?type=buy` và param rác (`?type=xxx` → hiện cả hai); bộ lọc `game`/`category`/`q` đúng trên cả 2 nguồn; bấm tab lọc + đồng bộ URL đúng; redirect `/buy-orders` giữ bộ lọc; tab mới **0 lỗi console**. 243 test pass, tsc + `next build` sạch. Không migration, không đổi API.
+
 ## [0.22.1] — 2026-07-29 — Sửa lỗi: thông báo trên tin đã bán vẫn hiện mãi
 
 ### Sửa lỗi

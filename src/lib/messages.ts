@@ -75,6 +75,14 @@ export const MESSAGES = {
   "home.tabSingle": { vi: "Thẻ lẻ", en: "Singles" },
   "home.tabBox": { vi: "BOX", en: "Boxes" },
   "home.count": { vi: "{n} tin đăng", en: "{n} listings" },
+  // Lọc theo LOẠI tin: trang tìm kiếm giờ gộp cả tin bán lẫn tin đăng mua.
+  "home.tabTypeSell": { vi: "Đang bán", en: "For sale" },
+  "home.tabTypeBuy": { vi: "Đăng mua", en: "Wanted" },
+  "home.badgeBuy": { vi: "Đăng mua", en: "Wanted" },
+  "home.emptyBuy": {
+    vi: "Chưa có tin đăng mua nào.",
+    en: "No buy requests yet.",
+  },
   "home.searchPlaceholder": {
     vi: "Tìm theo tên thẻ, set, số thẻ hoặc tên ga",
     en: "Search by card name, set, number or station",
@@ -408,7 +416,7 @@ export const MESSAGES = {
     en: "wants to buy “{card}”",
   },
   "me.actOffer": {
-    vi: "chào bán {n} thẻ vào tin gom “{card}”",
+    vi: "chào bán {n} thẻ vào tin đăng mua “{card}”",
     en: "offered {n} for your buy order “{card}”",
   },
   "me.actNew": { vi: "Mới", en: "New" },
@@ -530,25 +538,25 @@ export const MESSAGES = {
   },
   "gate.accept": { vi: "Đồng ý và tiếp tục", en: "Accept and continue" },
 
-  // ---- Tin gom số lượng lớn (bulk buy orders) ----
-  "nav.buyOrders": { vi: "Gom số lượng", en: "Bulk buy" },
-  "chat.buyOrderTag": { vi: "Gom SL", en: "Bulk" },
+  // ---- Đăng mua (tin của người MUỐN MUA; người bán vào chào bán) ----
+  "nav.buyOrders": { vi: "Đăng mua", en: "Post a buy request" },
+  "chat.buyOrderTag": { vi: "Đăng mua", en: "Buy request" },
   "chat.buyOrderQty": { vi: "Cần {n}", en: "Wants {n}" },
   // Bảng tin
-  "bo.title": { vi: "Tin gom số lượng lớn", en: "Bulk buy orders" },
+  "bo.title": { vi: "Đăng mua", en: "Buy requests" },
   "bo.desc": {
-    vi: "Bảng tin cho người muốn mua gom nhiều bản cùng một thẻ.",
-    en: "A board for buyers who want to purchase one card in bulk.",
+    vi: "Tin của người đang muốn mua. Có hàng khớp thì bạn chào bán.",
+    en: "Posts from people looking to buy. Got a match? Make an offer.",
   },
-  "bo.create": { vi: "Đăng tin gom", en: "Post a request" },
+  "bo.create": { vi: "Đăng mua", en: "Post a buy request" },
   "bo.searchPlaceholder": {
     vi: "Tìm theo tên thẻ / set / số",
     en: "Search by card name / set / number",
   },
-  "bo.count": { vi: "{n} tin gom", en: "{n} requests" },
-  "bo.empty": { vi: "Chưa có tin gom nào.", en: "No requests yet." },
+  "bo.count": { vi: "{n} tin đăng mua", en: "{n} buy requests" },
+  "bo.empty": { vi: "Chưa có tin đăng mua nào.", en: "No buy requests yet." },
   "bo.emptySearch": {
-    vi: "Không có tin gom nào khớp \"{q}\".",
+    vi: "Không có tin đăng mua nào khớp \"{q}\".",
     en: "No requests match \"{q}\".",
   },
   "bo.wants": { vi: "Cần {n} bản", en: "Wants {n}" },
@@ -556,18 +564,18 @@ export const MESSAGES = {
   "bo.noMaxPrice": { vi: "Đơn giá thương lượng", en: "Unit price negotiable" },
   "bo.offerCount": { vi: "{n} chào bán", en: "{n} offers" },
   // Form tạo tin
-  "bon.title": { vi: "Đăng tin gom số lượng lớn", en: "Post a bulk buy request" },
+  "bon.title": { vi: "Đăng tin mua", en: "Post a buy request" },
   "bon.game": { vi: "Trò chơi", en: "Game" },
   "bon.category": { vi: "Loại", en: "Category" },
-  "bon.selectCard": { vi: "Thẻ cần gom", en: "Card to buy" },
-  "bon.selectBox": { vi: "BOX cần gom", en: "Box to buy" },
-  "bon.selectOther": { vi: "Sản phẩm cần gom", en: "Product to buy" },
+  "bon.selectCard": { vi: "Thẻ cần mua", en: "Card to buy" },
+  "bon.selectBox": { vi: "BOX cần mua", en: "Box to buy" },
+  "bon.selectOther": { vi: "Sản phẩm cần mua", en: "Product to buy" },
   "bon.quantity": { vi: "Số lượng cần", en: "Quantity wanted" },
   "bon.maxPrice": { vi: "Đơn giá tối đa (tùy chọn)", en: "Max unit price (optional)" },
   "bon.maxPriceExample": { vi: "VD: 5000 (tối đa mỗi bản)", en: "e.g. 5000 (per unit)" },
   "bon.photo": { vi: "Ảnh minh họa (tùy chọn, tối đa 5MB)", en: "Reference photo (optional, max 5MB)" },
   "bon.photoHint": {
-    vi: "Ảnh mẫu thẻ/BOX bạn muốn gom giúp người bán nhận ra đúng món.",
+    vi: "Ảnh mẫu thẻ/BOX bạn muốn mua giúp người bán nhận ra đúng món.",
     en: "A sample photo of the card/box you want helps sellers recognize it.",
   },
   "bon.photoPreviewAlt": { vi: "Xem trước ảnh tải lên", en: "Upload preview" },
@@ -575,7 +583,7 @@ export const MESSAGES = {
   "bon.submit": { vi: "Đăng tin", en: "Post request" },
   "bon.submitting": { vi: "Đang gửi…", en: "Submitting…" },
   "bon.loginPrompt": {
-    vi: "Cần đăng nhập để đăng tin gom.",
+    vi: "Cần đăng nhập để đăng tin mua.",
     en: "Log in to post a request.",
   },
   "bon.errNoCard": { vi: "Vui lòng chọn thẻ.", en: "Please select a card." },
@@ -585,8 +593,8 @@ export const MESSAGES = {
   "bod.quantityValue": { vi: "{n} bản", en: "{n} pcs" },
   "bod.maxPrice": { vi: "Đơn giá tối đa", en: "Max unit price" },
   "bod.listedOn": { vi: "Ngày đăng", en: "Posted on" },
-  "bod.cancel": { vi: "Gỡ tin gom", en: "Withdraw request" },
-  "bod.cancelled": { vi: "Tin gom đã đóng.", en: "This request is closed." },
+  "bod.cancel": { vi: "Gỡ tin đăng mua", en: "Withdraw request" },
+  "bod.cancelled": { vi: "Tin đăng mua đã đóng.", en: "This request is closed." },
   "bod.offers": { vi: "Danh sách chào bán", en: "Offers" },
   "bod.noOffers": {
     vi: "Chưa có chào bán nào.",

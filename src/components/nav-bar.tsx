@@ -136,7 +136,7 @@ export function NavBar() {
           <Link href="/listings/new" className="rounded-md px-3 py-1.5 hover:bg-slate-100">
             {t("nav.sell")}
           </Link>
-          <Link href="/buy-orders" className="rounded-md px-3 py-1.5 hover:bg-slate-100">
+          <Link href="/buy-orders/new" className="rounded-md px-3 py-1.5 hover:bg-slate-100">
             {t("nav.buyOrders")}
           </Link>
           {me && (
@@ -232,7 +232,7 @@ export function NavBar() {
           <Link href="/listings/new" className="block rounded-md px-2 py-2.5 hover:bg-slate-100">
             {t("nav.sell")}
           </Link>
-          <Link href="/buy-orders" className="block rounded-md px-2 py-2.5 hover:bg-slate-100">
+          <Link href="/buy-orders/new" className="block rounded-md px-2 py-2.5 hover:bg-slate-100">
             {t("nav.buyOrders")}
           </Link>
           {me && (

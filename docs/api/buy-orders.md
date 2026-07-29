@@ -1,4 +1,4 @@
-# API — Buy Orders (tin gom số lượng lớn まとめ買い募集, Giai đoạn 1)
+# API — Buy Orders ("Đăng mua": tin của người MUỐN MUA, Giai đoạn 1)
 
 Quy ước chung: [README.md](README.md).
 

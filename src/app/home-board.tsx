@@ -1,16 +1,19 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { api, ApiClientError } from "@/lib/api-client";
-import type { ListingDto } from "@/lib/types";
+import type { BuyOrderDto, ListingDto } from "@/lib/types";
 import { ListingCard } from "@/components/listing-card";
-import { FilterTabs, useBoardFilters } from "@/components/board-filters";
+import { BuyOrderCard } from "@/components/buy-order-card";
+import { BoardTypeTabs, FilterTabs, useBoardFilters } from "@/components/board-filters";
+import { boardKey, type BoardType } from "@/lib/board";
 import { Empty, ErrorBox, Loading } from "@/components/ui";
 import { useI18n } from "@/lib/i18n";
 
-/** Dữ liệu server render sẵn; `key` = "q|game|category" của bộ lọc đã dùng. */
+/** Dữ liệu server render sẵn; `key` = "q|game|category|type" của bộ lọc đã dùng. */
 export interface InitialBoard {
   listings: ListingDto[];
+  buyOrders: BuyOrderDto[];
   total: number;
   key: string;
 }
@@ -26,9 +29,19 @@ export function HomeBoard({ initial }: { initial: InitialBoard | null }) {
 
 function HomeContent({ initial }: { initial: InitialBoard | null }) {
   const { t } = useI18n();
-  const { query, setQuery, debouncedQuery, game, setGame, category, setCategory } =
-    useBoardFilters("/");
+  const {
+    query,
+    setQuery,
+    debouncedQuery,
+    game,
+    setGame,
+    category,
+    setCategory,
+    boardType,
+    setBoardType,
+  } = useBoardFilters("/");
   const [listings, setListings] = useState<ListingDto[]>(initial?.listings ?? []);
+  const [buyOrders, setBuyOrders] = useState<BuyOrderDto[]>(initial?.buyOrders ?? []);
   const [total, setTotal] = useState(initial?.total ?? 0);
   const [loading, setLoading] = useState(!initial);
   const [error, setError] = useState<string | null>(null);
@@ -36,21 +49,33 @@ function HomeContent({ initial }: { initial: InitialBoard | null }) {
   const ssrKeyRef = useRef(initial?.key ?? null);
 
   useEffect(() => {
-    if (ssrKeyRef.current === `${debouncedQuery}|${game}|${category}`) return;
+    if (ssrKeyRef.current === boardKey(debouncedQuery, game, category, boardType)) return;
     ssrKeyRef.current = null;
     let cancelled = false;
     setLoading(true);
     setError(null);
-    api
-      .listListings({
-        ...(debouncedQuery ? { q: debouncedQuery } : {}),
-        ...(game ? { game } : {}),
-        ...(category ? { category } : {}),
-      })
-      .then(({ listings, total }) => {
+
+    const filter = {
+      ...(debouncedQuery ? { q: debouncedQuery } : {}),
+      ...(game ? { game } : {}),
+      ...(category ? { category } : {}),
+    };
+    // Tab "Tất cả" gọi song song 2 endpoint rồi trộn — cố ý KHÔNG gộp thành 1
+    // endpoint mới: listing và buy-order là 2 bảng khác nhau, gộp ở tầng SQL sẽ
+    // kéo theo phân trang chung phức tạp mà bảng tin hiện chưa hề phân trang.
+    Promise.all([
+      boardType === "buy"
+        ? Promise.resolve({ listings: [] as ListingDto[], total: 0 })
+        : api.listListings(filter),
+      boardType === "sell"
+        ? Promise.resolve({ buyOrders: [] as BuyOrderDto[], total: 0 })
+        : api.listBuyOrders(filter),
+    ])
+      .then(([listingRes, buyOrderRes]) => {
         if (cancelled) return;
-        setListings(listings);
-        setTotal(total);
+        setListings(listingRes.listings);
+        setBuyOrders(buyOrderRes.buyOrders);
+        setTotal(listingRes.total + buyOrderRes.total);
       })
       .catch((e) => {
         if (cancelled) return;
@@ -61,7 +86,18 @@ function HomeContent({ initial }: { initial: InitialBoard | null }) {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedQuery, game, category]);
+  }, [debouncedQuery, game, category, boardType]);
+
+  // Trộn 2 nguồn thành 1 dòng thời gian, mới nhất trước — nếu xếp hết tin bán
+  // rồi mới tới tin mua thì tin đăng mua luôn nằm đáy, coi như vẫn bị giấu,
+  // đúng thứ lần gộp này muốn bỏ. createdAt là ISO nên so sánh chuỗi = so thời gian.
+  const items = useMemo(() => {
+    const merged = [
+      ...listings.map((l) => ({ kind: "listing" as const, at: l.createdAt, data: l })),
+      ...buyOrders.map((b) => ({ kind: "buy_order" as const, at: b.createdAt, data: b })),
+    ];
+    return merged.sort((a, b) => b.at.localeCompare(a.at));
+  }, [listings, buyOrders]);
 
   return (
     <div className="space-y-6">
@@ -102,6 +138,8 @@ function HomeContent({ initial }: { initial: InitialBoard | null }) {
         )}
       </div>
 
+      <BoardTypeTabs value={boardType} onChange={setBoardType} />
+
       <FilterTabs
         game={game}
         category={category}
@@ -115,21 +153,30 @@ function HomeContent({ initial }: { initial: InitialBoard | null }) {
         <Loading />
       ) : error ? (
         <ErrorBox message={error} />
-      ) : listings.length === 0 ? (
-        <Empty
-          message={
-            debouncedQuery
-              ? t("home.emptySearch", { q: debouncedQuery })
-              : t("home.empty")
-          }
-        />
+      ) : items.length === 0 ? (
+        <Empty message={emptyMessage(t, debouncedQuery, boardType)} />
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {listings.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} />
-          ))}
+          {items.map((item) =>
+            item.kind === "listing" ? (
+              <ListingCard key={`l-${item.data.id}`} listing={item.data} />
+            ) : (
+              <BuyOrderCard key={`b-${item.data.id}`} order={item.data} />
+            )
+          )}
         </div>
       )}
     </div>
   );
+}
+
+/** Rỗng vì tìm kiếm, vì lọc riêng tin đăng mua, hay vì chợ chưa có gì — 3 câu khác nhau. */
+function emptyMessage(
+  t: ReturnType<typeof useI18n>["t"],
+  query: string,
+  boardType: BoardType
+): string {
+  if (query) return t("home.emptySearch", { q: query });
+  if (boardType === "buy") return t("home.emptyBuy");
+  return t("home.empty");
 }

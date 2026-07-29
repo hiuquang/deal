@@ -71,7 +71,7 @@ Bảng `push_subscriptions` — **một bản ghi = một thiết bị**, không
 |---|---|---|
 | Tin nhắn chat mới | bên còn lại của hội thoại | `/chat?c=<id>` |
 | 購入希望 (yêu cầu mua) | chủ tin đăng | `/listings/<id>` |
-| Chào bán vào tin gom | chủ tin gom | `/buy-orders/<id>` |
+| Chào bán vào tin đăng mua | chủ tin đăng mua | `/buy-orders/<id>` |
 | Bình luận vào tin | chủ tin (bỏ qua khi tự bình luận) | `/listings/<id>` |
 
 Chốt giá / nhắc đánh giá **cố ý chưa có** — chủ web chọn 3 nhóm trên để tránh làm phiền.
