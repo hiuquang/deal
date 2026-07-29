@@ -15,6 +15,7 @@
 - **Thiếu khoá VAPID → tính năng tự tắt êm** (`/api/push/public-key` trả `null`, UI ẩn mục, server không gửi gì), web chạy bình thường — quan trọng cho môi trường dev chưa sinh khoá.
 - `sw.js` **chỉ phục vụ push, KHÔNG cache** (tránh sinh trạng thái cũ khó gỡ, web đã dựa vào SSR/ISR của Next). CSP nới `worker-src`/`manifest-src`. Layout khai thêm tay `apple-mobile-web-app-capable` — Next 15 chỉ phát thẻ chuẩn mới `mobile-web-app-capable`, iOS đời cũ không đọc.
 - +14 unit test — **243 pass**, tsc sạch, `next build` sạch, `npm audit` 0 vuln. Verify browser: manifest/sw/icon/API đều 200, service worker đăng ký được (CSP không chặn), endpoint đúng 401 khi chưa đăng nhập, cặp VAPID ký JWT hợp lệ. **Round-trip thật tới điện thoại chưa verify được** — môi trường tự động luôn từ chối quyền thông báo; cần thử trên iPhone thật. Docs mới `docs/push.md`.
+- Env `VAPID_*` đã set trên Vercel (Production + Preview). Lưu ý: `vercel env pull` trả `[SENSITIVE]` cho **mọi** biến do người dùng đặt (kể cả `DATABASE_URL` đang chạy tốt) → **không dùng pull để kiểm chứng giá trị**; cách đúng là gọi `/api/push/public-key` trên production so với `.env` local (public key không phải bí mật).
 
 ## [0.21.2] — 2026-07-24 — Vá bảo mật: nâng Next.js 15.5.20 → 15.5.21
 
