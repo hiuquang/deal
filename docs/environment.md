@@ -35,7 +35,7 @@ npm run db:seed # chạy lại seed (idempotent)
 |---|---|---|
 | `DATABASE_URL` | (bắt buộc) | Supabase Postgres qua pooler — cả dev lẫn production; xem [deploy.md](deploy.md) |
 | `DIRECT_URL` | (bắt buộc khi migrate) | Kết nối trực tiếp (không qua pooler) cho `prisma migrate deploy` |
-| `APP_URL` | `http://localhost:3000` | URL gốc dùng trong link email |
+| `APP_URL` | `http://localhost:3000` | URL gốc: link trong email **và** `metadataBase` cho thẻ OG + `sitemap.xml` (`src/lib/site.ts`). ⚠️ Sai giá trị này trên production = mọi link chia sẻ ra Facebook/Zalo mất ảnh preview |
 | `SMTP_*` | (trống) | Xem [email.md](email.md) — ⚠️ KHÔNG đọc/ghi `SMTP_PASS` |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | (trống) | Có cả 2 → ảnh upload lên Supabase Storage; trống → lưu `public/uploads` |
 

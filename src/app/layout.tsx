@@ -19,11 +19,36 @@ import { TermsGate } from "@/components/terms-gate";
 import { SiteFooter } from "@/components/site-footer";
 import { BackBar } from "@/components/back-bar";
 import { PullToRefresh } from "@/components/pull-to-refresh";
+import { siteUrl } from "@/lib/site";
+
+const SITE_TITLE = "DEAL — Trade thẻ TCG phí 0%";
+const SITE_DESC =
+  "Trade thẻ Pokémon và One Piece trực tiếp giữa người chơi với nhau. Phí 0%, dữ liệu giá minh bạch.";
 
 export const metadata: Metadata = {
-  title: "DEAL — Trade thẻ TCG phí 0%",
-  description:
-    "Trade thẻ Pokémon và One Piece trực tiếp giữa người chơi với nhau. Phí 0%, dữ liệu giá minh bạch.",
+  // Bắt buộc để Next tự đổi mọi đường dẫn ảnh/URL tương đối trong metadata
+  // thành tuyệt đối — thiếu nó thì og:image bị bỏ qua và link dán vào
+  // Facebook/Zalo/Discord hiện ra trơ trọi, không ai bấm.
+  metadataBase: new URL(siteUrl()),
+  title: SITE_TITLE,
+  description: SITE_DESC,
+  // Mặc định toàn site; trang chi tiết tin override lại bằng generateMetadata
+  // với tên thẻ + giá + ảnh thật của thẻ.
+  openGraph: {
+    type: "website",
+    siteName: "DEAL",
+    locale: "vi_VN",
+    url: "/",
+    title: SITE_TITLE,
+    description: SITE_DESC,
+    images: [{ url: "/logo.jpg", width: 1280, height: 470, alt: "DEAL" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESC,
+    images: ["/logo.jpg"],
+  },
   // PWA: bắt buộc để iPhone cho "Thêm vào màn hình chính" — mà đó lại là điều
   // kiện duy nhất để iOS cho phép thông báo đẩy (Safari trong tab thường KHÔNG
   // nhận push). Xem docs/push.md.

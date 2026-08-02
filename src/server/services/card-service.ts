@@ -3,6 +3,12 @@ import * as cardsRepo from "@/server/repositories/cards";
 import { toCardDto } from "@/server/serializers";
 import type { CardDto } from "@/lib/types";
 
+/** Tra thẻ theo id; null nếu không có. Dùng cho metadata trang giá (SEO). */
+export async function getById(id: string): Promise<CardDto | null> {
+  const card = await cardsRepo.findCardById(id);
+  return card ? toCardDto(card) : null;
+}
+
 /**
  * User tự thêm sản phẩm/thẻ khi catalog thiếu — mở cho MỌI game từ 0.12.1
  * (nới business-rules #13 theo quyết định chủ web; trước đó chỉ mục その他).

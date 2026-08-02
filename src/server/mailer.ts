@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { prisma } from "@/server/db";
+import { siteUrl } from "@/lib/site";
 
 /**
  * Gửi email theo chuỗi dự phòng (đọc env tại thời điểm gọi để test được):
@@ -29,8 +30,9 @@ export function isMailConfigured(): boolean {
   return brevoConfigured() || smtpConfigured();
 }
 
+/** Alias giữ cho code email cũ; nguồn thật là `siteUrl()` (dùng chung với OG/sitemap). */
 export function appUrl(): string {
-  return process.env.APP_URL ?? "http://localhost:3000";
+  return siteUrl();
 }
 
 async function sendViaBrevo(to: string, subject: string, body: string): Promise<void> {

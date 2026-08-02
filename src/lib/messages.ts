@@ -199,6 +199,8 @@ export const MESSAGES = {
   },
   "detail.viewPrices": { vi: "Xem dữ liệu giá của sản phẩm này", en: "View price data for this item" },
   "detail.photoAlt": { vi: "Ảnh thật của {name}", en: "Photo of {name}" },
+  "share.button": { vi: "Chia sẻ tin này", en: "Share this listing" },
+  "share.copied": { vi: "✓ Đã copy link", en: "✓ Link copied" },
   "safety.chat": {
     vi: "Cảnh giác lừa đảo. Tránh trả trước; chỉ giao dịch sau khi đã kiểm tra hiện vật.",
     en: "Watch for scams. Avoid upfront payment; trade only after inspecting the item.",

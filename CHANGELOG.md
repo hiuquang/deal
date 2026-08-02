@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## [0.27.0] — 2026-08-02 — Cho người lạ tìm thấy DEAL (SEO + preview khi chia sẻ link)
+
+### Tính năng
+- **Link DEAL dán vào Facebook/Zalo/Discord giờ hiện thẻ preview** — ảnh thật của thẻ, tên thẻ, giá, ga gần nhất. Trước đó **không có một thẻ Open Graph nào trong toàn bộ codebase**, nên mọi link chia sẻ ra ngoài đều là link trần. Đây là vấn đề tăng trưởng chứ không phải thẩm mỹ: chợ mới không có backlink, đường lan truyền thật là người dùng dán link vào group — mà link không preview thì gần như không ai bấm.
+- **Nút "Chia sẻ tin này"** ở trang tin bán và tin đăng mua. Mobile mở sheet chia sẻ của hệ điều hành (Web Share API), desktop copy link. Bắt người dùng tự bôi đen thanh địa chỉ trên điện thoại là mất phần lớn lượt chia sẻ.
+- **`/sitemap.xml` + `/robots.txt`** — khai báo từng tin đăng đang mở và trang giá của các thẻ đang có tin cho Google.
+
+### Kỹ thuật
+- **Ba trang công khai đổi từ client sang server component**: `listings/[id]`, `buy-orders/[id]`, `prices/[cardId]`. Cả ba đang fetch trong `useEffect` → bộ quét của Google lẫn của Facebook/Zalo chỉ thấy trang rỗng. Phần tương tác tách ra `listing-detail.tsx` / `buy-order-detail.tsx` / `prices-view.tsx`, nhận dữ liệu lượt đầu qua prop; mọi thao tác sau đó vẫn đi qua api-client như cũ.
+- **Trang giá CỐ Ý không SSR nội dung** — phần giá giao dịch thật bị gate give-to-get theo người đăng nhập; server-render nó là đem dâng cho crawler đúng thứ mà người dùng chưa đóng góp thì không xem được. Server component ở đây chỉ sinh metadata. Vẫn cần: trước đó mọi trang giá dùng chung một title của layout — trùng title hàng loạt là thứ Google phạt.
+- `generateMetadata` và page cùng gọi getter bọc trong `cache()` của React → gộp còn **1 truy vấn** thay vì 2.
+- **`openGraph` KHÔNG được Next trộn theo từng khóa** — trang con khai lại là thay cả khối, nên phải lặp `siteName` + `locale` ở mỗi `generateMetadata`. Đã dính đúng bẫy này: bản đầu mất `og:site_name` và `og:locale` ở mọi trang chi tiết.
+- `metadataBase` lấy từ **`APP_URL`** — cùng biến env với link trong email (`src/lib/site.ts` là nguồn thật, `mailer.appUrl()` gọi lại nó) để không có hai "địa chỉ thật" lệch nhau. ⚠️ `APP_URL` sai trên Vercel = mọi og:image trỏ sai, link chia sẻ mất ảnh.
+- `absoluteUrl()` xử lý ảnh `/uploads/...` tương đối (khi chưa bật Supabase Storage) — đưa thẳng đường dẫn tương đối vào `og:image` là mất ảnh.
+- Tin đã gỡ / đã bán đặt `robots: noindex` (link cũ vẫn xem được, nhưng người tìm thấy nó chỉ gặp ngõ cụt). Sitemap cache 1h, chặn trần 50 trang quét, DB lỗi thì trả sitemap tối thiểu thay vì ném 500 — Google nhận 500 có thể bỏ luôn sitemap một thời gian.
+- **265 test pass** (không đổi), tsc + build sạch. Verify trên DB thật bằng chính cách bộ quét Facebook làm (curl → đọc thẻ meta): tin bán và tin đăng mua ra đủ og:title/description/image/site_name/locale với ảnh Supabase tuyệt đối; hai trang giá ra **hai title khác nhau**; id sai → **404** thật; sitemap liệt kê đúng 1 tin bán + 1 tin đăng mua + 2 trang giá đang mở. Không migration.
+
 ## [0.26.0] — 2026-07-30 — Trưng bày tin đã bán (xám + băng chéo "SOLD")
 
 ### Tính năng

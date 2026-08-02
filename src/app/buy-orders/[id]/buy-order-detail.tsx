@@ -1,0 +1,124 @@
+"use client";
+
+import { useState } from "react";
+import { api, ApiClientError } from "@/lib/api-client";
+import type { BuyOrderDto } from "@/lib/types";
+import { cardSpec, formatDate, formatJpy } from "@/lib/labels";
+import { useAuth } from "@/components/auth-context";
+import { ErrorBox } from "@/components/ui";
+import { HeartButton } from "@/components/heart-button";
+import { ShareButton } from "@/components/share-button";
+import { SellerSummary } from "@/components/seller-summary";
+import { OfferPanel } from "@/components/offer-panel";
+import { CommentsSection } from "@/components/comments-section";
+import { useI18n, type MessageKey } from "@/lib/i18n";
+
+/**
+ * Phần tương tác của trang tin đăng mua. Dữ liệu lượt đầu do server component
+ * cha truyền xuống — xem chú thích cùng loại ở `listings/[id]/listing-detail.tsx`.
+ */
+export function BuyOrderDetail({ initial }: { initial: BuyOrderDto }) {
+  const { me } = useAuth();
+  const { t } = useI18n();
+  const [order, setOrder] = useState<BuyOrderDto>(initial);
+  // actionError = lỗi nút hủy tin, hiện inline (không thay cả trang bằng 1 ô lỗi).
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const id = order.id;
+  const isOwner = me?.id === order.buyerId;
+
+  async function handleCancel() {
+    setBusy(true);
+    setActionError(null);
+    try {
+      const { buyOrder } = await api.cancelBuyOrder(id);
+      setOrder(buyOrder);
+    } catch (e) {
+      setActionError(e instanceof ApiClientError ? e.message : t("common.error"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mx-auto max-w-2xl space-y-6">
+      <div className="space-y-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-amber-500 px-2 py-0.5 text-xs font-bold text-white">
+              {t("bo.wants", { n: order.quantity })}
+            </span>
+            <p className="text-xs text-slate-500">
+              {t(`game.${order.card.game}` as MessageKey)}·
+              {t(`cat.${order.card.category}` as MessageKey)}
+            </p>
+          </div>
+          <div className="mt-1 flex items-start justify-between gap-3">
+            <h1 className="text-2xl font-bold">{order.card.nameJa}</h1>
+            {!isOwner && (
+              <HeartButton kind="buy_order" id={order.id} variant="inline" />
+            )}
+          </div>
+          {cardSpec(order.card) && (
+            <p className="text-sm text-slate-500">
+              {order.card.nameEn}·{cardSpec(order.card)}
+            </p>
+          )}
+        </div>
+
+        {order.imageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={order.imageUrl}
+            alt={order.card.nameJa}
+            className="max-h-96 w-full rounded-xl border border-slate-200 object-contain"
+          />
+        )}
+
+        <dl className="space-y-2 rounded-xl border border-slate-200 bg-white p-4 text-sm">
+          <div className="flex justify-between">
+            <dt className="text-slate-500">{t("bod.quantity")}</dt>
+            <dd className="font-medium">{t("bod.quantityValue", { n: order.quantity })}</dd>
+          </div>
+          <div className="flex justify-between">
+            <dt className="text-slate-500">{t("bod.maxPrice")}</dt>
+            <dd className="font-medium">
+              {order.maxUnitPriceJpy ? formatJpy(order.maxUnitPriceJpy) : t("bo.noMaxPrice")}
+            </dd>
+          </div>
+          <div className="flex justify-between">
+            <dt className="text-slate-500">{t("bod.listedOn")}</dt>
+            <dd>{formatDate(order.createdAt)}</dd>
+          </div>
+        </dl>
+
+        <SellerSummary sellerId={order.buyerId} />
+
+        {order.status === "cancelled" && (
+          <p className="rounded-lg bg-slate-100 px-4 py-2 text-sm text-slate-600">
+            {t("bod.cancelled")}
+          </p>
+        )}
+
+        {actionError && <ErrorBox message={actionError} />}
+        {isOwner && order.status === "active" && (
+          <button
+            onClick={handleCancel}
+            disabled={busy}
+            className="w-full rounded-lg border border-red-300 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+          >
+            {t("bod.cancel")}
+          </button>
+        )}
+
+        <ShareButton title={`${t("bo.wants", { n: order.quantity })} ${order.card.nameJa}`} />
+      </div>
+
+      <OfferPanel order={order} />
+
+      {/* Hỏi đáp công khai TRƯỚC khi chào bán / kết nối — đối xứng với tin bán. */}
+      <CommentsSection target={{ kind: "buy_order", id: order.id }} />
+    </div>
+  );
+}
