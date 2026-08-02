@@ -106,8 +106,12 @@ export function PricesView({ cardId }: { cardId: string }) {
         <section className="space-y-3 rounded-2xl border border-teal-200 bg-teal-50/40 p-4">
           <div>
             <h2 className="text-base font-bold text-teal-800">{t("refprice.title")}</h2>
+            {/* Một thẻ có thể gộp nhiều nguồn (giá rao / đã bán) — lấy
+                refRecords[0] là nói sai về phần dữ liệu còn lại. */}
             <p className="text-xs text-teal-700">
-              {t("refprice.source", { source: refRecords[0].source })}
+              {t("refprice.source", {
+                source: [...new Set(refRecords.map((r) => r.source))].join(" · "),
+              })}
             </p>
           </div>
 

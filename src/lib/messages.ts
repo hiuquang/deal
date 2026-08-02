@@ -388,8 +388,8 @@ export const MESSAGES = {
   "refprice.title": { vi: "Giá tham khảo thị trường", en: "Market reference prices" },
   "refprice.source": { vi: "Nguồn: {source}", en: "Source: {source}" },
   "refprice.disclaimer": {
-    vi: "※ Giá tham khảo do DEAL thu thập từ nguồn ngoài, KHÔNG phải giao dịch trên DEAL. Chỉ để tham khảo mặt bằng giá.",
-    en: "※ Reference prices collected by DEAL from external sources — NOT trades on DEAL. For price-level reference only.",
+    vi: "※ Giá tham khảo do DEAL thu thập từ nguồn ngoài, KHÔNG phải giao dịch trên DEAL. Mục ghi «giá rao» là giá người bán đưa ra, thường cao hơn giá chốt thật sau thương lượng.",
+    en: "※ Reference prices collected by DEAL from external sources — NOT trades on DEAL. Entries marked «giá rao» are asking prices, usually above the real negotiated sale price.",
   },
   "refprice.count": { vi: "Số lần ghi nhận", en: "Data points" },
   "refprice.weightedAvg": { vi: "TB có trọng số", en: "Weighted avg" },

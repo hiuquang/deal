@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [0.29.0] — 2026-08-03 — Giá tham khảo nhiều sản phẩm, nguồn Facebook
+
+### Bối cảnh
+Nguồn giá chính là **quan sát trong group Facebook** — chủ web chốt vậy vì người dùng tương lai của DEAL đến từ chính các group đó, nên mặt bằng giá phải khớp cái họ đang nhìn thấy hằng ngày. Sản phẩm nóng là **box mới nổi và box sắp ra**, không phải thẻ lẻ.
+
+### Kỹ thuật
+- `prisma/seed-reference-prices.ts` từ **1 sản phẩm gán cứng → mảng N sản phẩm**, mỗi sản phẩm N điểm giá. Thêm box mới = thêm một phần tử rồi chạy lại. Vẫn idempotent, vẫn chỉ chủ web chạy (không có admin UI, giống VIP/report).
+- **Phân biệt `kind: "rao" | "ban"`** → nhãn nguồn "Facebook (giá rao)" / "Facebook (đã bán)". Giá trong group **chủ yếu là giá RAO**, lệch đáng kể so với giá chốt sau thương lượng; trộn chung là bóp méo mặt bằng. Người xem phải biết đang nhìn loại nào.
+- ⚠️ **Dữ liệu Round One cũ giữ nguyên `source: "Round One"`** qua trường `source` ghi đè. `source` nằm trong khóa unique `[cardId, source, recordedAt]` → đổi nhãn là sinh 8 dòng trùng chứ không cập nhật dòng cũ. Đã verify trên production (chỉ đọc, qua API công khai): đúng 8 dòng, nguồn `"Round One"`, mốc giờ + giá + số lượng khớp từng dòng với mảng trong script.
+- **Box chưa có giá thì để `points: []`** — sản phẩm vẫn được tạo trong catalog nên gõ tên ở ô tra giá là ra ngay. Có tên sẵn trước ngày mở bán là lợi thế: đúng lúc cộng đồng bắt đầu hỏi giá thì DEAL đã có chỗ để trả lời.
+- Sửa lỗi hiển thị: dòng "Nguồn" lấy `refRecords[0].source` — một thẻ gộp nhiều nguồn (giá rao + đã bán) thì nói sai về phần dữ liệu còn lại. Giờ liệt kê **mọi nguồn phân biệt**.
+- Disclaimer giá tham khảo nói thẳng giá rao thường cao hơn giá chốt thật.
+- 268 test pass, tsc + build sạch, không migration. Verify browser (khách chưa đăng nhập, trang Round One): giá tham khảo TB có trọng số ¥14.587 + biểu đồ + đủ 8 dòng, **cộng** teaser giá thật 1 giao dịch trung vị ¥13.500, 0 lỗi console.
+
 ## [0.28.0] — 2026-08-02 — Đổi cửa trước thành TRA GIÁ + nới cổng give-to-get
 
 ### Bối cảnh
