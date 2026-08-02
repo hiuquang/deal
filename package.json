@@ -18,7 +18,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@prisma/client": "^6.10.0",
+    "@prisma/client": "^7.9.1",
     "bcryptjs": "^3.0.2",
     "next": "^15.3.4",
     "nodemailer": "^9.0.3",
