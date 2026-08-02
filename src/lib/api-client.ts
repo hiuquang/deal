@@ -316,10 +316,17 @@ export const api = {
     }),
 
   // ---- prices ----
+  // Công khai (không cần đăng nhập). `locked` = có dữ liệu nhưng người xem
+  // chưa đóng góp → `records` rỗng, `stats` vẫn đầy đủ. `recordCount` = tổng
+  // giao dịch của thẻ, mọi condition.
   getPrices: (cardId: string, condition?: Condition) =>
-    request<{ card: CardDto; records: PriceRecordDto[]; stats: PriceStatsDto }>(
-      `/api/prices/${cardId}${condition ? `?condition=${condition}` : ""}`
-    ),
+    request<{
+      card: CardDto;
+      records: PriceRecordDto[];
+      stats: PriceStatsDto;
+      locked: boolean;
+      recordCount: number;
+    }>(`/api/prices/${cardId}${condition ? `?condition=${condition}` : ""}`),
   getReferencePrices: (cardId: string) =>
     request<{ card: CardDto; records: ReferencePriceDto[]; stats: ReferencePriceStatsDto }>(
       `/api/reference-prices/${cardId}`

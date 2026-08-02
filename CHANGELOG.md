@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## [0.28.0] — 2026-08-02 — Đổi cửa trước thành TRA GIÁ + nới cổng give-to-get
+
+### Bối cảnh
+Chợ trade cần hai phía mới dùng được, mà DEAL đang có 1 tin bán và gần 0 giao dịch — người lạ vào chỉ thấy chợ trống. Tra giá thì **hữu ích với đúng một người**, không cần thanh khoản. Nên cửa trước đổi thành tra giá, chợ lùi xuống dưới. Chiến lược "đến vì công cụ, ở lại vì cộng đồng".
+
+### Tính năng
+- **Ô tra giá ngay đầu trang chủ** (`components/price-search.tsx`) — gõ tên thẻ → nhảy thẳng trang giá. **Không cần đăng nhập** (`GET /api/cards` vốn đã công khai). Khác `card-autocomplete` của form đăng bán: bỏ nút "thêm sản phẩm mới" vì thao tác đó cần tài khoản đã verify.
+- **Trang giá xem được mà không cần tài khoản.** Trước đây khách vãng lai gọi `/api/prices/:cardId` bị **401**, thấy ổ khóa — tức mọi link tra giá dán vào group Facebook đều dẫn tới ngõ cụt.
+
+### Kỹ thuật
+- **Gate give-to-get chuyển từ ném 403 sang nằm trong response**, ba trạng thái qua hàm thuần `priceAccess(recordCount, contributionCount)`:
+  - `empty` (thẻ chưa có giao dịch) → **KHÔNG khóa**, nói thẳng là chưa có. Khóa một cái hộp rỗng vừa vô nghĩa vừa đuổi khách: họ nhận đúng hai thông điệp "chẳng có gì" và "mà bạn cũng không được xem".
+  - `teaser` (có dữ liệu, chưa đóng góp — kể cả khách) → trả **`stats` đầy đủ**, giấu `records`. Đủ chứng minh dữ liệu có thật mà vẫn giữ động lực đóng góp; UI hiện số liệu tổng thay cho biểu đồ + bảng chi tiết.
+  - `full` (đã đóng góp ≥1 giao dịch) → như cũ.
+- ⚠️ **Đây là nới một bất biến nghiệp vụ, theo quyết định chủ web.** Lý do: ở mốc gần 0 giao dịch, cổng cũ chặn đúng cái phễu nó sinh ra để nuôi. Cơ chế give-to-get vẫn còn nguyên cho phần chi tiết từng giao dịch.
+- `recordCount` đếm **mọi condition**, còn `stats` theo bộ lọc `condition` — hai số cố ý không khớp; đừng "sửa" cho bằng nhau.
+- Route `/api/prices/:cardId` dùng `getSessionUser()` thay `requireUser()`; service nhận `userId: string | null`. Mã lỗi `NEED_CONTRIBUTION` không còn được phát.
+- +3 unit test cho `priceAccess` (**268 pass**), tsc + build sạch, không migration. Verify bằng DB thật: khách chưa đăng nhập gọi endpoint ra **200** (trước 401); thẻ "Thịt bò" có 2 giao dịch → `locked:true`, `records:[]` nhưng **trung vị ¥1.400 hiện ra**; thẻ chưa có giao dịch → không khóa; gõ ô tra giá ở trang chủ → chọn thẻ → sang đúng trang giá, 0 lỗi console.
+
 ## [0.27.0] — 2026-08-02 — Cho người lạ tìm thấy DEAL (SEO + preview khi chia sẻ link)
 
 ### Tính năng

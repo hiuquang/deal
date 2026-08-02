@@ -2,25 +2,30 @@
 
 Quy ước chung: [README.md](README.md). Bất biến: [business-rules.md](../business-rules.md) mục 1–7.
 
-### GET /api/prices/:cardId?condition=PSA10 (cần đăng nhập)
+### GET /api/prices/:cardId?condition=PSA10 (CÔNG KHAI — không cần đăng nhập)
 
 ```json
 // 200 — KHÔNG BAO GIỜ chứa thông tin user (ẩn danh từ schema)
 { "card": {...},
   "records": [ { "priceJpy": 12345, "condition": "RAW_NM", "reliability": "confirmed",
                  "flagged": false, "tradedAt": "2026-07-11T..." } ],
-  "stats": { "count": 5, "median": 12800, "min": 11000, "max": 15700 } }
+  "stats": { "count": 5, "median": 12800, "min": 11000, "max": 15700 },
+  "locked": false, "recordCount": 5 }
 ```
 
-```json
-// 403 NEED_CONTRIBUTION — user chưa đóng góp giao dịch nào (give-to-get)
-{ "error": { "code": "NEED_CONTRIBUTION", "message": "相場データを見るには...",
-  "details": { "recordCount": 7 } } }
-```
+**Gate give-to-get nằm trong response, KHÔNG còn ném 403** (đổi ở v0.28.0 — trước đó chưa đóng góp = `403 NEED_CONTRIBUTION`, khách chưa đăng nhập = `401`). Ba trạng thái, quyết định bởi hàm thuần `priceAccess(recordCount, contributionCount)`:
 
+| Trạng thái | Điều kiện | `records` | `stats` | `locked` |
+|---|---|---|---|---|
+| empty | `recordCount === 0` | `[]` | rỗng | `false` |
+| teaser | có dữ liệu, người xem chưa đóng góp (kể cả khách) | `[]` | **đầy đủ** | `true` |
+| full | đã đóng góp ≥1 giao dịch | đầy đủ | đầy đủ | `false` |
+
+- **Thẻ chưa có giao dịch nào thì KHÔNG khóa** — khóa một cái hộp rỗng vừa vô nghĩa vừa đuổi khách mới (họ nhận đúng hai thông điệp "chẳng có gì" + "mà bạn cũng không được xem").
+- **Teaser trả `stats` nhưng giấu `records`**: đủ chứng minh dữ liệu có thật, vẫn giữ động lực đóng góp. Lý do nới: ở mốc gần 0 giao dịch, cổng cũ chặn đúng cái phễu nó sinh ra để nuôi.
+- `recordCount` đếm **mọi condition**; `stats` thì theo bộ lọc `condition` — hai con số này cố ý không khớp nhau.
 - `reliability`: `confirmed` (2 bên xác nhận) | `self_reported` (tự chốt sau 7 ngày).
 - `flagged: true` (P2) = giá lệch >50% so với median của ≥3 record chưa-flag cùng (card, condition) tại thời điểm tạo — vẫn trả về nhưng **loại khỏi `stats`** (UI loại khỏi chart, hiện ⚠ 外れ値の可能性).
-- `details.recordCount` trong lỗi 403 = teaser tạo động lực đóng góp.
 - Endpoint này cũng lazy-check auto-close trade quá hạn.
 - Dữ liệu giá BOX dùng chung pipeline này.
 

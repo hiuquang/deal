@@ -1,5 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { computeStats } from "@/server/services/price-service";
+import { computeStats, priceAccess } from "@/server/services/price-service";
+
+describe("priceAccess (gate give-to-get)", () => {
+  it("thẻ chưa có giao dịch nào → 'empty', KHÔNG khóa dù chưa đóng góp", () => {
+    // Khóa một cái hộp rỗng vừa vô nghĩa vừa đuổi khách mới.
+    expect(priceAccess(0, 0)).toBe("empty");
+    expect(priceAccess(0, 5)).toBe("empty");
+  });
+
+  it("có dữ liệu + chưa đóng góp (kể cả khách chưa đăng nhập) → 'teaser'", () => {
+    expect(priceAccess(1, 0)).toBe("teaser");
+    expect(priceAccess(42, 0)).toBe("teaser");
+  });
+
+  it("có dữ liệu + đã đóng góp ≥1 giao dịch → 'full'", () => {
+    expect(priceAccess(1, 1)).toBe("full");
+    expect(priceAccess(42, 9)).toBe("full");
+  });
+});
 
 describe("computeStats", () => {
   it("trả null cho mảng rỗng", () => {

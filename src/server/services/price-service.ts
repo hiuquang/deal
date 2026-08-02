@@ -28,16 +28,44 @@ export function computeStats(pricesJpy: number[]): PriceStatsDto {
 }
 
 
+export type PriceAccess = "empty" | "teaser" | "full";
+
 /**
- * Dữ liệu giá theo thẻ — GATE give-to-get: user chưa đóng góp giao dịch nào
- * → 403 NEED_CONTRIBUTION kèm teaser (số record đang có) để tạo động lực.
- * Response KHÔNG BAO GIỜ chứa thông tin user (ẩn danh từ tầng schema).
+ * Quyền xem dữ liệu giá — hàm THUẦN để test được, đừng nhét truy vấn vào.
+ *
+ * - `empty`: thẻ chưa có giao dịch nào → **KHÔNG khóa**. Khóa một cái hộp rỗng
+ *   vừa vô nghĩa vừa phản tác dụng: khách mới nhận đúng hai thông điệp "ở đây
+ *   chẳng có gì" và "mà bạn cũng không được xem".
+ * - `teaser`: có dữ liệu nhưng người xem chưa đóng góp (kể cả khách chưa đăng
+ *   nhập) → cho xem SỐ LIỆU TỔNG (trung vị, khoảng giá), giấu từng giao dịch.
+ *   Đủ chứng minh dữ liệu có thật mà vẫn giữ động lực give-to-get.
+ * - `full`: đã đóng góp ≥1 giao dịch → xem tất cả.
+ *
+ * Nới từ v0.28.0 (trước đó chưa đóng góp = 403, khách vãng lai không xem được
+ * gì): ở mốc gần 0 giao dịch, cổng cũ chặn đúng cái phễu nó sinh ra để nuôi —
+ * người từ link group Facebook vào chỉ thấy ổ khóa rồi thoát.
+ */
+export function priceAccess(recordCount: number, contributionCount: number): PriceAccess {
+  if (recordCount === 0) return "empty";
+  return contributionCount >= 1 ? "full" : "teaser";
+}
+
+/**
+ * Dữ liệu giá theo thẻ. `userId` null = khách chưa đăng nhập (endpoint công
+ * khai). Response KHÔNG BAO GIỜ chứa thông tin user (ẩn danh từ tầng schema).
  */
 export async function getForCard(
-  userId: string,
+  userId: string | null,
   cardId: string,
   condition?: string
-): Promise<{ card: CardDto; records: PriceRecordDto[]; stats: PriceStatsDto }> {
+): Promise<{
+  card: CardDto;
+  records: PriceRecordDto[];
+  stats: PriceStatsDto;
+  locked: boolean;
+  /** Tổng số giao dịch của thẻ (MỌI condition) — dùng cho lời mời đóng góp. */
+  recordCount: number;
+}> {
   await autoCloseExpiredThrottled();
 
   const card = await cards.findCardById(cardId);
@@ -45,18 +73,11 @@ export async function getForCard(
     throw new ApiError(404, "NOT_FOUND", "Không tìm thấy thẻ.");
   }
 
-  const contributionCount = await users.countContributions(userId);
-  if (contributionCount < 1) {
-    const teaserCount = await prices.countPriceRecords(cardId);
-    throw new ApiError(
-      403,
-      "NEED_CONTRIBUTION",
-      "Để xem dữ liệu giá, hãy hoàn tất 1 giao dịch để đóng góp dữ liệu trước.",
-      { recordCount: teaserCount }
-    );
-  }
+  const recordCount = await prices.countPriceRecords(cardId);
+  const contributionCount = userId ? await users.countContributions(userId) : 0;
+  const access = priceAccess(recordCount, contributionCount);
 
-  const rows = await prices.listPriceRecords(cardId, condition);
+  const rows = access === "empty" ? [] : await prices.listPriceRecords(cardId, condition);
   const records: PriceRecordDto[] = rows.map((row) => ({
     priceJpy: row.priceJpy,
     condition: row.condition as Condition,
@@ -65,9 +86,13 @@ export async function getForCard(
     tradedAt: row.tradedAt.toISOString(),
   }));
   // Stats chỉ tính trên record chưa bị flag — outlier không được kéo lệch median.
+  // Tính trên TOÀN BỘ rows kể cả ở chế độ teaser: số liệu tổng là thứ được cho
+  // xem, chỉ danh sách từng giao dịch mới bị giấu.
   return {
     card: toCardDto(card),
-    records,
+    records: access === "full" ? records : [],
     stats: computeStats(records.filter((r) => !r.flagged).map((r) => r.priceJpy)),
+    locked: access === "teaser",
+    recordCount,
   };
 }

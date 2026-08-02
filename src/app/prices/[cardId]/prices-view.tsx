@@ -18,10 +18,8 @@ import { ReferencePriceChart } from "@/components/reference-price-chart";
 import { ErrorBox, Loading, ReliabilityBadge } from "@/components/ui";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 
-type Locked = { recordCount: number };
-
 /**
- * Thân trang giá. Vẫn tải phía client vì phần giá giao dịch thật bị gate
+ * Thân trang giá. Vẫn tải phía client vì danh sách từng giao dịch bị gate
  * give-to-get theo người đang đăng nhập — không SSR được, và cũng KHÔNG nên:
  * server-render dữ liệu gate là đem nó dâng cho crawler thứ mà người dùng
  * chưa đóng góp thì không xem được. Server component cha chỉ lo metadata.
@@ -35,14 +33,18 @@ export function PricesView({ cardId }: { cardId: string }) {
   const [stats, setStats] = useState<PriceStatsDto | null>(null);
   const [refRecords, setRefRecords] = useState<ReferencePriceDto[]>([]);
   const [refStats, setRefStats] = useState<ReferencePriceStatsDto | null>(null);
-  const [locked, setLocked] = useState<Locked | null>(null);
+  // locked = có dữ liệu nhưng người xem chưa đóng góp (chỉ giấu danh sách chi
+  // tiết, số liệu tổng vẫn hiện). recordCount = 0 → thẻ chưa có giao dịch nào,
+  // KHÔNG khóa mà nói thẳng là chưa có.
+  const [locked, setLocked] = useState(false);
+  const [recordCount, setRecordCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
-    setLocked(null);
+    setLocked(false);
     // Giá tham khảo (công khai, không gate) — luôn tải: cho card header + hiển
     // thị mặt bằng giá kể cả khi phần giá-giao-dịch-thật bên dưới bị khóa.
     try {
@@ -59,18 +61,16 @@ export function PricesView({ cardId }: { cardId: string }) {
       setRefRecords([]);
       setRefStats(null);
     }
-    // Giá giao dịch thật — gate give-to-get theo condition.
+    // Giá giao dịch thật — endpoint công khai, gate nằm trong response.
     try {
       const result = await api.getPrices(cardId, condition || undefined);
       setCard(result.card);
       setRecords(result.records);
       setStats(result.stats);
+      setLocked(result.locked);
+      setRecordCount(result.recordCount);
     } catch (e) {
-      if (e instanceof ApiClientError && e.code === "NEED_CONTRIBUTION") {
-        setLocked({ recordCount: (e.details as Locked | undefined)?.recordCount ?? 0 });
-      } else if (e instanceof ApiClientError && e.status === 401) {
-        setLocked({ recordCount: 0 });
-      } else if (!(e instanceof ApiClientError && e.status === 404)) {
+      if (!(e instanceof ApiClientError && e.status === 404)) {
         // 404 ở đây = thẻ tồn tại (ref đã xác nhận) nhưng lỗi lạ — bỏ qua phần trade.
         setError(e instanceof ApiClientError ? e.message : t("common.loadError"));
       }
@@ -154,21 +154,13 @@ export function PricesView({ cardId }: { cardId: string }) {
         </section>
       )}
 
-      {/* Giá giao dịch thật trên DEAL — gate give-to-get. */}
-      {locked ? (
-        <div className="mx-auto max-w-md space-y-4 rounded-2xl border border-slate-200 bg-white p-8 text-center">
-          <div className="text-4xl">🔒</div>
-          <h2 className="text-lg font-bold">{t("lock.title")}</h2>
-          <p className="text-sm text-slate-600">{t("lock.desc", { n: locked.recordCount })}</p>
-          <p className="text-xs text-slate-400">{t("lock.note")}</p>
-          {me ? (
-            <Link
-              href="/"
-              className="inline-block rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
-            >
-              {t("lock.ctaBrowse")}
-            </Link>
-          ) : (
+      {/* Giá giao dịch thật trên DEAL. Thẻ chưa có giao dịch nào thì nói thẳng
+          là chưa có — KHÔNG dựng ổ khóa lên một cái hộp rỗng. */}
+      {recordCount === 0 ? (
+        <div className="mx-auto max-w-md space-y-3 rounded-2xl border border-slate-200 bg-white p-8 text-center">
+          <h2 className="text-lg font-bold">{t("price.noneTitle")}</h2>
+          <p className="text-sm text-slate-600">{t("price.noneDesc")}</p>
+          {!me && (
             <Link
               href="/register"
               className="inline-block rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
@@ -212,11 +204,28 @@ export function PricesView({ cardId }: { cardId: string }) {
             </div>
           )}
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4">
-            <PriceChart records={records.filter((r) => !r.flagged)} />
-          </div>
+          {/* Chưa đóng góp: số liệu tổng ở trên vẫn hiện (đủ để tin là dữ liệu
+              có thật), chỉ biểu đồ + danh sách từng giao dịch mới phải đổi. */}
+          {locked ? (
+            <div className="space-y-3 rounded-2xl border border-indigo-200 bg-indigo-50/50 p-6 text-center">
+              <p className="text-sm font-semibold text-indigo-900">
+                {t("lock.teaser", { n: recordCount })}
+              </p>
+              <p className="text-xs text-slate-500">{t("lock.note")}</p>
+              <Link
+                href={me ? "/" : "/register"}
+                className="inline-block rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
+              >
+                {me ? t("lock.ctaBrowse") : t("lock.ctaRegister")}
+              </Link>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-slate-200 bg-white p-4">
+              <PriceChart records={records.filter((r) => !r.flagged)} />
+            </div>
+          )}
 
-          {records.length === 0 ? (
+          {locked ? null : records.length === 0 ? (
             <p className="py-6 text-center text-sm text-slate-500">{t("price.noData")}</p>
           ) : (
             <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">

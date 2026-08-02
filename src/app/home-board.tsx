@@ -6,6 +6,7 @@ import type { BuyOrderDto, ListingDto } from "@/lib/types";
 import { ListingCard } from "@/components/listing-card";
 import { BuyOrderCard } from "@/components/buy-order-card";
 import { BoardTypeTabs, FilterTabs, useBoardFilters } from "@/components/board-filters";
+import { PriceSearch } from "@/components/price-search";
 import { boardKey, type BoardType } from "@/lib/board";
 import { Empty, ErrorBox, Loading } from "@/components/ui";
 import { useI18n } from "@/lib/i18n";
@@ -116,9 +117,15 @@ function HomeContent({ initial }: { initial: InitialBoard | null }) {
 
   return (
     <div className="space-y-6">
+      {/* Cửa trước là TRA GIÁ, không phải bảng tin: tra giá dùng được với đúng
+          một người, còn chợ cần hai phía. Xem chú thích ở `price-search.tsx`. */}
       <section className="rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-8 text-white">
         <h1 className="text-2xl font-black sm:text-3xl">{t("home.heroTitle")}</h1>
         <p className="mt-2 text-sm text-indigo-100">{t("home.heroDesc")}</p>
+        <div className="mt-5">
+          <PriceSearch />
+          <p className="mt-2 text-xs text-indigo-200">{t("psearch.hint")}</p>
+        </div>
       </section>
 
       <div className="relative">

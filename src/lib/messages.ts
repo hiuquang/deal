@@ -61,12 +61,18 @@ export const MESSAGES = {
 
   // ---- Trang chủ ----
   "home.heroTitle": {
-    vi: "Trade thẻ trực tiếp, hoàn toàn miễn phí.",
-    en: "Trade cards directly, with zero fees.",
+    vi: "Thẻ này giá bao nhiêu?",
+    en: "What's this card worth?",
   },
   "home.heroDesc": {
-    vi: "Hoàn tất giao dịch để đóng góp dữ liệu và mở khóa giá bán thực tế của cộng đồng. Đăng bán và mua đều không mất phí.",
-    en: "Complete trades to contribute data and unlock real community sale prices. Listing and buying are completely free.",
+    vi: "Tra giá thẻ Pokémon và One Piece tại Nhật, bằng tiếng Việt. Và trade trực tiếp với người chơi khác, phí 0%.",
+    en: "Look up Pokémon and One Piece card prices in Japan. And trade directly with other players, zero fees.",
+  },
+  "psearch.placeholder": { vi: "Nhập tên thẻ để tra giá…", en: "Type a card name to look up its price…" },
+  "psearch.empty": { vi: "Không tìm thấy thẻ nào khớp.", en: "No matching cards." },
+  "psearch.hint": {
+    vi: "Gõ tên thẻ tiếng Nhật hoặc tiếng Anh. Không cần đăng nhập.",
+    en: "Type the card name in Japanese or English. No account needed.",
   },
   "home.tabAll": { vi: "Tất cả", en: "All" },
   "home.tabPokemon": { vi: "Pokémon", en: "Pokémon" },
@@ -368,6 +374,15 @@ export const MESSAGES = {
   },
   "lock.ctaBrowse": { vi: "Tìm tin đăng và bắt đầu giao dịch", en: "Browse listings and start trading" },
   "lock.ctaRegister": { vi: "Đăng ký miễn phí để bắt đầu", en: "Sign up free to get started" },
+  "lock.teaser": {
+    vi: "Số liệu trên tổng hợp từ {n} giao dịch thật trên DEAL. Hoàn tất 1 giao dịch để xem biểu đồ và chi tiết từng giao dịch.",
+    en: "The figures above come from {n} real trades on DEAL. Complete 1 trade to see the chart and every individual sale.",
+  },
+  "price.noneTitle": { vi: "Chưa có giao dịch nào trên DEAL", en: "No trades on DEAL yet" },
+  "price.noneDesc": {
+    vi: "Sản phẩm này chưa có giao dịch nào được ghi nhận. Giao dịch đầu tiên sẽ tạo ra điểm giá đầu tiên cho cả cộng đồng.",
+    en: "No sale has been recorded for this item yet. The first trade creates the first price point for everyone.",
+  },
 
   // ---- Giá tham khảo (nguồn ngoài) ----
   "refprice.title": { vi: "Giá tham khảo thị trường", en: "Market reference prices" },
