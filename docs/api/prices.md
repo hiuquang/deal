@@ -44,4 +44,9 @@ Quy ước chung: [README.md](README.md). Bất biến: [business-rules.md](../b
 - KHÔNG gate give-to-get và KHÔNG cần đăng nhập: mục đích là cho người mới thấy mặt bằng giá khi web còn ít giao dịch → xây niềm tin. Cache như catalog (`PUBLIC_CATALOG_CACHE`).
 - `quantity` = số lượng (pack) quan sát; `priceJpy` = đơn giá/pack. `weightedAvg` = trung bình có trọng số theo `quantity`.
 - Trả kèm `card` để trang `/prices/:cardId` hiển thị được ngay cả khi phần giá-giao-dịch-thật đang bị khóa.
-- Nhập/cập nhật dữ liệu: `npm run db:seed-reference-prices` (idempotent, chỉ chủ web chạy — không có admin UI, giống VIP/report).
+- Nhập/cập nhật dữ liệu (idempotent, chỉ chủ web chạy — không có admin UI, giống VIP/report):
+  - **Hằng ngày**: ghi quan sát vào `prisma/reference-prices.txt` (1 dòng = 1 quan sát) → `npm run db:import-prices` xem thử → thêm `-- --apply` để ghi. **Mặc định KHÔNG ghi** vì script chạy thẳng vào DB production.
+  - **Dữ liệu lịch sử pin cứng trong code**: `npm run db:seed-reference-prices` (mảng `DATA` trong `prisma/seed-reference-prices.ts`).
+- Nhãn `source` phân biệt **giá rao** vs **đã bán**: giá quan sát trong group Facebook chủ yếu là giá rao, cao hơn giá chốt sau thương lượng — trộn chung là bóp méo mặt bằng.
+- ⚠️ **KHÔNG đổ vào đây dữ liệu lấy tự động từ sàn khác** (SNKRDUNK/スニダン…): điều khoản của họ cấm hiển thị lại thông tin lấy từ dịch vụ và cấm dùng cho mục đích thương mại khi chưa xin phép. Đây là giá chủ web TỰ quan sát.
+- UI cảnh báo khi điểm giá mới nhất đã quá 14 ngày — giá box biến động theo tuần, số cũ mà không nói gì là nói sai về thị trường.

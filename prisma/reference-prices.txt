@@ -1,0 +1,31 @@
+# ─────────────────────────────────────────────────────────────────────────
+# GHI GIÁ QUAN SÁT ĐƯỢC — mỗi dòng một quan sát.
+#
+# Nhập xong chạy:   npm run db:import-prices          (xem thử, KHÔNG ghi)
+#                   npm run db:import-prices -- --apply   (ghi vào DB thật)
+#
+# Dòng bắt đầu bằng "#" là ghi chú HOẶC khai bối cảnh cho các dòng bên dưới:
+#     # onepiece box      → từ đây trở xuống là box One Piece
+#     # pokemon single    → từ đây trở xuống là thẻ lẻ Pokémon
+#
+# Dòng dữ liệu, các ô cách nhau bằng dấu |, chỉ 2 ô đầu là BẮT BUỘC:
+#     tên | giá | số lượng | rao/ban | thời điểm
+#
+#   giá        12000 · 12,000 · 12k · 12.5k  đều được
+#   số lượng   mặc định 1
+#   rao/ban    mặc định "rao" (giá người ta rao).
+#              Chỉ ghi "ban" khi bài nói RÕ là đã bán xong.
+#   thời điểm  mặc định là bây giờ. Ghi "20:00" = hôm nay 20:00 giờ Nhật,
+#              hoặc "2026-08-03 20:00" nếu là chuyện hôm trước.
+#
+# Ví dụ (xóa đi khi nhập thật):
+#     OP-09 Bùng nổ | 12k | 5 | rao | 20:00
+#     OP-09 Bùng nổ | 11.5k | 1 | ban
+#     OP-10 | 15000
+#
+# ⚠️ Đây là giá bạn TỰ quan sát ngoài thị trường. KHÔNG chép dữ liệu từ API
+#    hay trang của sàn khác (SNKRDUNK...) — điều khoản của họ cấm hiển thị
+#    lại thông tin lấy từ dịch vụ. Xem CHANGELOG v0.30.0.
+# ─────────────────────────────────────────────────────────────────────────
+
+# onepiece box

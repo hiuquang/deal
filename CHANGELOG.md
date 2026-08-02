@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## [0.30.0] — 2026-08-03 — Nhập giá bằng file text + cảnh báo dữ liệu cũ
+
+### Bối cảnh
+Chủ web hỏi có thu thập tự động giá từ **SNKRDUNK (スニダン)** và Facebook về DEAL được không. **Không.** Điều khoản của SNKRDUNK (SODA Inc.) cấm thẳng: *"reproducing, publishing... displaying... any information obtained from the Service"* và *"using the Service for commercial purposes without the prior consent of the Company"* — lấy giá của họ rồi hiển thị lại trên DEAL rơi vào cả hai. Facebook thì đã loại từ v0.29.0 (rủi ro cho chính tài khoản + domain).
+
+Nút thắt thật ra không nằm ở việc lấy dữ liệu mà ở **công gõ**, nên đợt này tấn công đúng chỗ đó.
+
+### Tính năng
+- **Nhập giá bằng file text**: ghi 1 dòng cho 1 quan sát vào `prisma/reference-prices.txt`, chạy `npm run db:import-prices`. Chỉ 2 ô đầu bắt buộc (`tên | giá`); số lượng mặc định 1, loại mặc định "rao", thời điểm mặc định là bây giờ. Giá nhận cả `12000`, `12,000`, `¥12000`, `12k`, `12.5k`.
+- **Mặc định KHÔNG ghi DB** — in ra những gì đọc được để soát, phải thêm `-- --apply` mới ghi. Script chạy thẳng vào production, gõ nhầm một dòng mà ghi luôn thì phải vào Supabase dọn tay.
+- **Cảnh báo dữ liệu cũ** trên trang giá khi điểm giá mới nhất đã quá 7 ngày.
+
+### Kỹ thuật
+- Tách `prisma/parse-reference-prices.ts` (THUẦN, không đụng Prisma) khỏi `import-reference-prices.ts`. Lý do: script cũ gọi `main()` ngay khi load module → không thể import hàm parse vào test mà không chạy cả script và dựng `PrismaClient`.
+- **Mốc thời gian gắn cứng `+09:00`**, không để máy tự suy: dữ liệu quan sát ở Nhật nhưng máy chủ web đặt giờ Việt Nam → lệch 2 tiếng, và lệch khác nữa nếu đi nước khác. `"20:00"` = hôm nay 20:00 **giờ Nhật**, tính qua `toLocaleDateString("en-CA", { timeZone: "Asia/Tokyo" })`.
+- Giá trị lạ ở ô rao/bán, ô số lượng, ô thời điểm đều **báo lỗi kèm số dòng** thay vì âm thầm lấy mặc định — nhập tay thì gõ nhầm là chuyện thường, nuốt lỗi ở đây là làm bẩn dataset trong im lặng.
+- **Ngưỡng cũ 7 ngày chọn theo bằng chứng thật**, không phải ước lượng: giá Round One thu 23–24/7 đã không còn đúng khi chủ web kiểm lại ngày 3/8 — 10 ngày là đã sai. Ngưỡng 14 ngày thử lúc đầu quá rộng, đã hạ.
+- Tuổi dữ liệu tính từ bản ghi **mới nhất** (`Math.max` trên `recordedAt`), không phải phần tử đầu mảng — thứ tự do API quyết, đừng dựa vào.
+- +18 unit test cho bộ đọc (**286 pass**), tsc + build sạch, không migration. Verify: chạy thử file mẫu 4 dòng ra đúng cả 4 (`12k`→¥12.000, `11.5k`+`ban`→nhãn "Facebook (đã bán)", `20:00`→hôm nay giờ JST, ô trống→mặc định); trang Round One hiện đúng "⚠ Điểm giá mới nhất đã 9 ngày trước".
+
 ## [0.29.0] — 2026-08-03 — Giá tham khảo nhiều sản phẩm, nguồn Facebook
 
 ### Bối cảnh

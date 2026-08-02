@@ -19,6 +19,13 @@ import { ErrorBox, Loading, ReliabilityBadge } from "@/components/ui";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 
 /**
+ * Quá mốc này thì cảnh báo dữ liệu cũ. Đặt 7 ngày theo bằng chứng thật: giá
+ * Round One thu 23–24/7 đã không còn đúng khi chủ web kiểm lại ngày 3/8 —
+ * tức 10 ngày là đã sai. Ngưỡng 14 ngày (thử lúc đầu) là quá rộng cho box.
+ */
+const STALE_AFTER_DAYS = 7;
+
+/**
  * Thân trang giá. Vẫn tải phía client vì danh sách từng giao dịch bị gate
  * give-to-get theo người đang đăng nhập — không SSR được, và cũng KHÔNG nên:
  * server-render dữ liệu gate là đem nó dâng cho crawler thứ mà người dùng
@@ -87,6 +94,14 @@ export function PricesView({ cardId }: { cardId: string }) {
   if (authLoading || loading) return <Loading />;
   if (error) return <ErrorBox message={error} />;
 
+  // Tuổi của điểm giá tham khảo MỚI NHẤT (không phải của bản ghi đầu mảng —
+  // thứ tự do API quyết, đừng dựa vào nó).
+  const newestRefMs = refRecords.length
+    ? Math.max(...refRecords.map((r) => new Date(r.recordedAt).getTime()))
+    : null;
+  const refAgeDays =
+    newestRefMs === null ? null : Math.floor((Date.now() - newestRefMs) / 86_400_000);
+
   return (
     <div className="space-y-5">
       {card && (
@@ -113,6 +128,13 @@ export function PricesView({ cardId }: { cardId: string }) {
                 source: [...new Set(refRecords.map((r) => r.source))].join(" · "),
               })}
             </p>
+            {/* Giá box biến động theo tuần: trưng số cũ mà không nói gì là nói
+                sai về thị trường, và đó đúng là thứ làm mất niềm tin nhanh nhất. */}
+            {refAgeDays !== null && refAgeDays > STALE_AFTER_DAYS && (
+              <p className="rounded-lg bg-amber-100 px-3 py-2 text-xs font-medium text-amber-900">
+                {t("refprice.stale", { n: refAgeDays })}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

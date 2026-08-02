@@ -391,6 +391,10 @@ export const MESSAGES = {
     vi: "※ Giá tham khảo do DEAL thu thập từ nguồn ngoài, KHÔNG phải giao dịch trên DEAL. Mục ghi «giá rao» là giá người bán đưa ra, thường cao hơn giá chốt thật sau thương lượng.",
     en: "※ Reference prices collected by DEAL from external sources — NOT trades on DEAL. Entries marked «giá rao» are asking prices, usually above the real negotiated sale price.",
   },
+  "refprice.stale": {
+    vi: "⚠ Điểm giá mới nhất đã {n} ngày trước — giá box biến động theo tuần, con số dưới đây có thể không còn đúng.",
+    en: "⚠ Latest data point is {n} days old — box prices move weekly, so these figures may be out of date.",
+  },
   "refprice.count": { vi: "Số lần ghi nhận", en: "Data points" },
   "refprice.weightedAvg": { vi: "TB có trọng số", en: "Weighted avg" },
   "refprice.totalQty": { vi: "Tổng số lượng", en: "Total quantity" },

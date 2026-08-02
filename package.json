@@ -1,6 +1,6 @@
 {
   "name": "deal",
-  "version": "0.29.0",
+  "version": "0.30.0",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
@@ -11,6 +11,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:seed-prod": "tsx prisma/seed-prod.ts",
     "db:seed-reference-prices": "tsx prisma/seed-reference-prices.ts",
+    "db:import-prices": "tsx prisma/import-reference-prices.ts",
     "db:reset-test": "tsx prisma/reset-test-data.ts",
     "postinstall": "prisma generate"
   },
