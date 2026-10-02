@@ -3,6 +3,7 @@ import { withErrorHandling } from "@/server/errors";
 import { createCommentSchema } from "@/server/validation";
 import { requireVerifiedUser } from "@/server/session";
 import * as commentService from "@/server/services/comment-service";
+import * as rateLimit from "@/server/services/rate-limit-service";
 
 // Bình luận công khai trên tin ĐĂNG MUA — hỏi đáp trước khi chào bán / kết nối.
 // Đối xứng hoàn toàn với /api/listings/:id/comments.
@@ -19,6 +20,7 @@ export const GET = withErrorHandling(
 export const POST = withErrorHandling(
   async (req: NextRequest, ctx: { params: Promise<{ id: string }> }) => {
     const user = await requireVerifiedUser();
+    await rateLimit.enforce("comment:user", user.id);
     const { id } = await ctx.params;
     const input = createCommentSchema.parse(await req.json());
     const comment = await commentService.create(user.id, { kind: "buy_order", id }, input.body);

@@ -13,6 +13,21 @@ const ALLOWED: Record<string, string> = {
   "image/webp": ".webp",
 };
 
+// `file.type` là do client tự khai — kiểm thêm magic bytes để bucket public
+// không bị dùng làm chỗ host file tùy ý (HTML, exe...) đội lốt ảnh.
+function matchesSignature(buf: Buffer, type: string): boolean {
+  switch (type) {
+    case "image/jpeg":
+      return buf.length > 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff;
+    case "image/png":
+      return buf.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+    case "image/webp":
+      return buf.toString("latin1", 0, 4) === "RIFF" && buf.toString("latin1", 8, 12) === "WEBP";
+    default:
+      return false;
+  }
+}
+
 // Có SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY → Supabase Storage (bucket
 // public "uploads", REST API — không cần SDK). Không có → lưu local
 // public/uploads (dev). Vercel không có đĩa ghi được nên production BẮT BUỘC
@@ -60,8 +75,13 @@ export const POST = withErrorHandling(async (req: NextRequest) => {
     throw new ApiError(400, "VALIDATION", "Kích thước ảnh tối đa 5MB.");
   }
 
+  const buf = Buffer.from(await file.arrayBuffer());
+  if (!matchesSignature(buf, file.type)) {
+    throw new ApiError(400, "VALIDATION", "Chỉ tải lên được JPEG / PNG / WebP.");
+  }
+
   const name = `${randomUUID()}${ext}`;
-  const url = await store(name, Buffer.from(await file.arrayBuffer()), file.type);
+  const url = await store(name, buf, file.type);
 
   return NextResponse.json({ url }, { status: 201 });
 });

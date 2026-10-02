@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { withErrorHandling } from "@/server/errors";
 import { requireUser, requireVerifiedUser } from "@/server/session";
 import * as requestService from "@/server/services/request-service";
+import * as rateLimit from "@/server/services/rate-limit-service";
 
 // CHỈ seller xem được danh sách người muốn mua.
 export const GET = withErrorHandling(
@@ -17,6 +18,7 @@ export const GET = withErrorHandling(
 export const POST = withErrorHandling(
   async (_req: NextRequest, ctx: { params: Promise<{ id: string }> }) => {
     const user = await requireVerifiedUser();
+    await rateLimit.enforce("request:user", user.id);
     const { id } = await ctx.params;
     const request = await requestService.create(user.id, id);
     return NextResponse.json({ request }, { status: 201 });

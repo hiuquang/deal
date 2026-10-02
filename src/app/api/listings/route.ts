@@ -5,6 +5,7 @@ import { requireUser, requireVerifiedUser } from "@/server/session";
 import * as listingService from "@/server/services/listing-service";
 import { PRIVATE_NO_STORE, PUBLIC_LIST_CACHE } from "@/server/cache";
 import { trangThaiHienTrenCho } from "@/server/showcase";
+import * as rateLimit from "@/server/services/rate-limit-service";
 
 export const GET = withErrorHandling(async (req: NextRequest) => {
   const params = req.nextUrl.searchParams;
@@ -36,6 +37,7 @@ export const GET = withErrorHandling(async (req: NextRequest) => {
 
 export const POST = withErrorHandling(async (req: NextRequest) => {
   const user = await requireVerifiedUser();
+  await rateLimit.enforce("listing:user", user.id);
   const input = createListingSchema.parse(await req.json());
   const listing = await listingService.create(user.id, input);
   return NextResponse.json({ listing }, { status: 201 });

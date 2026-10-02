@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [0.30.1] — 2026-10-02 — Vá bảo mật (audit lần 2)
+
+### Bảo mật
+- **Thư viện**: `npm audit` báo 10 lỗ hổng (1 critical). `next` 15.5.21 → **15.5.27** (vá RCE ở Image Optimization khi dùng AVIF), `sharp` → 0.35.5, `postcss` → 8.5.28, `nodemailer` **^9 → ^10.0.13** (DoS ở addressparser, lách allow-list domain người nhận). Code chỉ dùng `createTransport`/`sendMail` nên lên major không vỡ gì.
+- **SSRF qua thông báo đẩy**: `endpoint` khi đăng ký push trước nhận URL tùy ý → server POST tới đó mỗi lần gửi thông báo (IP nội bộ, metadata cloud, site bên thứ ba). Giờ phải là HTTPS tới dịch vụ push thật (FCM / Apple / Mozilla / WNS), không port lạ, không userinfo — hàm `isPushServiceEndpoint` trong `validation.ts`.
+- **Giới hạn tần suất cho hành động ghi**: trước chỉ auth + upload có. Thêm theo user: tin nhắn 120/10ph, bình luận 30/10ph, 購入希望 + chào bán 30/10ph, báo chốt giao dịch 20/10ph, tin đăng + tin gom 30/giờ, thêm sản phẩm 30/giờ, báo cáo 10/giờ. Chặn 1 tài khoản bơm rác vào DB và dội thông báo lên điện thoại người khác.
+- **Upload kiểm magic bytes**: không tin `file.type` do client khai nữa — đọc byte đầu file xác nhận đúng JPEG/PNG/WebP, tránh bucket public bị dùng để host file tùy ý đội lốt ảnh.
+
+### Chưa vá (có chủ ý)
+- `vitest` (chỉ chạy test, cần lên major 5) và `deepmerge-ts` trong Prisma CLI (chỉ lúc build, gộp config của chính mình) — không chạm được từ web.
+
+### Kỹ thuật
+- +13 unit test cho allow-list push (**299 pass**), tsc + build sạch, không migration.
+
 ## [0.30.0] — 2026-08-03 — Nhập giá bằng file text + cảnh báo dữ liệu cũ
 
 ### Bối cảnh

@@ -3,6 +3,7 @@ import { withErrorHandling } from "@/server/errors";
 import { createCommentSchema } from "@/server/validation";
 import { requireVerifiedUser } from "@/server/session";
 import * as commentService from "@/server/services/comment-service";
+import * as rateLimit from "@/server/services/rate-limit-service";
 
 // Đọc công khai — không cần đăng nhập.
 export const GET = withErrorHandling(
@@ -16,6 +17,7 @@ export const GET = withErrorHandling(
 export const POST = withErrorHandling(
   async (req: NextRequest, ctx: { params: Promise<{ id: string }> }) => {
     const user = await requireVerifiedUser();
+    await rateLimit.enforce("comment:user", user.id);
     const { id } = await ctx.params;
     const input = createCommentSchema.parse(await req.json());
     const comment = await commentService.create(user.id, { kind: "listing", id }, input.body);

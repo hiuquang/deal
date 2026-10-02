@@ -223,10 +223,31 @@ export const createReportSchema = z.object({
     .max(500, "Lý do báo cáo tối đa 500 ký tự"),
 });
 
+/**
+ * Host dịch vụ push của các trình duyệt thật (Chrome/Edge/Opera → FCM, Firefox
+ * → Mozilla autopush, Safari/iOS → Apple, Edge cũ → WNS). Server POST tới
+ * `endpoint` mỗi lần gửi thông báo — nhận URL tùy ý là mở cửa SSRF (bắt server
+ * gọi vào IP nội bộ / site bên thứ ba). Trình duyệt mới có host lạ thì thêm vào đây.
+ */
+const PUSH_HOSTS = ["fcm.googleapis.com", "android.googleapis.com", "web.push.apple.com"];
+const PUSH_HOST_SUFFIXES = [".push.services.mozilla.com", ".push.apple.com", ".notify.windows.com"];
+
+export function isPushServiceEndpoint(value: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return false;
+  }
+  if (url.protocol !== "https:" || url.port !== "" || url.username || url.password) return false;
+  const host = url.hostname.toLowerCase();
+  return PUSH_HOSTS.includes(host) || PUSH_HOST_SUFFIXES.some((suffix) => host.endsWith(suffix));
+}
+
 // Đăng ký nhận thông báo đẩy. `endpoint` do trình duyệt cấp (URL của dịch vụ
 // push Apple/Google) — giới hạn độ dài để không ai nhồi rác vào bảng.
 export const pushSubscribeSchema = z.object({
-  endpoint: z.string().url("Endpoint không hợp lệ").max(1000),
+  endpoint: z.string().max(1000).refine(isPushServiceEndpoint, "Endpoint không hợp lệ"),
   keys: z.object({
     p256dh: z.string().min(1).max(255),
     auth: z.string().min(1).max(255),

@@ -3,6 +3,7 @@ import { withErrorHandling } from "@/server/errors";
 import { createOfferSchema } from "@/server/validation";
 import { requireVerifiedUser } from "@/server/session";
 import * as offerService from "@/server/services/buy-order-offer-service";
+import * as rateLimit from "@/server/services/rate-limit-service";
 
 // Danh sách chào bán — công khai.
 export const GET = withErrorHandling(
@@ -17,6 +18,7 @@ export const GET = withErrorHandling(
 export const POST = withErrorHandling(
   async (req: NextRequest, ctx: { params: Promise<{ id: string }> }) => {
     const user = await requireVerifiedUser();
+    await rateLimit.enforce("request:user", user.id);
     const { id } = await ctx.params;
     const input = createOfferSchema.parse(await req.json());
     const offer = await offerService.create(user.id, id, input);

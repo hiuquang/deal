@@ -4,6 +4,7 @@ import {
   createListingSchema,
   createMessageSchema,
   createTradeSchema,
+  isPushServiceEndpoint,
   listListingsSchema,
   registerSchema,
 } from "@/server/validation";
@@ -143,5 +144,30 @@ describe("createMessageSchema", () => {
   it("từ chối chuỗi rỗng/toàn khoảng trắng và > 1000 ký tự", () => {
     expect(() => createMessageSchema.parse({ body: "   " })).toThrow();
     expect(() => createMessageSchema.parse({ body: "a".repeat(1001) })).toThrow();
+  });
+});
+
+describe("isPushServiceEndpoint — chống SSRF qua endpoint thông báo đẩy", () => {
+  it.each([
+    "https://fcm.googleapis.com/fcm/send/abc",
+    "https://web.push.apple.com/QGx1",
+    "https://updates.push.services.mozilla.com/wpush/v2/xyz",
+    "https://wns2-par02p.notify.windows.com/w/?token=1",
+  ])("chấp nhận dịch vụ push thật: %s", (url) => {
+    expect(isPushServiceEndpoint(url)).toBe(true);
+  });
+
+  it.each([
+    "http://fcm.googleapis.com/fcm/send/abc", // không HTTPS
+    "https://127.0.0.1/x",
+    "http://169.254.169.254/latest/meta-data",
+    "https://evil.com/fcm.googleapis.com",
+    "https://fcm.googleapis.com.evil.com/x",
+    "https://evilpush.apple.com.attacker.net/x",
+    "https://fcm.googleapis.com:8443/x", // port lạ
+    "https://user:pw@fcm.googleapis.com/x",
+    "not a url",
+  ])("từ chối: %s", (url) => {
+    expect(isPushServiceEndpoint(url)).toBe(false);
   });
 });

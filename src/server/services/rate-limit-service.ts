@@ -21,6 +21,15 @@ export const LIMITS = {
   // Mỗi ảnh tới 5MB vào Supabase Storage — chặn spam đầy bucket. Người thật
   // đăng tin nhiều ảnh vẫn dư (30 ảnh/10 phút).
   "upload:user": { limit: 30, windowMs: 10 * 60 * 1000 },
+  // Hành động ghi nội dung — chặn 1 tài khoản bơm rác vào DB và dội thông báo
+  // đẩy lên điện thoại người khác. Ngưỡng rộng gấp nhiều lần người thật dùng.
+  "message:user": { limit: 120, windowMs: 10 * 60 * 1000 },
+  "comment:user": { limit: 30, windowMs: 10 * 60 * 1000 },
+  "request:user": { limit: 30, windowMs: 10 * 60 * 1000 },
+  "trade:user": { limit: 20, windowMs: 10 * 60 * 1000 },
+  "listing:user": { limit: 30, windowMs: 60 * 60 * 1000 },
+  "card:user": { limit: 30, windowMs: 60 * 60 * 1000 },
+  "report:user": { limit: 10, windowMs: 60 * 60 * 1000 },
 } as const;
 
 export type LimitAction = keyof typeof LIMITS;

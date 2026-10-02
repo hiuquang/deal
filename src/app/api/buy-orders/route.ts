@@ -4,6 +4,7 @@ import { createBuyOrderSchema, listBuyOrdersSchema } from "@/server/validation";
 import { requireUser, requireVerifiedUser } from "@/server/session";
 import * as buyOrderService from "@/server/services/buy-order-service";
 import { PRIVATE_NO_STORE, PUBLIC_LIST_CACHE } from "@/server/cache";
+import * as rateLimit from "@/server/services/rate-limit-service";
 
 export const GET = withErrorHandling(async (req: NextRequest) => {
   const params = req.nextUrl.searchParams;
@@ -31,6 +32,7 @@ export const GET = withErrorHandling(async (req: NextRequest) => {
 
 export const POST = withErrorHandling(async (req: NextRequest) => {
   const user = await requireVerifiedUser();
+  await rateLimit.enforce("listing:user", user.id);
   const input = createBuyOrderSchema.parse(await req.json());
   const buyOrder = await buyOrderService.create(user.id, input);
   return NextResponse.json({ buyOrder }, { status: 201 });
