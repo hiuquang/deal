@@ -33,7 +33,7 @@ export default function NewBuyOrderPage() {
     return (
       <div className="py-12 text-center text-sm text-slate-600">
         {t("bon.loginPrompt")}{" "}
-        <Link href="/login" className="text-indigo-600 hover:underline">
+        <Link href="/login" className="text-brand-600 hover:underline">
           {t("nav.login")}
         </Link>
       </div>

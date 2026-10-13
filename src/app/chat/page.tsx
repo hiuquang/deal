@@ -63,7 +63,7 @@ function ChatContent() {
     return (
       <div className="py-12 text-center text-sm text-slate-600">
         {t("chat.loginPrompt")}{" "}
-        <Link href="/login" className="text-indigo-600 hover:underline">
+        <Link href="/login" className="text-brand-600 hover:underline">
           {t("nav.login")}
         </Link>
       </div>
@@ -93,7 +93,7 @@ function ChatContent() {
                 <button
                   onClick={() => router.push(`/chat?c=${conversation.id}`)}
                   className={`w-full border-b border-slate-100 px-3 py-3 text-left hover:bg-slate-50 ${
-                    conversation.id === selectedId ? "bg-indigo-50" : ""
+                    conversation.id === selectedId ? "bg-brand-50" : ""
                   }`}
                 >
                   <div className="flex items-center gap-2">
@@ -153,7 +153,7 @@ function ChatContent() {
                       ? `/buy-orders/${selected.buyOrder.id}`
                       : `/listings/${selected.listing.id}`
                   }
-                  className="line-clamp-1 text-sm font-semibold hover:text-indigo-600"
+                  className="line-clamp-1 text-sm font-semibold hover:text-brand-600"
                 >
                   {selected.kind === "buy_order" && (
                     <span className="mr-1 rounded bg-amber-100 px-1 text-[10px] font-semibold text-amber-700">
@@ -165,7 +165,7 @@ function ChatContent() {
                 <p className="text-xs text-slate-500">
                   <Link
                     href={`/users/${selected.otherPartyId}`}
-                    className="hover:text-indigo-600 hover:underline"
+                    className="hover:text-brand-600 hover:underline"
                   >
                     {t("chat.partner", { name: selected.otherPartyName })}
                     {selected.otherPartyIsVip && <VipBadge />}

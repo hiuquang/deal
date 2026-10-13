@@ -22,7 +22,7 @@ export function GameCategoryPicker({
   category,
   onGameChange,
   onCategoryChange,
-  activeGameClass = "bg-indigo-600 text-white",
+  activeGameClass = "bg-brand-600 text-white",
   gameLabel,
   categoryLabel,
 }: Props) {
@@ -60,7 +60,7 @@ export function GameCategoryPicker({
               type="button"
               onClick={() => onCategoryChange(c)}
               className={`rounded-full px-4 py-1.5 text-sm ${
-                category === c ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-600"
+                category === c ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600"
               }`}
             >
               {t(`cat.${c}` as MessageKey)}

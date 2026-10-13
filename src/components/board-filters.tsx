@@ -70,13 +70,16 @@ export function BoardTypeTabs({
   onChange: (value: BoardType) => void;
 }) {
   const { t } = useI18n();
+  // Màu của "Đang bán" / "Đăng mua" khớp màu thẻ tin tương ứng trên lưới
+  // (navy / hổ phách) — nút lọc và thẻ nó lọc ra phải cùng một mã màu, nếu
+  // không thì màu chỉ là trang trí.
   const tabs: { value: BoardType; label: string; active: string }[] = [
-    { value: "", label: t("home.tabAll"), active: "bg-slate-800 text-white" },
-    { value: "sell", label: t("home.tabTypeSell"), active: "bg-indigo-600 text-white" },
+    { value: "", label: t("home.tabAll"), active: "bg-slate-900 text-white" },
+    { value: "sell", label: t("home.tabTypeSell"), active: "bg-brand-600 text-white" },
     { value: "buy", label: t("home.tabTypeBuy"), active: "bg-amber-600 text-white" },
   ];
   return (
-    <div className="flex items-center gap-2" role="tablist">
+    <div className="flex items-center gap-1.5" role="tablist">
       {tabs.map((tab) => (
         <button
           key={`t-${tab.value}`}
@@ -84,10 +87,10 @@ export function BoardTypeTabs({
           role="tab"
           aria-selected={value === tab.value}
           onClick={() => onChange(tab.value)}
-          className={`rounded-full px-4 py-1.5 text-sm font-semibold transition ${
+          className={`shrink-0 rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${
             value === tab.value
               ? tab.active
-              : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-100"
+              : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
           }`}
         >
           {tab.label}
@@ -104,8 +107,6 @@ interface FilterTabsProps {
   onCategoryChange: (category: Category | "") => void;
   /** class khi tab game active — mỗi bảng tin 1 màu chủ đạo */
   activeGameClass?: string;
-  /** hiển thị bên phải (vd. đếm kết quả) */
-  children?: React.ReactNode;
 }
 
 export function FilterTabs({
@@ -113,8 +114,7 @@ export function FilterTabs({
   category,
   onGameChange,
   onCategoryChange,
-  activeGameClass = "bg-indigo-600 text-white",
-  children,
+  activeGameClass = "bg-brand-600 text-white",
 }: FilterTabsProps) {
   const { t } = useI18n();
   const gameTabs: { value: Game | ""; label: string }[] = [
@@ -128,33 +128,35 @@ export function FilterTabs({
     { value: "single", label: t("home.tabSingle") },
     { value: "box", label: t("home.tabBox") },
   ];
-  const inactive = "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-100";
+  const inactive = "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50";
+  const pill = "shrink-0 rounded-full px-3.5 py-1.5 text-sm font-medium transition";
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    // CUỘN NGANG thay vì xuống dòng. Bản cũ dùng flex-wrap nên trên màn 375px
+    // hàng cuối rơi ra "Khác | Tất cả" — dấu phân cách lạc giữa hàng, trông
+    // như lỗi hiển thị. `-mx-4 px-4` cho dải cuộn chạm mép máy (main có px-4).
+    <div className="-mx-4 flex items-center gap-1.5 overflow-x-auto px-4 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {gameTabs.map((tab) => (
         <button
           key={`g-${tab.value}`}
           onClick={() => onGameChange(tab.value)}
-          className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
-            game === tab.value ? activeGameClass : inactive
-          }`}
+          className={`${pill} ${game === tab.value ? activeGameClass : inactive}`}
         >
           {tab.label}
         </button>
       ))}
-      <span className="mx-1 text-slate-300">|</span>
+      <span aria-hidden="true" className="mx-1 h-5 w-px shrink-0 bg-slate-200" />
       {categoryTabs.map((tab) => (
         <button
           key={`c-${tab.value}`}
           onClick={() => onCategoryChange(tab.value)}
-          className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
-            category === tab.value ? "bg-violet-600 text-white" : inactive
-          }`}
+          // Cùng màu active với nhóm game: hai màu khác nhau (tím vs chàm) chỉ
+          // làm người ta tưởng hai nhóm khác loại nhau, trong khi cả hai đều
+          // là bộ lọc. Phân nhóm bằng vạch ngăn là đủ.
+          className={`${pill} ${category === tab.value ? activeGameClass : inactive}`}
         >
           {tab.label}
         </button>
       ))}
-      <span className="ml-auto text-xs text-slate-500">{children}</span>
     </div>
   );
 }

@@ -24,7 +24,7 @@ export function BackBar() {
   return (
     <button
       onClick={handleBack}
-      className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-indigo-700"
+      className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-brand-700"
     >
       <span aria-hidden="true">←</span> {t("common.back")}
     </button>

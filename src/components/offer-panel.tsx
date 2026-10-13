@@ -125,7 +125,7 @@ export function OfferPanel({ order }: { order: BuyOrderDto }) {
           {offers.map((offer) => (
             <li key={offer.id} className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
               <div className="flex items-baseline justify-between gap-2">
-                <span className="text-xs font-semibold text-indigo-700">
+                <span className="text-xs font-semibold text-brand-700">
                   {offer.sellerDisplayName}
                   {offer.sellerIsVip && <VipBadge />}
                   {offer.sellerRatingAvg !== null && (
@@ -149,7 +149,7 @@ export function OfferPanel({ order }: { order: BuyOrderDto }) {
                 (offer.status === "connected" && offer.conversationId ? (
                   <Link
                     href={`/chat?c=${offer.conversationId}`}
-                    className="mt-1 inline-block text-xs font-semibold text-indigo-600 hover:underline"
+                    className="mt-1 inline-block text-xs font-semibold text-brand-600 hover:underline"
                   >
                     {t("bod.openChat")} →
                   </Link>
@@ -157,7 +157,7 @@ export function OfferPanel({ order }: { order: BuyOrderDto }) {
                   <button
                     onClick={() => handleConnect(offer.id)}
                     disabled={busy}
-                    className="mt-1 rounded-lg bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+                    className="mt-1 rounded-lg bg-brand-600 px-3 py-1 text-xs font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
                   >
                     {t("bod.connect")}
                   </button>

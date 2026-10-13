@@ -188,11 +188,11 @@ export function ChatPanel({
             <div key={message.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
               <div
                 className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${
-                  mine ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-800"
+                  mine ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-800"
                 }`}
               >
                 <p className="whitespace-pre-wrap break-words">{message.body}</p>
-                <p className={`mt-0.5 text-[10px] ${mine ? "text-indigo-200" : "text-slate-400"}`}>
+                <p className={`mt-0.5 text-[10px] ${mine ? "text-brand-200" : "text-slate-400"}`}>
                   {formatDateTime(message.createdAt)}
                 </p>
               </div>
@@ -222,12 +222,12 @@ export function ChatPanel({
           aria-label={t("chat.placeholder")}
           // text-base (16px) trên mobile: iOS Safari tự phóng to trang khi focus
           // input có font < 16px — nguyên nhân vỡ layout chat trên iPhone.
-          className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-base focus:border-indigo-500 focus:outline-none sm:text-sm"
+          className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-base focus:border-brand-500 focus:outline-none sm:text-sm"
         />
         <button
           type="submit"
           disabled={busy || !draft.trim()}
-          className="rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+          className="rounded-lg bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
         >
           {t("chat.send")}
         </button>

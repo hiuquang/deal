@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## [0.31.0] — 2026-10-13 — Dọn giao diện: một ô tìm, tông màu theo logo, tin đăng lên màn hình đầu
+
+### Bối cảnh
+Đo lại thực tế sau 10 tuần: **chợ chạy** (16 tin, 9 giao dịch chốt) nhưng **công cụ tra giá không** (`reference-prices.txt` rỗng, 0 điểm giá tham khảo trên cả 5 trang giá). Trong khi đó trang chủ từ v0.28.0 mở đầu bằng *"Thẻ này giá bao nhiêu?"* — hứa một thứ web không đưa được. Chủ web chốt (2026-10-13): **chợ làm chính, tra giá gộp vào cùng ô tìm**, tông **trầm và đáng tin**.
+
+### Tính năng
+- **Một ô tìm duy nhất** (`components/board-search.tsx`): gõ một lần vừa lọc bảng tin vừa hiện lối rẽ "Xem dữ liệu giá" cho thẻ khớp tên. Thay cho **hai ô cách nhau 60px làm hai việc khác nhau** — lỗi do chính v0.28.0 gây ra khi chồng ô tra giá lên trên ô lọc sẵn có thay vì gộp.
+- **Hero thấp xuống còn ~1/5.** Bản cũ chiếm 550/812px màn hình điện thoại; cộng ô tìm thứ hai và ba hàng lọc thành **hơn 1.100px phải cuộn mới thấy tin đầu tiên**. Giờ tin đăng nằm trong màn hình đầu.
+- **Nhãn game/BOX rời khỏi ảnh** xuống khối chữ: trên artwork rực rỡ (BOX 30th Celebration) chữ đè lên chìm hẳn, không đọc được.
+
+### Kỹ thuật
+- **Hệ màu neo vào LOGO**: navy `#16305c` — vốn đã là `themeColor` trong `layout.tsx` từ lâu nhưng **không chỗ nào trong giao diện dùng tới**, nên web tím còn logo navy. Khai bằng `@theme` của Tailwind 4 (không phải biến CSS thường) để sinh ra utility thật `bg-brand-600` / `text-brand-700` / `border-brand-200`.
+- Quét toàn bộ `indigo-*` → `brand-*` và `violet-600/500` → `brand-600/500` trên **34 file**. Thang màu brand khai đủ 50–900 nên mọi sắc độ đang dùng đều có chỗ rơi vào.
+- Bỏ gradient tím ở hero. Lý do không chỉ là thẩm mỹ: DEAL bán **niềm tin** cho người sắp gặp người lạ ngoài đời để trao tiền và thẻ; gradient tím rực là thứ hay gặp ở web dựng vội nên dễ bị đánh đồng với web rác — đúng cảm giác "nhìn như web lừa đảo" chủ web từng mô tả.
+- Hàng lọc đổi `flex-wrap` → **cuộn ngang** (`-mx-4 px-4`, ẩn thanh cuộn). Bản cũ trên màn 375px rơi ra dòng `Khác | Tất cả` — dấu phân cách lạc giữa hàng, trông như lỗi hiển thị. Dấu `|` ký tự thay bằng vạch `w-px` không bao giờ xuống dòng một mình.
+- **Nhóm game và nhóm loại dùng CHUNG một màu active.** Trước đó chàm vs tím làm người ta tưởng hai nhóm khác bản chất, trong khi cả hai đều là bộ lọc; phân nhóm bằng vạch ngăn là đủ. Màu của "Đang bán"/"Đăng mua" thì GIỮ khác nhau vì khớp màu viền thẻ tin tương ứng trên lưới.
+- Ẩn nút xóa mặc định của `input[type=search]` (`[&::-webkit-search-cancel-button]:appearance-none`) — để nguyên thì nằm sát nút ✕ của mình thành **hai nút xóa cạnh nhau**.
+- Gỡ `components/price-search.tsx` (đã gộp vào `board-search.tsx`).
+- 299 test pass, tsc + build sạch, không migration. Verify trên trình duyệt ở **375px** và desktop: tin đăng vào màn hình đầu; gõ "dorimu" lọc đúng 3 tin **và** hiện gợi ý trỏ `/prices/cmrvhfj0o…` (đúng trang giá dorimu, trung vị ¥14.750); trang giá hiện số liệu đúng cho khách chưa đăng nhập; 0 lỗi console (401 `/api/auth/me` là hành vi đúng của khách).
+
 ## [0.30.1] — 2026-10-02 — Vá bảo mật (audit lần 2)
 
 ### Bảo mật

@@ -55,7 +55,7 @@ export function SellerSummary({ sellerId, listingId }: Props) {
       <div className="flex items-center justify-between">
         <div>
           <p className="font-medium">
-            <Link href={`/users/${sellerId}`} className="hover:text-indigo-700 hover:underline">
+            <Link href={`/users/${sellerId}`} className="hover:text-brand-700 hover:underline">
               <VipName name={summary.displayName} isVip={summary.isVip} />
             </Link>
           </p>
@@ -69,7 +69,7 @@ export function SellerSummary({ sellerId, listingId }: Props) {
               t("seller.noRating")
             )}
             ·{t("seller.trades", { n: summary.contributionCount })}·
-            <Link href={`/users/${sellerId}`} className="text-indigo-600 hover:underline">
+            <Link href={`/users/${sellerId}`} className="text-brand-600 hover:underline">
               {t("seller.viewProfile")}
             </Link>
           </p>

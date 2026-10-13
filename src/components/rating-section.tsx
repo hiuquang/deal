@@ -96,12 +96,12 @@ export function RatingSection({ tradeId }: { tradeId: string }) {
             maxLength={300}
             placeholder={t("rate.commentPlaceholder")}
             aria-label={t("rate.commentPlaceholder")}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
           />
           <button
             disabled={busy || score === 0}
             onClick={handleSubmit}
-            className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="rounded-lg bg-brand-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
           >
             {t("rate.submit")}
           </button>

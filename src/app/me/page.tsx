@@ -70,7 +70,7 @@ export default function MePage() {
     return (
       <div className="py-12 text-center text-sm text-slate-600">
         {t("me.loginPrompt")}{" "}
-        <Link href="/login" className="text-indigo-600 hover:underline">
+        <Link href="/login" className="text-brand-600 hover:underline">
           {t("nav.login")}
         </Link>
       </div>
@@ -80,7 +80,7 @@ export default function MePage() {
   return (
     <div className="space-y-6">
       <section className="flex flex-wrap items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-lg font-bold text-indigo-700">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 text-lg font-bold text-brand-700">
           {me.displayName.charAt(0)}
         </div>
         <div>
@@ -102,14 +102,14 @@ export default function MePage() {
           )}
           <Link
             href={`/users/${me.id}`}
-            className="mt-1 inline-block rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 hover:bg-indigo-100"
+            className="mt-1 inline-block rounded-lg border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700 hover:bg-brand-100"
           >
             {t("me.viewPublicProfile")}
           </Link>
         </div>
         <div className="ml-auto text-right">
           <p className="text-xs text-slate-500">{t("me.contribution")}</p>
-          <p className="text-2xl font-black text-indigo-700">{me.contributionCount}</p>
+          <p className="text-2xl font-black text-brand-700">{me.contributionCount}</p>
           <p className={`text-xs ${me.canViewPrices ? "text-emerald-600" : "text-amber-600"}`}>
             {me.canViewPrices ? t("me.canView") : t("me.locked")}
           </p>
@@ -142,7 +142,7 @@ export default function MePage() {
                       : `/listings/${item.targetId}`
                   }
                   className={`flex items-start gap-2 px-4 py-3 hover:bg-slate-50 ${
-                    item.isNew ? "bg-indigo-50/60" : ""
+                    item.isNew ? "bg-brand-50/60" : ""
                   }`}
                 >
                   <span aria-hidden="true" className="mt-0.5 text-base">
@@ -211,7 +211,7 @@ export default function MePage() {
                 <div className="min-w-0 flex-1">
                   <Link
                     href={`/chat?c=${trade.conversationId}`}
-                    className="line-clamp-1 text-sm font-medium hover:text-indigo-600"
+                    className="line-clamp-1 text-sm font-medium hover:text-brand-600"
                   >
                     {trade.card.nameJa}
                     {trade.quantity > 1 && (
@@ -244,7 +244,7 @@ export default function MePage() {
                 <div className="min-w-0 flex-1">
                   <Link
                     href={`/listings/${listing.id}`}
-                    className="line-clamp-1 text-sm font-medium hover:text-indigo-600"
+                    className="line-clamp-1 text-sm font-medium hover:text-brand-600"
                   >
                     {listing.card.nameJa}
                   </Link>

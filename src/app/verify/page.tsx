@@ -44,7 +44,7 @@ function VerifyContent() {
           <p className="text-sm text-slate-600">{t("verify.okDesc")}</p>
           <Link
             href="/"
-            className="inline-block rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
+            className="inline-block rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
           >
             {t("verify.okCta")}
           </Link>
@@ -55,7 +55,7 @@ function VerifyContent() {
           <div className="text-4xl">⚠️</div>
           <h1 className="text-lg font-bold">{t("verify.errTitle")}</h1>
           <p className="text-sm text-slate-600">{message}</p>
-          <Link href="/" className="text-sm text-indigo-600 hover:underline">
+          <Link href="/" className="text-sm text-brand-600 hover:underline">
             {t("verify.home")}
           </Link>
         </>

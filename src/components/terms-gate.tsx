@@ -44,11 +44,11 @@ export function TermsGate() {
         </ul>
         <p className="text-sm">
           {t("gate.fulltext")}{" "}
-          <Link href="/terms" target="_blank" className="text-indigo-600 underline">
+          <Link href="/terms" target="_blank" className="text-brand-600 underline">
             {t("legal.terms")}
           </Link>
           ·
-          <Link href="/privacy" target="_blank" className="text-indigo-600 underline">
+          <Link href="/privacy" target="_blank" className="text-brand-600 underline">
             {t("legal.privacy")}
           </Link>
         </p>
@@ -57,7 +57,7 @@ export function TermsGate() {
             type="checkbox"
             checked={agree}
             onChange={(e) => setAgree(e.target.checked)}
-            className="mt-0.5 h-4 w-4 accent-indigo-600"
+            className="mt-0.5 h-4 w-4 accent-brand-600"
           />
           <span>{t("gate.agreeLabel")}</span>
         </label>
@@ -65,7 +65,7 @@ export function TermsGate() {
           <button
             onClick={handleAccept}
             disabled={!agree || busy}
-            className="flex-1 rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="flex-1 rounded-lg bg-brand-600 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
           >
             {t("gate.accept")}
           </button>

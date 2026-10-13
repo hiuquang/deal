@@ -6,7 +6,7 @@ import type { BuyOrderDto, ListingDto } from "@/lib/types";
 import { ListingCard } from "@/components/listing-card";
 import { BuyOrderCard } from "@/components/buy-order-card";
 import { BoardTypeTabs, FilterTabs, useBoardFilters } from "@/components/board-filters";
-import { PriceSearch } from "@/components/price-search";
+import { BoardSearch } from "@/components/board-search";
 import { boardKey, type BoardType } from "@/lib/board";
 import { Empty, ErrorBox, Loading } from "@/components/ui";
 import { useI18n } from "@/lib/i18n";
@@ -116,60 +116,34 @@ function HomeContent({ initial }: { initial: InitialBoard | null }) {
   }, [listings, buyOrders]);
 
   return (
-    <div className="space-y-6">
-      {/* Cửa trước là TRA GIÁ, không phải bảng tin: tra giá dùng được với đúng
-          một người, còn chợ cần hai phía. Xem chú thích ở `price-search.tsx`. */}
-      <section className="rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-8 text-white">
-        <h1 className="text-2xl font-black sm:text-3xl">{t("home.heroTitle")}</h1>
-        <p className="mt-2 text-sm text-indigo-100">{t("home.heroDesc")}</p>
-        <div className="mt-5">
-          <PriceSearch />
-          <p className="mt-2 text-xs text-indigo-200">{t("psearch.hint")}</p>
-        </div>
+    // space-y-4 (không phải 6): mỗi nấc khoảng cách ở đây đẩy lưới tin xuống
+    // thêm ~16px, mà mục tiêu cả đợt này là tin đăng phải nằm trong màn hình
+    // đầu tiên trên điện thoại.
+    <div className="space-y-4">
+      {/* Hero CỐ Ý thấp (~90px trên điện thoại). Bản cũ chiếm 550/812px màn
+          hình, cộng ô tìm thứ hai và ba hàng lọc thành hơn 1.100px phải cuộn
+          mới thấy tin đầu tiên — người bấm link từ Facebook bỏ đi trước khi
+          thấy nội dung. Chợ là nội dung, hero chỉ là tấm biển. */}
+      <section className="rounded-2xl bg-brand-600 px-5 py-4 text-white sm:px-6 sm:py-5">
+        <h1 className="text-lg font-bold tracking-tight sm:text-xl">{t("home.heroTitle")}</h1>
+        <p className="mt-1 text-xs text-brand-100 sm:text-sm">{t("home.heroDesc")}</p>
       </section>
 
-      <div className="relative">
-        <svg
-          className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
-          aria-hidden="true"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.3-4.3M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z" />
-        </svg>
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t("home.searchPlaceholder")}
-          aria-label={t("home.searchPlaceholder")}
-          maxLength={100}
-          className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+      <BoardSearch value={query} onChange={setQuery} />
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <BoardTypeTabs value={boardType} onChange={setBoardType} />
+          <span className="shrink-0 text-xs text-slate-500">{t("home.count", { n: total })}</span>
+        </div>
+
+        <FilterTabs
+          game={game}
+          category={category}
+          onGameChange={setGame}
+          onCategoryChange={setCategory}
         />
-        {query && (
-          <button
-            type="button"
-            onClick={() => setQuery("")}
-            aria-label={t("home.searchClear")}
-            className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-          >
-            ✕
-          </button>
-        )}
       </div>
-
-      <BoardTypeTabs value={boardType} onChange={setBoardType} />
-
-      <FilterTabs
-        game={game}
-        category={category}
-        onGameChange={setGame}
-        onCategoryChange={setCategory}
-      >
-        {t("home.count", { n: total })}
-      </FilterTabs>
 
       {loading ? (
         <Loading />

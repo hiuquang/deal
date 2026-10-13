@@ -46,7 +46,7 @@ function ResetContent() {
         <p className="text-sm text-slate-600">{t("reset.doneDesc")}</p>
         <Link
           href="/login"
-          className="inline-block rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
+          className="inline-block rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
         >
           {t("auth.submitLogin")}
         </Link>
@@ -55,7 +55,7 @@ function ResetContent() {
   }
 
   const input =
-    "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none";
+    "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none";
 
   return (
     <div className="mx-auto max-w-sm space-y-4 py-8">
@@ -93,7 +93,7 @@ function ResetContent() {
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded-lg bg-indigo-600 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+          className="w-full rounded-lg bg-brand-600 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
         >
           {busy ? t("reset.submitting") : t("reset.submit")}
         </button>

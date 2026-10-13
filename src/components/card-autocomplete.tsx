@@ -104,7 +104,7 @@ export function CardAutocomplete({ game, category, onSelect }: Props) {
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         placeholder={placeholder}
         aria-label={placeholder}
-        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
       />
       {open && (results.length > 0 || canCreate) && (
         <ul className="absolute z-10 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-slate-200 bg-white shadow-lg">
@@ -113,7 +113,7 @@ export function CardAutocomplete({ game, category, onSelect }: Props) {
               <button
                 type="button"
                 onMouseDown={() => choose(card)}
-                className="flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-indigo-50"
+                className="flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-brand-50"
               >
                 <span className="font-medium">{card.nameJa}</span>
                 <span className="text-xs text-slate-500">
@@ -129,7 +129,7 @@ export function CardAutocomplete({ game, category, onSelect }: Props) {
                 type="button"
                 onMouseDown={createNew}
                 disabled={creating}
-                className="flex w-full items-center gap-1 px-3 py-2 text-left text-sm font-medium text-indigo-600 hover:bg-indigo-50 disabled:opacity-50"
+                className="flex w-full items-center gap-1 px-3 py-2 text-left text-sm font-medium text-brand-600 hover:bg-brand-50 disabled:opacity-50"
               >
                 ＋ {t("sell.createOther", { name: query.trim() })}
               </button>

@@ -123,7 +123,7 @@ export default function TermsPage() {
         <p>Liên hệ: deal.tcg.jp@gmail.com</p>
         <p>
           Liên quan:{" "}
-          <Link href="/privacy" className="text-indigo-600 hover:underline">
+          <Link href="/privacy" className="text-brand-600 hover:underline">
             Chính sách bảo mật
           </Link>
         </p>

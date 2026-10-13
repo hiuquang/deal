@@ -61,19 +61,15 @@ export const MESSAGES = {
 
   // ---- Trang chủ ----
   "home.heroTitle": {
-    vi: "Thẻ này giá bao nhiêu?",
-    en: "What's this card worth?",
+    vi: "Trade thẻ trực tiếp, phí 0%",
+    en: "Trade cards directly, zero fees",
   },
   "home.heroDesc": {
-    vi: "Tra giá thẻ Pokémon và One Piece tại Nhật, bằng tiếng Việt. Và trade trực tiếp với người chơi khác, phí 0%.",
-    en: "Look up Pokémon and One Piece card prices in Japan. And trade directly with other players, zero fees.",
+    vi: "Mua bán thẻ Pokémon và One Piece với người chơi khác tại Nhật — không qua trung gian, không mất phí.",
+    en: "Buy and sell Pokémon and One Piece cards with other players in Japan — no middleman, no fees.",
   },
-  "psearch.placeholder": { vi: "Nhập tên thẻ để tra giá…", en: "Type a card name to look up its price…" },
-  "psearch.empty": { vi: "Không tìm thấy thẻ nào khớp.", en: "No matching cards." },
-  "psearch.hint": {
-    vi: "Gõ tên thẻ tiếng Nhật hoặc tiếng Anh. Không cần đăng nhập.",
-    en: "Type the card name in Japanese or English. No account needed.",
-  },
+  "bsearch.priceHeading": { vi: "Xem dữ liệu giá", en: "View price data" },
+  "bsearch.priceCta": { vi: "Xem giá →", en: "Prices →" },
   "home.tabAll": { vi: "Tất cả", en: "All" },
   "home.tabPokemon": { vi: "Pokémon", en: "Pokémon" },
   "home.tabOnepiece": { vi: "One Piece", en: "One Piece" },
@@ -94,8 +90,8 @@ export const MESSAGES = {
     en: "No buy requests yet.",
   },
   "home.searchPlaceholder": {
-    vi: "Tìm theo tên thẻ, set, số thẻ hoặc tên ga",
-    en: "Search by card name, set, number or station",
+    vi: "Tìm thẻ, set, số thẻ hoặc tên ga — hoặc xem giá",
+    en: "Search card, set, number or station — or view prices",
   },
   "home.searchClear": { vi: "Xóa tìm kiếm", en: "Clear search" },
   "home.empty": {

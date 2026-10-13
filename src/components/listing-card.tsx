@@ -33,21 +33,17 @@ export function ListingCard({ listing }: { listing: ListingDto }) {
             SOLD
           </span>
         )}
-        <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">
-          {t(`game.${listing.card.game}` as MessageKey)}
-        </span>
-        {listing.card.category === "box" && (
-          <span className="absolute left-2 top-9 rounded-full bg-violet-600/90 px-2 py-0.5 text-xs font-bold text-white">
-            BOX
-          </span>
-        )}
+        {/* Nhãn game + BOX ĐÃ CHUYỂN xuống khối chữ bên dưới: đè lên ảnh thì
+            trên artwork rực rỡ (vd. BOX 30th Celebration) chữ chìm hẳn, không
+            đọc được. Trên ảnh chỉ còn thứ phải thấy ngay cả khi lướt nhanh:
+            trạng thái, số lượng, nút lưu. */}
         {listing.status !== "active" && (
           <span className="absolute right-2 top-2 rounded-full bg-slate-800/80 px-2 py-0.5 text-xs text-white">
             {t(`lstatus.${listing.status}` as MessageKey)}
           </span>
         )}
         {listing.quantity > 1 && (
-          <span className="absolute bottom-2 left-2 rounded-full bg-indigo-600/90 px-2 py-0.5 text-xs font-bold text-white">
+          <span className="absolute bottom-2 left-2 rounded-full bg-slate-900/75 px-2 py-0.5 text-xs font-bold text-white">
             ×{listing.quantity}
           </span>
         )}
@@ -56,23 +52,33 @@ export function ListingCard({ listing }: { listing: ListingDto }) {
         </span>
       </div>
       <div className="flex flex-1 flex-col gap-1 p-3">
-        <p className="line-clamp-1 text-sm font-semibold group-hover:text-indigo-600">
+        <p className="line-clamp-1 text-sm font-semibold group-hover:text-brand-600">
           {listing.card.nameJa}
         </p>
         {cardSpec(listing.card) && (
-          <p className="text-xs text-slate-500">{cardSpec(listing.card)}</p>
+          <p className="line-clamp-1 text-xs text-slate-500">{cardSpec(listing.card)}</p>
         )}
-        <p className="text-xs text-slate-500">
-          {t(`cond.${listing.condition}` as MessageKey)}
-        </p>
+        <div className="flex flex-wrap items-center gap-1">
+          <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-600">
+            {t(`game.${listing.card.game}` as MessageKey)}
+          </span>
+          {listing.card.category === "box" && (
+            <span className="rounded bg-brand-50 px-1.5 py-0.5 text-[11px] font-bold text-brand-700 ring-1 ring-brand-200">
+              BOX
+            </span>
+          )}
+          <span className="text-xs text-slate-500">
+            {t(`cond.${listing.condition}` as MessageKey)}
+          </span>
+        </div>
         {listing.station && (
           <p className="line-clamp-1 text-xs text-slate-400">📍 {listing.station}</p>
         )}
-        <div className="mt-auto flex items-center justify-between pt-1">
-          <span className="text-base font-bold text-indigo-700">
+        <div className="mt-auto flex items-center justify-between gap-1 pt-1">
+          <span className="text-base font-bold text-brand-700">
             {listing.askingPriceJpy ? formatJpy(listing.askingPriceJpy) : t("common.negotiable")}
           </span>
-          <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
+          <span className="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
             {t(`ttype.${listing.tradeType}` as MessageKey)}
           </span>
         </div>

@@ -129,7 +129,7 @@ export function TradePanel({ conversation, myUserId, onTradeChange }: Props) {
       onChange={(e) => setPrice(e.target.value)}
       placeholder={isBuyOrder ? t("trade.unitPricePlaceholder") : t("trade.pricePlaceholder")}
       aria-label={isBuyOrder ? t("trade.unitPricePlaceholder") : t("trade.pricePlaceholder")}
-      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
     />
   );
 
@@ -143,7 +143,7 @@ export function TradePanel({ conversation, myUserId, onTradeChange }: Props) {
       onChange={(e) => setQty(e.target.value)}
       placeholder={t("trade.qtyPlaceholder")}
       aria-label={t("trade.qtyPlaceholder")}
-      className="w-24 shrink-0 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+      className="w-24 shrink-0 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
     />
   );
 
@@ -189,7 +189,7 @@ export function TradePanel({ conversation, myUserId, onTradeChange }: Props) {
               value={condition}
               onChange={(e) => setCondition(e.target.value as Condition)}
               aria-label={t("trade.conditionLabel")}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
             >
               {conditionKeys.map((value) => (
                 <option key={value} value={value}>

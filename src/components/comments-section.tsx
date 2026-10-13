@@ -62,7 +62,7 @@ export function CommentsSection({ target }: { target: CommentTarget }) {
           {comments.map((comment) => (
             <li key={comment.id} className="rounded-lg bg-slate-50 px-3 py-2">
               <div className="flex items-baseline justify-between gap-2">
-                <span className="text-xs font-semibold text-indigo-700">
+                <span className="text-xs font-semibold text-brand-700">
                   <VipName name={comment.userDisplayName} isVip={comment.userIsVip} />
                 </span>
                 <span className="text-[10px] text-slate-400">
@@ -85,12 +85,12 @@ export function CommentsSection({ target }: { target: CommentTarget }) {
             maxLength={500}
             placeholder={t("cmt.placeholder")}
             aria-label={t("cmt.title")}
-            className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
           />
           <button
             type="submit"
             disabled={busy || !draft.trim()}
-            className="shrink-0 rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="shrink-0 rounded-lg bg-brand-600 px-4 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
           >
             {t("cmt.post")}
           </button>
@@ -98,7 +98,7 @@ export function CommentsSection({ target }: { target: CommentTarget }) {
       ) : (
         <p className="text-xs text-slate-500">
           {t("cmt.loginPrefix")}{" "}
-          <Link href="/login" className="text-indigo-600 hover:underline">
+          <Link href="/login" className="text-brand-600 hover:underline">
             {t("buy.loginLink")}
           </Link>
           {t("buy.loginSuffix")}

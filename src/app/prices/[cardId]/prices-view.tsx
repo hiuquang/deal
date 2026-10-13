@@ -189,7 +189,7 @@ export function PricesView({ cardId }: { cardId: string }) {
           {!me && (
             <Link
               href="/register"
-              className="inline-block rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
+              className="inline-block rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
             >
               {t("lock.ctaRegister")}
             </Link>
@@ -224,7 +224,7 @@ export function PricesView({ cardId }: { cardId: string }) {
               ].map((item) => (
                 <div key={item.label} className="rounded-xl border border-slate-200 bg-white p-4">
                   <p className="text-xs text-slate-500">{item.label}</p>
-                  <p className="text-lg font-bold text-indigo-700">{item.value}</p>
+                  <p className="text-lg font-bold text-brand-700">{item.value}</p>
                 </div>
               ))}
             </div>
@@ -233,14 +233,14 @@ export function PricesView({ cardId }: { cardId: string }) {
           {/* Chưa đóng góp: số liệu tổng ở trên vẫn hiện (đủ để tin là dữ liệu
               có thật), chỉ biểu đồ + danh sách từng giao dịch mới phải đổi. */}
           {locked ? (
-            <div className="space-y-3 rounded-2xl border border-indigo-200 bg-indigo-50/50 p-6 text-center">
-              <p className="text-sm font-semibold text-indigo-900">
+            <div className="space-y-3 rounded-2xl border border-brand-200 bg-brand-50/50 p-6 text-center">
+              <p className="text-sm font-semibold text-brand-900">
                 {t("lock.teaser", { n: recordCount })}
               </p>
               <p className="text-xs text-slate-500">{t("lock.note")}</p>
               <Link
                 href={me ? "/" : "/register"}
-                className="inline-block rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
+                className="inline-block rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
               >
                 {me ? t("lock.ctaBrowse") : t("lock.ctaRegister")}
               </Link>

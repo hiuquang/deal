@@ -61,9 +61,9 @@ export function PurchasePanel({ listing }: { listing: ListingDto }) {
     // (v0.26.0): khách bấm vào thật, lời mời sai này thành nổi bật.
     if (listing.status !== "active") return null;
     return (
-      <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-center text-sm">
+      <div className="rounded-xl border border-brand-200 bg-brand-50 p-4 text-center text-sm">
         {t("buy.loginPrompt")}{" "}
-        <Link href="/login" className="font-semibold text-indigo-700 underline">
+        <Link href="/login" className="font-semibold text-brand-700 underline">
           {t("buy.loginLink")}
         </Link>
         {t("buy.loginSuffix")}
@@ -81,7 +81,7 @@ export function PurchasePanel({ listing }: { listing: ListingDto }) {
           <button
             onClick={() => run(() => api.sendPurchaseRequest(listing.id))}
             disabled={busy || listing.status !== "active"}
-            className="w-full rounded-lg bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="w-full rounded-lg bg-brand-600 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
           >
             {t("buy.send")}
           </button>
@@ -164,7 +164,7 @@ export function PurchasePanel({ listing }: { listing: ListingDto }) {
                       router.push(`/chat?c=${conversationId}`);
                     })
                   }
-                  className="shrink-0 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+                  className="shrink-0 rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
                 >
                   {t("buy.connect")}
                 </button>

@@ -114,7 +114,7 @@ export function ListingDetail({ initial }: { initial: ListingDto }) {
           <div className="space-y-2">
             {actionError && <ErrorBox message={actionError} />}
             <div className="flex flex-wrap items-baseline gap-3">
-              <span className="text-3xl font-black text-indigo-700">
+              <span className="text-3xl font-black text-brand-700">
                 {listing.askingPriceJpy ? formatJpy(listing.askingPriceJpy) : t("common.negotiable")}
               </span>
               <span className="rounded bg-slate-100 px-2 py-0.5 text-xs">
@@ -126,7 +126,7 @@ export function ListingDetail({ initial }: { initial: ListingDto }) {
               {isOwner && listing.status === "active" && !editingPrice && (
                 <button
                   onClick={startEditPrice}
-                  className="ml-auto rounded-lg border border-indigo-200 px-3 py-1 text-xs font-semibold text-indigo-700 hover:bg-indigo-50"
+                  className="ml-auto rounded-lg border border-brand-200 px-3 py-1 text-xs font-semibold text-brand-700 hover:bg-brand-50"
                 >
                   {t("detail.editPrice")}
                 </button>
@@ -139,7 +139,7 @@ export function ListingDetail({ initial }: { initial: ListingDto }) {
               )}
             </div>
             {isOwner && editingPrice && (
-              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50/50 p-3">
+              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-brand-200 bg-brand-50/50 p-3">
                 <span className="text-sm text-slate-500">¥</span>
                 <input
                   type="number"
@@ -152,7 +152,7 @@ export function ListingDetail({ initial }: { initial: ListingDto }) {
                 <button
                   onClick={handleSavePrice}
                   disabled={busy}
-                  className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+                  className="rounded-lg bg-brand-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
                 >
                   {t("common.save")}
                 </button>
@@ -231,7 +231,7 @@ export function ListingDetail({ initial }: { initial: ListingDto }) {
             />
             <Link
               href={`/prices/${listing.card.id}`}
-              className="block w-full rounded-lg border border-indigo-200 bg-indigo-50 py-2.5 text-center text-sm font-semibold text-indigo-700 hover:bg-indigo-100"
+              className="block w-full rounded-lg border border-brand-200 bg-brand-50 py-2.5 text-center text-sm font-semibold text-brand-700 hover:bg-brand-100"
             >
               {t("detail.viewPrices")}
             </Link>

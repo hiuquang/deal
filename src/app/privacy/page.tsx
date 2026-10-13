@@ -83,7 +83,7 @@ export default function PrivacyPage() {
         <p>Liên hệ: deal.tcg.jp@gmail.com</p>
         <p>
           Liên quan:{" "}
-          <Link href="/terms" className="text-indigo-600 hover:underline">
+          <Link href="/terms" className="text-brand-600 hover:underline">
             Điều khoản sử dụng
           </Link>
         </p>

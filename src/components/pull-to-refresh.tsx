@@ -132,7 +132,7 @@ export function PullToRefresh() {
       className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center"
       style={{ transform: `translateY(${dangTaiLai ? NGUONG_PX : keo}px)` }}
     >
-      <div className="flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-xs font-semibold text-indigo-700 shadow-lg ring-1 ring-slate-200">
+      <div className="flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-xs font-semibold text-brand-700 shadow-lg ring-1 ring-slate-200">
         <span
           aria-hidden="true"
           className={`inline-block ${dangTaiLai ? "animate-spin" : "transition-transform"}`}

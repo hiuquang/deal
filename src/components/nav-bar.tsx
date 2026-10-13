@@ -38,8 +38,8 @@ function LanguageSwitcher() {
                   setLocale(option.value);
                   setOpen(false);
                 }}
-                className={`flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-indigo-50 ${
-                  option.value === locale ? "bg-indigo-50 font-semibold text-indigo-700" : ""
+                className={`flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-brand-50 ${
+                  option.value === locale ? "bg-brand-50 font-semibold text-brand-700" : ""
                 }`}
               >
                 <span>{option.flag}</span> {option.label}
@@ -155,7 +155,7 @@ export function NavBar() {
             <>
               <Link
                 href="/me"
-                className="relative flex max-w-[10rem] items-center rounded-md px-3 py-1.5 font-medium text-indigo-700 hover:bg-indigo-50"
+                className="relative flex max-w-[10rem] items-center rounded-md px-3 py-1.5 font-medium text-brand-700 hover:bg-brand-50"
               >
                 <span className="truncate">{me.displayName}</span>
                 {me.isVip && <VipBadge />}
@@ -179,7 +179,7 @@ export function NavBar() {
               </Link>
               <Link
                 href="/register"
-                className="rounded-md bg-indigo-600 px-3 py-1.5 font-medium text-white hover:bg-indigo-700"
+                className="rounded-md bg-brand-600 px-3 py-1.5 font-medium text-white hover:bg-brand-700"
               >
                 {t("nav.register")}
               </Link>
@@ -250,7 +250,7 @@ export function NavBar() {
             <>
               <Link
                 href="/me"
-                className="flex items-center gap-2 rounded-md px-2 py-2.5 font-medium text-indigo-700 hover:bg-indigo-50"
+                className="flex items-center gap-2 rounded-md px-2 py-2.5 font-medium text-brand-700 hover:bg-brand-50"
               >
                 <span className="truncate">{me.displayName}</span>
                 {me.isVip && <VipBadge />}
@@ -270,7 +270,7 @@ export function NavBar() {
               </Link>
               <Link
                 href="/register"
-                className="mt-1 block rounded-md bg-indigo-600 px-2 py-2.5 text-center font-medium text-white hover:bg-indigo-700"
+                className="mt-1 block rounded-md bg-brand-600 px-2 py-2.5 text-center font-medium text-white hover:bg-brand-700"
               >
                 {t("nav.register")}
               </Link>

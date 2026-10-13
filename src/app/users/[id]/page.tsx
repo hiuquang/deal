@@ -70,7 +70,7 @@ export default function UserProfilePage({
         <div className="flex flex-wrap items-start gap-4">
           <div
             aria-hidden="true"
-            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-2xl font-black text-white"
+            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-500 to-brand-600 text-2xl font-black text-white"
           >
             {profile.displayName.charAt(0).toUpperCase()}
           </div>
@@ -78,7 +78,7 @@ export default function UserProfilePage({
             <h1 className="truncate text-xl font-bold">
               <VipName name={profile.displayName} isVip={profile.isVip} />
             </h1>
-            <p className="text-sm font-medium text-indigo-700">
+            <p className="text-sm font-medium text-brand-700">
               {t(`profile.tier.${profile.tier}` as MessageKey)}{" "}
               {t("profile.level", { n: profile.level })}
             </p>
@@ -95,7 +95,7 @@ export default function UserProfilePage({
             <div className="mt-2 max-w-xs">
               <div className="h-2 overflow-hidden rounded-full bg-slate-100">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500"
+                  className="h-full rounded-full bg-gradient-to-r from-brand-500 to-brand-500"
                   style={{ width: `${xpPercent}%` }}
                 />
               </div>
@@ -175,7 +175,7 @@ export default function UserProfilePage({
             {profile.badges.map((badge) => (
               <span
                 key={badge}
-                className="rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700"
+                className="rounded-full border border-brand-100 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700"
               >
                 {t(`badge.${badge}` as MessageKey)}
               </span>

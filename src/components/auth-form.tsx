@@ -40,7 +40,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   }
 
   const input =
-    "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none";
+    "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none";
 
   return (
     <div className="mx-auto max-w-sm space-y-4 py-8">
@@ -86,7 +86,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             {mode === "login" && (
               <Link
                 href="/forgot-password"
-                className="text-xs text-indigo-600 hover:underline"
+                className="text-xs text-brand-600 hover:underline"
               >
                 {t("auth.forgot")}
               </Link>
@@ -108,15 +108,15 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
               type="checkbox"
               checked={agree}
               onChange={(e) => setAgree(e.target.checked)}
-              className="mt-0.5 h-4 w-4 accent-indigo-600"
+              className="mt-0.5 h-4 w-4 accent-brand-600"
             />
             <span>
               {t("auth.agreePrefix")}
-              <Link href="/terms" target="_blank" className="text-indigo-600 hover:underline">
+              <Link href="/terms" target="_blank" className="text-brand-600 hover:underline">
                 {t("legal.terms")}
               </Link>
               {t("auth.agreeMid")}
-              <Link href="/privacy" target="_blank" className="text-indigo-600 hover:underline">
+              <Link href="/privacy" target="_blank" className="text-brand-600 hover:underline">
                 {t("legal.privacy")}
               </Link>
               {t("auth.agreeSuffix")}
@@ -126,7 +126,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         <button
           type="submit"
           disabled={busy || (mode === "register" && !agree)}
-          className="w-full rounded-lg bg-indigo-600 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+          className="w-full rounded-lg bg-brand-600 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
         >
           {busy
             ? t("auth.sending")
@@ -139,14 +139,14 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         {mode === "login" ? (
           <>
             {t("auth.noAccount")}{" "}
-            <Link href="/register" className="text-indigo-600 hover:underline">
+            <Link href="/register" className="text-brand-600 hover:underline">
               {t("nav.register")}
             </Link>
           </>
         ) : (
           <>
             {t("auth.haveAccount")}{" "}
-            <Link href="/login" className="text-indigo-600 hover:underline">
+            <Link href="/login" className="text-brand-600 hover:underline">
               {t("nav.login")}
             </Link>
           </>

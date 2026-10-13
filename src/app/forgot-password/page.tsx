@@ -36,7 +36,7 @@ export default function ForgotPasswordPage() {
           <strong>{email}</strong>
           {t("forgot.sentDesc")}
         </p>
-        <Link href="/login" className="text-sm text-indigo-600 hover:underline">
+        <Link href="/login" className="text-sm text-brand-600 hover:underline">
           {t("forgot.back")}
         </Link>
       </div>
@@ -59,19 +59,19 @@ export default function ForgotPasswordPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
           />
         </div>
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded-lg bg-indigo-600 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+          className="w-full rounded-lg bg-brand-600 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
         >
           {busy ? t("auth.sending") : t("forgot.submit")}
         </button>
       </form>
       <p className="text-center text-sm text-slate-500">
-        <Link href="/login" className="text-indigo-600 hover:underline">
+        <Link href="/login" className="text-brand-600 hover:underline">
           {t("forgot.back")}
         </Link>
       </p>

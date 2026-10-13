@@ -11,7 +11,7 @@ type DevEmail = { id: string; to: string; subject: string; body: string; created
 function linkify(body: string) {
   return body.split(/(https?:\/\/\S+)/g).map((part, i) =>
     part.startsWith("http") ? (
-      <a key={i} href={part} className="break-all text-indigo-600 underline">
+      <a key={i} href={part} className="break-all text-brand-600 underline">
         {part}
       </a>
     ) : (

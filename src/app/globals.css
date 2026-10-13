@@ -1,7 +1,42 @@
 @import "tailwindcss";
 
+/* ───────────────────────────────────────────────────────────────────────────
+   HỆ MÀU (v0.31.0)
+
+   Neo vào chính LOGO: navy #16305c — vốn đã là `themeColor` trong layout.tsx
+   nhưng trước đó không chỗ nào trong giao diện dùng tới, nên web tím còn logo
+   navy, hai thứ không liên quan gì nhau.
+
+   Chọn tông trầm theo quyết định chủ web (2026-10-13): DEAL bán NIỀM TIN cho
+   người sắp gặp người lạ ngoài đời để trao tiền và thẻ. Gradient tím rực là
+   thứ hay gặp ở web dựng vội nên dễ bị đánh đồng với web rác — đúng cảm giác
+   "nhìn như web lừa đảo" mà chủ web mô tả.
+
+   Khai bằng @theme (Tailwind 4) chứ không phải biến CSS thường: cách này sinh
+   ra utility thật (bg-brand-600, text-brand-700, border-brand-200…) nên dùng
+   được ở mọi nơi như màu có sẵn, thay vì phải viết style tay.
+   ─────────────────────────────────────────────────────────────────────────── */
+@theme {
+  --color-brand-50: #f2f5fa;
+  --color-brand-100: #e0e8f3;
+  --color-brand-200: #c2d0e6;
+  --color-brand-300: #93aed1;
+  --color-brand-400: #5c82b2;
+  --color-brand-500: #345e93;
+  --color-brand-600: #16305c; /* navy của logo */
+  --color-brand-700: #12284d;
+  --color-brand-800: #0e1f3c;
+  --color-brand-900: #0a162b;
+
+  /* Vàng đồng trong logo — dùng DÈ, chỉ cho điểm nhấn nhỏ. Vàng trên nền
+     trắng tương phản kém nên không bao giờ dùng làm chữ thường. */
+  --color-gold-400: #d8aa52;
+  --color-gold-500: #bb8c33;
+  --color-gold-600: #96701f;
+}
+
 :root {
-  --background: #f8fafc;
+  --background: #f6f7f9;
   --foreground: #0f172a;
 }
 

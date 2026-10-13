@@ -40,14 +40,7 @@ export function BuyOrderCard({ order }: { order: BuyOrderDto }) {
             <span className="px-2 text-center text-xs font-medium">{t("home.badgeBuy")}</span>
           </div>
         )}
-        <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white">
-          {t(`game.${order.card.game}` as MessageKey)}
-        </span>
-        {order.card.category === "box" && (
-          <span className="absolute left-2 top-9 rounded-full bg-violet-600/90 px-2 py-0.5 text-xs font-bold text-white">
-            BOX
-          </span>
-        )}
+        {/* Nhãn game + BOX nằm ở khối chữ bên dưới — xem chú thích ở listing-card.tsx. */}
         <span className="absolute right-2 top-2 rounded-full bg-amber-500 px-2 py-0.5 text-xs font-bold text-white">
           {t("home.badgeBuy")}
         </span>
@@ -63,8 +56,18 @@ export function BuyOrderCard({ order }: { order: BuyOrderDto }) {
           {order.card.nameJa}
         </p>
         {cardSpec(order.card) && (
-          <p className="text-xs text-slate-500">{cardSpec(order.card)}</p>
+          <p className="line-clamp-1 text-xs text-slate-500">{cardSpec(order.card)}</p>
         )}
+        <div className="flex flex-wrap items-center gap-1">
+          <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-600">
+            {t(`game.${order.card.game}` as MessageKey)}
+          </span>
+          {order.card.category === "box" && (
+            <span className="rounded bg-brand-50 px-1.5 py-0.5 text-[11px] font-bold text-brand-700 ring-1 ring-brand-200">
+              BOX
+            </span>
+          )}
+        </div>
         <div className="mt-auto flex items-center justify-between gap-1 pt-1">
           <span className="text-sm font-bold text-amber-700">
             {order.maxUnitPriceJpy

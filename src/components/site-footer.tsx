@@ -8,10 +8,10 @@ export function SiteFooter() {
   return (
     <footer className="mx-auto max-w-5xl space-y-2 px-4 py-8 text-center text-xs text-slate-400">
       <p className="space-x-3">
-        <Link href="/terms" className="hover:text-indigo-600 hover:underline">
+        <Link href="/terms" className="hover:text-brand-600 hover:underline">
           {t("legal.terms")}
         </Link>
-        <Link href="/privacy" className="hover:text-indigo-600 hover:underline">
+        <Link href="/privacy" className="hover:text-brand-600 hover:underline">
           {t("legal.privacy")}
         </Link>
       </p>
