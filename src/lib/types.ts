@@ -404,12 +404,46 @@ export interface PriceStatsDto {
  * Giá tham khảo từ nguồn ngoài (vd Round One) — KHÔNG phải giao dịch trên DEAL.
  * quantity = số lượng (pack) quan sát; priceJpy = đơn giá/pack.
  */
+/**
+ * Loại giá tham khảo. KHÔNG trộn ba loại vào cùng một trung bình — shop thu
+ * vào luôn thấp hơn giá rao, trộn ra con số vô nghĩa mà nhìn vẫn như thật.
+ */
+export type ReferenceKind = "rao" | "ban" | "kaitori";
+
 export interface ReferencePriceDto {
   source: string;
+  kind: ReferenceKind;
   quantity: number;
   priceJpy: number;
   note: string | null;
+  /** Link bài gốc (tweet 買取 của shop) — null với dữ liệu nhập tay. */
+  sourceUrl: string | null;
   recordedAt: string;
+}
+
+/** Giá tham khảo gom theo loại — mỗi loại có thống kê RIÊNG, không trộn. */
+export interface ReferenceGroupDto {
+  kind: ReferenceKind;
+  records: ReferencePriceDto[];
+  stats: ReferencePriceStatsDto;
+}
+
+/** Một dòng giá 買取 Grok ĐỀ XUẤT — chưa kiểm chứng, chưa vào DB. */
+export interface KaitoriCandidateDto {
+  productName: string;
+  priceJpy: number;
+  shop: string;
+  postedOn: string;
+  sourceUrl: string | null;
+}
+
+/** Dòng chủ web đã duyệt và gắn đúng thẻ trong catalog. */
+export interface KaitoriImportRow {
+  cardId: string;
+  priceJpy: number;
+  shop: string;
+  postedOn: string;
+  sourceUrl?: string | null;
 }
 
 export interface ReferencePriceStatsDto extends PriceStatsDto {

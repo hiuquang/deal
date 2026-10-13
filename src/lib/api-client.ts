@@ -14,10 +14,13 @@ import type {
   Condition,
   ConversationDto,
   Game,
+  KaitoriCandidateDto,
+  KaitoriImportRow,
   ListingDto,
   MeDto,
   MessageDto,
   PriceRecordDto,
+  ReferenceGroupDto,
   PriceStatsDto,
   ReferencePriceDto,
   ReferencePriceStatsDto,
@@ -327,8 +330,24 @@ export const api = {
       locked: boolean;
       recordCount: number;
     }>(`/api/prices/${cardId}${condition ? `?condition=${condition}` : ""}`),
+  // `groups` tách theo loại giá (買取 / đã bán / rao) — KHÔNG có con số gộp
+  // chung, vì trộn ba loại ra trung bình là vô nghĩa. Xem reference-price-service.
   getReferencePrices: (cardId: string) =>
-    request<{ card: CardDto; records: ReferencePriceDto[]; stats: ReferencePriceStatsDto }>(
-      `/api/reference-prices/${cardId}`
-    ),
+    request<{ card: CardDto; groups: ReferenceGroupDto[] }>(`/api/reference-prices/${cardId}`),
+
+  // ── Khu chủ web: thu thập giá 買取 từ X ──────────────────────────────────
+  // scan KHÔNG ghi gì vào DB, chỉ trả đề xuất chờ duyệt (xem kaitori-service).
+  scanKaitori: (body: { handles?: string[]; days?: number }) =>
+    request<{
+      items: KaitoriCandidateDto[];
+      postsFetched: number;
+      fromDate: string;
+      toDate: string;
+    }>("/api/kaitori/scan", { method: "POST", body: JSON.stringify(body) }),
+
+  importKaitori: (rows: KaitoriImportRow[]) =>
+    request<{ saved: number }>("/api/kaitori/import", {
+      method: "POST",
+      body: JSON.stringify({ rows }),
+    }),
 };

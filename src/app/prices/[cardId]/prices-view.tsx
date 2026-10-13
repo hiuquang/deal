@@ -8,8 +8,7 @@ import type {
   Condition,
   PriceRecordDto,
   PriceStatsDto,
-  ReferencePriceDto,
-  ReferencePriceStatsDto,
+  ReferenceGroupDto,
 } from "@/lib/types";
 import { cardSpec, CONDITION_KEYS, formatDate, formatDateTime, formatJpy } from "@/lib/labels";
 import { useAuth } from "@/components/auth-context";
@@ -38,8 +37,7 @@ export function PricesView({ cardId }: { cardId: string }) {
   const [card, setCard] = useState<CardDto | null>(null);
   const [records, setRecords] = useState<PriceRecordDto[]>([]);
   const [stats, setStats] = useState<PriceStatsDto | null>(null);
-  const [refRecords, setRefRecords] = useState<ReferencePriceDto[]>([]);
-  const [refStats, setRefStats] = useState<ReferencePriceStatsDto | null>(null);
+  const [refGroups, setRefGroups] = useState<ReferenceGroupDto[]>([]);
   // locked = có dữ liệu nhưng người xem chưa đóng góp (chỉ giấu danh sách chi
   // tiết, số liệu tổng vẫn hiện). recordCount = 0 → thẻ chưa có giao dịch nào,
   // KHÔNG khóa mà nói thẳng là chưa có.
@@ -57,16 +55,14 @@ export function PricesView({ cardId }: { cardId: string }) {
     try {
       const ref = await api.getReferencePrices(cardId);
       setCard(ref.card);
-      setRefRecords(ref.records);
-      setRefStats(ref.stats);
+      setRefGroups(ref.groups);
     } catch (e) {
       if (e instanceof ApiClientError && e.status === 404) {
         setError(e.message);
         setLoading(false);
         return;
       }
-      setRefRecords([]);
-      setRefStats(null);
+      setRefGroups([]);
     }
     // Giá giao dịch thật — endpoint công khai, gate nằm trong response.
     try {
@@ -94,13 +90,24 @@ export function PricesView({ cardId }: { cardId: string }) {
   if (authLoading || loading) return <Loading />;
   if (error) return <ErrorBox message={error} />;
 
+  const allRefRecords = refGroups.flatMap((g) => g.records);
   // Tuổi của điểm giá tham khảo MỚI NHẤT (không phải của bản ghi đầu mảng —
   // thứ tự do API quyết, đừng dựa vào nó).
-  const newestRefMs = refRecords.length
-    ? Math.max(...refRecords.map((r) => new Date(r.recordedAt).getTime()))
+  const newestRefMs = allRefRecords.length
+    ? Math.max(...allRefRecords.map((r) => new Date(r.recordedAt).getTime()))
     : null;
   const refAgeDays =
     newestRefMs === null ? null : Math.floor((Date.now() - newestRefMs) / 86_400_000);
+
+  // Khoảng thương lượng: chỉ dựng được khi có CẢ giá shop thu vào lẫn giá rao.
+  // Thiếu một đầu thì không có khoảng nào để nói, và bịa ra một con số là
+  // đúng kiểu sai mà nhìn vẫn như thật.
+  const floorAvg = refGroups.find((g) => g.kind === "kaitori")?.stats.weightedAvg ?? null;
+  const askAvg = refGroups.find((g) => g.kind === "rao")?.stats.weightedAvg ?? null;
+  const midPrice =
+    floorAvg !== null && askAvg !== null && askAvg > floorAvg
+      ? Math.round((floorAvg + askAvg) / 2)
+      : null;
 
   return (
     <div className="space-y-5">
@@ -116,18 +123,39 @@ export function PricesView({ cardId }: { cardId: string }) {
         </div>
       )}
 
-      {/* Giá tham khảo — nguồn ngoài, hiển thị cho mọi người (không gate). */}
-      {refRecords.length > 0 && refStats && (
+      {/* KHOẢNG THƯƠNG LƯỢNG — lý do tồn tại của cả màn hình này. Shop thu vào
+          là mức chắc chắn bán được ngay; giá rao là mức người bán đang hỏi.
+          Trade tay đôi phí 0% nên phần chênh đó chia đôi cho hai bên. */}
+      {midPrice !== null && (
+        <section className="rounded-2xl bg-brand-600 p-4 text-white">
+          <h2 className="text-base font-bold">{t("refprice.spreadTitle")}</h2>
+          <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+            <div className="rounded-xl bg-white/10 p-3">
+              <p className="text-[11px] text-brand-100">{t("refprice.spreadFloor")}</p>
+              <p className="text-base font-bold sm:text-lg">{formatJpy(floorAvg)}</p>
+            </div>
+            <div className="rounded-xl bg-gold-400 p-3 text-brand-900">
+              <p className="text-[11px] font-semibold">{t("refprice.spreadMid")}</p>
+              <p className="text-base font-black sm:text-lg">{formatJpy(midPrice)}</p>
+            </div>
+            <div className="rounded-xl bg-white/10 p-3">
+              <p className="text-[11px] text-brand-100">{t("refprice.spreadAsk")}</p>
+              <p className="text-base font-bold sm:text-lg">{formatJpy(askAvg)}</p>
+            </div>
+          </div>
+          <p className="mt-3 text-[11px] leading-relaxed text-brand-100">
+            {t("refprice.spreadNote")}
+          </p>
+        </section>
+      )}
+
+      {/* Giá tham khảo — nguồn ngoài, hiện cho mọi người (không gate). TÁCH
+          theo loại: trộn giá shop thu vào với giá rao thành một trung bình là
+          con số vô nghĩa mà nhìn vẫn như thật (lỗi tồn tại tới v0.31.0). */}
+      {refGroups.length > 0 && (
         <section className="space-y-3 rounded-2xl border border-teal-200 bg-teal-50/40 p-4">
-          <div>
+          <div className="space-y-2">
             <h2 className="text-base font-bold text-teal-800">{t("refprice.title")}</h2>
-            {/* Một thẻ có thể gộp nhiều nguồn (giá rao / đã bán) — lấy
-                refRecords[0] là nói sai về phần dữ liệu còn lại. */}
-            <p className="text-xs text-teal-700">
-              {t("refprice.source", {
-                source: [...new Set(refRecords.map((r) => r.source))].join(" · "),
-              })}
-            </p>
             {/* Giá box biến động theo tuần: trưng số cũ mà không nói gì là nói
                 sai về thị trường, và đó đúng là thứ làm mất niềm tin nhanh nhất. */}
             {refAgeDays !== null && refAgeDays > STALE_AFTER_DAYS && (
@@ -137,44 +165,72 @@ export function PricesView({ cardId }: { cardId: string }) {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[
-              { label: t("refprice.weightedAvg"), value: formatJpy(refStats.weightedAvg) },
-              { label: t("price.min"), value: formatJpy(refStats.min) },
-              { label: t("price.max"), value: formatJpy(refStats.max) },
-              { label: t("refprice.count"), value: String(refStats.count) },
-            ].map((item) => (
-              <div key={item.label} className="rounded-xl border border-teal-200 bg-white p-4">
-                <p className="text-xs text-slate-500">{item.label}</p>
-                <p className="text-lg font-bold text-teal-700">{item.value}</p>
+          {refGroups.map((group) => (
+            <div key={group.kind} className="space-y-3 rounded-xl border border-teal-200 bg-white p-3">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h3 className="text-sm font-bold text-teal-800">
+                  {t(`refkind.${group.kind}` as MessageKey)}
+                </h3>
+                <p className="text-xs text-teal-700">
+                  {t("refprice.source", {
+                    source: [...new Set(group.records.map((r) => r.source))].join(" · "),
+                  })}
+                </p>
               </div>
-            ))}
-          </div>
 
-          <div className="rounded-xl border border-teal-200 bg-white p-4">
-            <ReferencePriceChart records={refRecords} />
-          </div>
-
-          <div className="overflow-x-auto rounded-xl border border-teal-200 bg-white">
-            <table className="w-full text-sm">
-              <thead className="bg-teal-50 text-left text-xs text-slate-500">
-                <tr>
-                  <th className="px-4 py-2">{t("refprice.thDate")}</th>
-                  <th className="px-4 py-2">{t("refprice.thQuantity")}</th>
-                  <th className="px-4 py-2">{t("refprice.thPrice")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[...refRecords].reverse().map((r, i) => (
-                  <tr key={i} className="border-t border-slate-100">
-                    <td className="px-4 py-2">{formatDateTime(r.recordedAt)}</td>
-                    <td className="px-4 py-2">{t("refprice.unit", { n: r.quantity })}</td>
-                    <td className="px-4 py-2 font-semibold">{formatJpy(r.priceJpy)}</td>
-                  </tr>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {[
+                  { label: t("refprice.weightedAvg"), value: formatJpy(group.stats.weightedAvg) },
+                  { label: t("price.min"), value: formatJpy(group.stats.min) },
+                  { label: t("price.max"), value: formatJpy(group.stats.max) },
+                  { label: t("refprice.count"), value: String(group.stats.count) },
+                ].map((item) => (
+                  <div key={item.label} className="rounded-lg bg-teal-50/60 p-3">
+                    <p className="text-xs text-slate-500">{item.label}</p>
+                    <p className="text-base font-bold text-teal-700">{item.value}</p>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </div>
+
+              {group.records.length > 1 && <ReferencePriceChart records={group.records} />}
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="text-left text-xs text-slate-500">
+                    <tr>
+                      <th className="py-1 pr-3">{t("refprice.thDate")}</th>
+                      <th className="py-1 pr-3">{t("refprice.thQuantity")}</th>
+                      <th className="py-1">{t("refprice.thPrice")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...group.records].reverse().map((r, i) => (
+                      <tr key={i} className="border-t border-slate-100">
+                        <td className="py-1.5 pr-3">
+                          {/* Link bài gốc để kiểm lại khi con số trông lạ —
+                              dữ liệu 買取 do mô hình rút ra nên phải truy được. */}
+                          {r.sourceUrl ? (
+                            <a
+                              href={r.sourceUrl}
+                              target="_blank"
+                              rel="noopener noreferrer nofollow"
+                              className="text-brand-600 underline"
+                            >
+                              {formatDateTime(r.recordedAt)}
+                            </a>
+                          ) : (
+                            formatDateTime(r.recordedAt)
+                          )}
+                        </td>
+                        <td className="py-1.5 pr-3">{t("refprice.unit", { n: r.quantity })}</td>
+                        <td className="py-1.5 font-semibold">{formatJpy(r.priceJpy)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
 
           <p className="text-xs text-slate-500">{t("refprice.disclaimer")}</p>
         </section>

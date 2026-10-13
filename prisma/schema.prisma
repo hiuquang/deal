@@ -453,11 +453,20 @@ model PriceRecord {
 // bao giờ trộn chung: nguồn ngoài không được coi là dữ liệu đóng cho AI dự đoán
 // giá. quantity = số pack quan sát; priceJpy = đơn giá/pack tại recordedAt.
 model ReferencePrice {
-  id         String   @id @default(cuid())
-  cardId     String   @map("card_id")
-  source     String // nhãn nguồn hiển thị cho user, vd "Round One"
+  id     String @id @default(cuid())
+  cardId String @map("card_id")
+  source String // nhãn nguồn hiển thị cho user, vd "Round One", "遊々亭"
+  /// LOẠI giá — quyết định nhóm thống kê. KHÔNG được trộn ba loại này vào
+  /// cùng một trung bình: shop thu vào luôn thấp hơn giá rao, trộn ra con số
+  /// vô nghĩa mà nhìn vẫn như thật.
+  ///   "rao"     giá người bán rao (Facebook…) — mặc định, khớp dữ liệu cũ
+  ///   "ban"     giá đã bán xong
+  ///   "kaitori" giá SHOP THU VÀO (買取) — giá sàn, lấy từ X qua Grok
+  kind       String   @default("rao")
   quantity   Int // số lượng (pack) quan sát tại thời điểm đó
   priceJpy   Int      @map("price_jpy") // đơn giá / pack
+  /// Link bài gốc (tweet 買取 của shop) — để kiểm chứng lại khi số trông lạ.
+  sourceUrl  String?  @map("source_url")
   note       String?
   recordedAt DateTime @map("recorded_at")
   createdAt  DateTime @default(now()) @map("created_at")

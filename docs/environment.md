@@ -37,6 +37,8 @@ npm run db:seed # chạy lại seed (idempotent)
 | `DIRECT_URL` | (bắt buộc khi migrate) | Kết nối trực tiếp (không qua pooler) cho `prisma migrate deploy` |
 | `APP_URL` | `http://localhost:3000` | URL gốc: link trong email **và** `metadataBase` cho thẻ OG + `sitemap.xml` (`src/lib/site.ts`). ⚠️ Sai giá trị này trên production = mọi link chia sẻ ra Facebook/Zalo mất ảnh preview |
 | `SMTP_*` | (trống) | Xem [email.md](email.md) — ⚠️ KHÔNG đọc/ghi `SMTP_PASS` |
+| `OWNER_USER_ID` | (trống) | `users.id` của chủ web — mở khu quản trị `/admin/*`. **Trống = chặn hết (404)**, không phải mở hết; xem [kaitori.md](kaitori.md) |
+| `XAI_API_KEY` | (trống) | Khoá API xAI cho nút quét giá 買取 trên X. Trống → chỉ tính năng đó tắt (503 kèm thông báo), web vẫn chạy bình thường |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | (trống) | Có cả 2 → ảnh upload lên Supabase Storage; trống → lưu `public/uploads` |
 
 Xem `.env.example`. `.env` đã gitignore.

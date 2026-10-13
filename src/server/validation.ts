@@ -257,3 +257,34 @@ export const pushSubscribeSchema = z.object({
 export const pushUnsubscribeSchema = z.object({
   endpoint: z.string().url("Endpoint không hợp lệ").max(1000),
 });
+
+// ── Thu thập giá 買取 từ X (chỉ chủ web) ──────────────────────────────────
+// Handle X: chữ/số/gạch dưới, tối đa 15 ký tự theo quy ước của X. Siết ở đây
+// vì giá trị này đi thẳng vào tham số `allowed_x_handles` của xAI.
+const xHandle = z
+  .string()
+  .trim()
+  .transform((v) => v.replace(/^@/, ""))
+  .pipe(z.string().regex(/^[A-Za-z0-9_]{1,15}$/, "Tài khoản X không hợp lệ"));
+
+export const kaitoriScanSchema = z.object({
+  handles: z.array(xHandle).max(20).optional(),
+  days: z.coerce.number().int().min(1).max(14).optional(),
+});
+
+// Dòng chủ web ĐÃ DUYỆT: cardId do người chọn trong catalog, không phải tên
+// Grok đoán ra — xem kaitori-service.ts.
+export const kaitoriImportSchema = z.object({
+  rows: z
+    .array(
+      z.object({
+        cardId: z.string().min(1),
+        priceJpy: z.coerce.number().int().positive().max(100_000_000),
+        shop: z.string().trim().min(1).max(100),
+        postedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày phải dạng YYYY-MM-DD"),
+        sourceUrl: z.string().url().max(500).optional().nullable(),
+      })
+    )
+    .min(1)
+    .max(60),
+});

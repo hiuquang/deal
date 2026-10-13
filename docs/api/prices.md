@@ -29,16 +29,30 @@ Quy ước chung: [README.md](README.md). Bất biến: [business-rules.md](../b
 - Endpoint này cũng lazy-check auto-close trade quá hạn.
 - Dữ liệu giá BOX dùng chung pipeline này.
 
+### POST /api/kaitori/scan · POST /api/kaitori/import (CHỈ CHỦ WEB)
+
+Thu thập giá 買取 từ X qua Grok. Chi tiết + lý do thiết kế: [kaitori.md](../kaitori.md).
+
+- Gate `requireOwner()` (env `OWNER_USER_ID`). Không phải chủ web → **404**, không phải 403: người lạ dò trúng URL không có lý do gì để biết ở đây CÓ trang họ không vào được. Thiếu env → chặn hết.
+- `scan` **KHÔNG ghi gì vào DB**, chỉ trả đề xuất chờ duyệt. `import` là cửa DUY NHẤT đưa 買取 vào `reference_prices`, và chỉ nhận dòng đã có `cardId` do người chọn.
+- ⚠️ `scan` gọi API xAI **tốn tiền thật** → chỉ POST, không bao giờ để GET.
+
 ### GET /api/reference-prices/:cardId (CÔNG KHAI — không auth, không gate)
 
 ```json
 // 200 — giá THAM KHẢO từ nguồn NGOÀI platform (KHÔNG phải giao dịch trên DEAL)
 { "card": {...},
-  "records": [ { "source": "Round One", "quantity": 50, "priceJpy": 15300,
-                 "note": null, "recordedAt": "2026-07-23T03:51:00.000Z" } ],
-  "stats": { "count": 8, "median": 14250, "min": 13000, "max": 15500,
-             "weightedAvg": 14587, "totalQuantity": 115 } }
+  "groups": [
+    { "kind": "kaitori",
+      "records": [ { "source": "yuyu_tei", "kind": "kaitori", "quantity": 1, "priceJpy": 11000,
+                     "note": null, "sourceUrl": "https://x.com/…", "recordedAt": "…" } ],
+      "stats": { "count": 1, "median": 11000, "min": 11000, "max": 11000,
+                 "weightedAvg": 11000, "totalQuantity": 1 } },
+    { "kind": "rao", "records": [ … ], "stats": { … } }
+  ] }
 ```
+
+⚠️ **ĐỔI SHAPE ở v0.32.0**: trước đó trả `records` + `stats` phẳng. Giờ **gom theo `kind`, mỗi nhóm một thống kê RIÊNG**, và **không còn con số gộp chung**. Lý do: trộn 買取 (shop thu vào, thấp) với giá rao (cao) ra trung bình vô nghĩa mà nhìn vẫn như thật — lỗi tồn tại từ v0.21.0, vì nhãn `source` chỉ để hiển thị chứ không tách thống kê. Thứ tự nhóm cố định `kaitori → ban → rao` (sàn → thật → trần). Nhóm rỗng bị loại; `kind` lạ trong DB rơi về `rao` thay vì biến mất.
 
 - **Tách hẳn khỏi `/api/prices`**: nguồn ngoài do chủ web nhập tay (bảng `reference_prices`), KHÔNG trộn vào `price_records` (giao dịch P2P thật, ẩn danh) — không được coi là dữ liệu đóng cho AI.
 - KHÔNG gate give-to-get và KHÔNG cần đăng nhập: mục đích là cho người mới thấy mặt bằng giá khi web còn ít giao dịch → xây niềm tin. Cache như catalog (`PUBLIC_CATALOG_CACHE`).
@@ -47,6 +61,7 @@ Quy ước chung: [README.md](README.md). Bất biến: [business-rules.md](../b
 - Nhập/cập nhật dữ liệu (idempotent, chỉ chủ web chạy — không có admin UI, giống VIP/report):
   - **Hằng ngày**: ghi quan sát vào `prisma/reference-prices.txt` (1 dòng = 1 quan sát) → `npm run db:import-prices` xem thử → thêm `-- --apply` để ghi. **Mặc định KHÔNG ghi** vì script chạy thẳng vào DB production.
   - **Dữ liệu lịch sử pin cứng trong code**: `npm run db:seed-reference-prices` (mảng `DATA` trong `prisma/seed-reference-prices.ts`).
-- Nhãn `source` phân biệt **giá rao** vs **đã bán**: giá quan sát trong group Facebook chủ yếu là giá rao, cao hơn giá chốt sau thương lượng — trộn chung là bóp méo mặt bằng.
+  - **Giá 買取 từ X**: trang `/admin/kaitori` (Grok đề xuất → chủ web duyệt) — xem [kaitori.md](../kaitori.md).
+- Cột `kind` (`rao` mặc định / `ban` / `kaitori`) quyết định nhóm thống kê. Nhãn `source` chỉ để HIỂN THỊ nguồn, **không** dùng để tách số liệu.
 - ⚠️ **KHÔNG đổ vào đây dữ liệu lấy tự động từ sàn khác** (SNKRDUNK/スニダン…): điều khoản của họ cấm hiển thị lại thông tin lấy từ dịch vụ và cấm dùng cho mục đích thương mại khi chưa xin phép. Đây là giá chủ web TỰ quan sát.
-- UI cảnh báo khi điểm giá mới nhất đã quá 14 ngày — giá box biến động theo tuần, số cũ mà không nói gì là nói sai về thị trường.
+- UI cảnh báo khi điểm giá mới nhất đã quá 7 ngày — giá box biến động theo tuần, số cũ mà không nói gì là nói sai về thị trường.

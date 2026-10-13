@@ -87,7 +87,10 @@ reference_prices  id, card_id→cards, source, quantity, price_jpy, note?,
                   unique(card_id, source, recorded_at) — dedupe seed idempotent
                   index(card_id, recorded_at)
                   ── Giá THAM KHẢO nguồn NGOÀI (vd Round One), chủ web nhập tay
-                     (npm run db:seed-reference-prices). TÁCH HẲN price_records:
+                     (npm run db:import-prices / db:seed-reference-prices / trang /admin/kaitori).
+                     kind = rao|ban|kaitori — THỐNG KÊ TÁCH RIÊNG theo kind, đừng gộp
+                     (shop thu vào luôn thấp hơn giá rao). source_url = link bài gốc.
+                     TÁCH HẲN price_records:
                      KHÔNG phải giao dịch trên DEAL, KHÔNG dùng làm dữ liệu đóng
                      cho AI. Hiển thị công khai để tạo mặt bằng giá khi web còn
                      ít giao dịch. quantity=số pack, price_jpy=đơn giá/pack.

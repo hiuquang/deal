@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## [0.32.0] — 2026-10-13 — Thu thập giá 買取 từ X qua Grok + tách ba loại giá
+
+### Bối cảnh
+買取 = giá **shop THU VÀO**, tức **giá sàn**: mức chắc chắn bán được ngay hôm nay. Có nó thì luận điểm phí 0% của DEAL thành con số thay vì lời quảng cáo — *"shop thu ¥11.000, người ta rao ¥14.587, trade tay đôi ¥12.794"*. Chủ web chốt dùng Grok trên X làm nguồn.
+
+### Tính năng
+- **Trang `/admin/kaitori`** (chỉ chủ web): bấm nút → Grok quét X → bảng đề xuất kèm link tweet gốc → chủ web tick + gắn thẻ trong catalog → lưu.
+- **Dải "Khoảng thương lượng"** trên trang giá: shop thu vào · **điểm giữa** · đang rao. Chỉ hiện khi có CẢ hai đầu — thiếu một đầu thì không có khoảng nào để nói, bịa ra một con số là đúng kiểu sai mà nhìn vẫn như thật.
+
+### Kỹ thuật
+- ⚠️ **Nguyên tắc không được phá: Grok ĐỀ XUẤT, người DUYỆT.** `scan` **không ghi gì vào DB**; `import` là cửa duy nhất vào `reference_prices` và chỉ nhận dòng đã có `cardId` do người chọn. Mô hình đọc tweet sẽ sai thường xuyên (nhầm thẻ, nuốt chữ 最大, tưởng bài đăng lại là mới) — mà dataset giá sạch là lý do cả dự án tồn tại. Checkbox **mặc định không tick**: tick sẵn là mời bấm "Lưu" cho nhanh rồi rác chui thẳng vào dataset.
+- **Vì sao hợp lệ, khác vụ SNKRDUNK từ chối ở v0.30.0**: dùng chính API xAI bán ra, đúng mục đích; giá 買取 do shop cố ý đăng công khai để mời khách bán; ta ghi lại dữ kiện chứ không sao chép nội dung hay ảnh.
+- **Migration `20261013012405_reference_price_kind`** (đã deploy Tokyo): thêm `kind` (default `'rao'`) + `source_url`. Chỉ thêm cột, 8 dòng Round One cũ tự nhận `rao` — đúng bản chất.
+- 🐛 **Sửa lỗi tồn tại từ v0.21.0**: trang giá tính trung bình có trọng số trên **toàn bộ** điểm giá tham khảo. Nhãn `source` thêm ở v0.29.0 (`giá rao` / `đã bán`) **chỉ là nhãn hiển thị**, số liệu vẫn trộn. Thêm 買取 vào sẽ làm lỗi thành nghiêm trọng: trộn giá shop thu (thấp) với giá rao (cao) ra con số vô nghĩa mà nhìn vẫn như thật. Giờ API trả `groups` tách theo `kind`, **không còn con số gộp chung**. Thứ tự cố định `kaitori → ban → rao` (sàn → thật → trần). **ĐỔI SHAPE của `GET /api/reference-prices/:cardId`.**
+- `kind` lạ trong DB rơi về `rao` thay vì biến mất — mất dữ liệu trong im lặng khó phát hiện hơn nhiều so với xếp nhầm ô.
+- **Gate chủ web mới** `requireOwner()` / `isOwner()` qua env `OWNER_USER_ID`. Dự án không có hệ phân quyền (VIP bật tay trong Supabase) nên dựng cả bảng role cho một người là thừa. **Thiếu env → chặn hết (404), không phải mở hết.** Trả **404 chứ không 403**: người lạ dò trúng URL không có lý do gì để biết ở đây CÓ trang họ không vào được.
+- 🐛 **Bẫy bắt được lúc build**: `/admin/kaitori` bị Next đánh dấu **tĩnh** vì lúc build chưa có `OWNER_USER_ID` → `isOwner()` thoát sớm, không chạm cookie → prerender thành 404 vĩnh viễn, đặt env sau cũng vô ích. Chặn bằng `export const dynamic = "force-dynamic"`.
+- `scan` chỉ nhận **POST** — tốn tiền API thật, để ở GET là dán link cũng kích hoạt được. Trần an toàn: tối đa 20 handle, 14 ngày ngược, `max_turns: 2`. Lỗi từ xAI **không ném nguyên body ra client** (có thể lẫn chi tiết khoá).
+- Thiếu `XAI_API_KEY` → chỉ tính năng này trả 503 kèm thông báo rõ, phần còn lại của web không ảnh hưởng (cùng lối với VAPID).
+- **Ngoại lệ i18n có chủ đích**: trang `/admin/kaitori` hardcode tiếng Việt, không vào `messages.ts`. Đúng một người xem, người đó nói tiếng Việt; dịch sang tiếng Anh chỉ phình từ điển dùng chung. Mọi trang người dùng thấy vẫn theo quy tắc.
+- +4 test khoá bất biến "không trộn ba loại giá" (**303 pass**), tsc + build sạch. Verify trên DB thật: khách vào `/admin/kaitori` → **404**, cả hai API route → **404**, `robots.txt` chặn `/admin/`; thêm tạm 1 dòng 買取 ¥11.000 cho Round One → dải khoảng thương lượng hiện đúng **¥11.000 / ¥12.794 / ¥14.587**, hai nhóm thống kê tách riêng, nhóm "Đang rao" giữ nguyên ¥14.587 như trước migration → **đã xóa dòng tạm, còn đúng 8 dòng gốc**.
+
 ## [0.31.0] — 2026-10-13 — Dọn giao diện: một ô tìm, tông màu theo logo, tin đăng lên màn hình đầu
 
 ### Bối cảnh

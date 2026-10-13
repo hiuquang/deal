@@ -58,6 +58,37 @@ export async function requireUser(): Promise<User> {
 }
 
 /**
+ * Chỉ CHỦ WEB — gate cho khu quản trị (nhập giá 買取 từ X…).
+ *
+ * Dự án không có hệ phân quyền: VIP bật tay trong Supabase, report duyệt tay.
+ * Dựng cả bảng role cho đúng một người dùng là thừa, nên chủ web nhận diện
+ * bằng env `OWNER_USER_ID`.
+ *
+ * ⚠️ Thiếu env → CHẶN HẾT (404), không phải mở hết. Cấu hình sót trên môi
+ * trường mới mà hoá ra mở toang khu quản trị thì tệ hơn nhiều so với việc chủ
+ * web phải thêm một biến env.
+ *
+ * Trả 404 chứ không 403: người lạ dò trúng URL thì không có lý do gì để biết
+ * là ở đây CÓ một trang mà họ không được vào.
+ */
+export async function requireOwner(): Promise<User> {
+  const ownerId = process.env.OWNER_USER_ID;
+  const user = await getSessionUser();
+  if (!ownerId || !user || user.id !== ownerId) {
+    throw new ApiError(404, "NOT_FOUND", "Không tìm thấy trang.");
+  }
+  return user;
+}
+
+/** Chủ web đã cấu hình và đang đăng nhập? Dùng để ẩn/hiện lối vào khu quản trị. */
+export async function isOwner(): Promise<boolean> {
+  const ownerId = process.env.OWNER_USER_ID;
+  if (!ownerId) return false;
+  const user = await getSessionUser();
+  return user?.id === ownerId;
+}
+
+/**
  * Bắt buộc đã xác nhận email + đã đồng ý bản 利用規約 hiện hành — dùng cho
  * MỌI hành động ghi (đăng tin, chat, trade, comment, rating...).
  */
