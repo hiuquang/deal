@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## [0.33.1] — 2026-10-21 — Vá lỗ hổng thư viện
+
+### Bối cảnh
+Push v0.33.0 xong, GitHub Dependabot báo 5 lỗ hổng trên `main` (2 critical, 1 high, 2 moderate); `npm audit` đủ bộ báo 8 (2 critical, 5 high, 1 moderate), trong đó 4 high nằm ở gói chạy production. v0.33.0 không đổi lockfile → đây là nợ có sẵn từ trước, vá thành bản riêng. **Không đổi hành vi web.**
+
+### Tính năng
+- Không có tính năng mới.
+
+### Kỹ thuật
+- **Production — chỉ 2 gói đổi**:
+  - `source-map-js` 1.2.1 → **1.2.2** (GHSA-68fv-2mgg-jv7q, DoS treo event loop). Kéo theo bởi `postcss`/`@tailwindcss/node`; `npm audit fix` thường.
+  - `deepmerge-ts` 7.1.5 → **8.0.2** (GHSA-ggr8-5vv4-36mx, tràn stack khi merge đồ thị đệ quy). Nằm trong `@prisma/config` của `prisma` CLI. ⚠️ **Prisma 6 không có bản vá**: 6.19.3 là bản 6.x cuối và ghim cứng `deepmerge-ts@7.1.5`; bản vá chính thức chỉ có ở **Prisma 7.10.1** — nâng major Prisma là đổi API client + cách migrate, không đáng cho lỗi này. Đã đối chiếu: bản vá của Prisma 7.10.1 **chỉ đúng là nâng `deepmerge-ts` lên 8.0.2**, code gọi giữ nguyên (`merger: deepmerge` truyền cho c12, chỉ dùng khi đọc `prisma.config.ts` — DEAL không có file này). Breaking change của deepmerge-ts 8 là merge sâu `Map`, không đụng tới config. → Thêm `overrides."deepmerge-ts": "^8.0.2"` (override phẳng: npm 10 lỗi `edgesOut` với override lồng `"@prisma/config": {...}`; ngoài `@prisma/config` không gói nào dùng deepmerge-ts). Đã chạy `prisma validate` + `prisma generate` OK. **Khi nào lên Prisma 7 thì gỡ override này.**
+- **Dev (chỉ chạy test, không lên production)**: `vitest` 3.2.7 → **4.1.12**. Vitest 3 kéo `tinypool` 1.1.1 (2 lỗ **critical** GHSA-5gmw-xhrv-c9v3, GHSA-85c8-ppgw-ccpr — prototype pollution → RCE) và `@vitest/mocker` (GHSA-82fw-gwwq-j7x9, đọc file tùy ý); vitest 4 bỏ hẳn tinypool. `vite` (chỉ vitest dùng) 7.3.6 → 8.3.4, hết 3 lỗ `launch-editor`. `vitest.config.ts` giữ nguyên, 335/335 test pass. Vite 8 cảnh báo config ESM trong package CommonJS — chỉ là cảnh báo cho major sau, chưa phải sửa.
+- ⚠️ **Cài vitest 4 bằng npm 10.9.8 dính bug arborist** (`Cannot read properties of null (reading 'edgesOut')`). Lockfile được tạo bằng `npx npm@11 install -D vitest@^4.1.12`, rồi **`npm ci` bằng npm 10 chạy sạch** (đúng kiểu Vercel cài) → lockfile dùng được với npm 10.
+- Kết quả: `npm audit` (cả dev) **0 lỗ hổng**. `tsc --noEmit`, 335 test, `next build` xanh.
+
 ## [0.33.0] — 2026-10-21 — Trang 買取: chọn vùng, 5 shop, bài bảng giá mới trên X
 
 ### Bối cảnh
