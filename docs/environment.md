@@ -39,6 +39,8 @@ npm run db:seed # chạy lại seed (idempotent)
 | `SMTP_*` | (trống) | Xem [email.md](email.md) — ⚠️ KHÔNG đọc/ghi `SMTP_PASS` |
 | `OWNER_USER_ID` | (trống) | `users.id` của chủ web — mở khu quản trị `/admin/*`. **Trống = chặn hết (404)**, không phải mở hết; xem [kaitori.md](kaitori.md) |
 | `XAI_API_KEY` | (trống) | Khoá API xAI cho nút quét giá 買取 trên X. Trống → chỉ tính năng đó tắt (503 kèm thông báo), web vẫn chạy bình thường |
+| `CRON_SECRET` | (trống) | Khóa cho `POST /api/cron/kaitori-posts` (GitHub Actions gọi 4 tiếng/lần). **Trống = endpoint 404 (chặn hết).** Phải trùng secret cùng tên trên GitHub; xem [kaitori.md](kaitori.md) |
+| `KAITORI_POSTS_MONTHLY_BUDGET` | `2000` | Trần số bài X Search được đọc mỗi tháng (JST) cho việc quét bài 買取 (~$5/1.000 bài). `0` = tắt quét. Chạm trần → bỏ qua tới đầu tháng |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | (trống) | Có cả 2 → ảnh upload lên Supabase Storage; trống → lưu `public/uploads` |
 
 Xem `.env.example`. `.env` đã gitignore.

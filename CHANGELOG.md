@@ -1,5 +1,31 @@
 # CHANGELOG
 
+## [0.33.0] — 2026-10-21 — Trang 買取: chọn vùng, 5 shop, bài bảng giá mới trên X
+
+### Bối cảnh
+v0.32.0 mới chỉ **lấy số** 買取 về cho dataset, còn người dùng vẫn không có chỗ nào trên DEAL trả lời câu họ hỏi hằng ngày trong group: *mang thẻ đi đâu bán, hôm nay shop thu bao nhiêu*. Đây đúng là loại trang DEAL thiếu: hữu ích với MỘT người, không cần chợ đủ hai phía mới chạy.
+
+Chủ web chốt thiết kế (2026-10-21): vào trang **chọn khu vực** (Tokyo / Osaka) → **5 shop nằm ngang** → bên dưới là **bài 買取 các shop đó đăng trên X**, cập nhật **4 tiếng/lần**, **quá 2 ngày tự xóa**. Bỏ hết phần giải thích cho trang gọn.
+
+### Tính năng
+- **`/kaitori`** chỉ để chọn vùng; **`/kaitori/tokyo`**, **`/kaitori/osaka`** là trang riêng (tĩnh + ISR 10 phút), có nút chuyển vùng.
+- **Hàng 5 shop** (chủ web chọn tay): 晴れる屋2, カードラボ, 遊々亭, ホビーステーション, 駿河屋. Điện thoại vuốt ngang, từ lg 5 cột. Bấm thẻ là sang thẳng trang 買取 chính thức.
+- **Bài 買取 trên X** hiện bằng **khung nhúng chính thức của X**; script bị chặn thì vẫn còn tên shop + giờ đăng + link.
+- Nav có mục **買取** (để nguyên chữ Nhật ở cả hai ngôn ngữ — quyết định chủ web: đó là chữ trên biển hiệu shop). Có cả ở footer + sitemap.
+
+### Kỹ thuật
+- ⚠️ **Sửa lỗi ở v0.32.0 (đang chạy production)**: `DEFAULT_SHOP_HANDLES` của nút quét giá ghi `yuyu_tei`, `hareruya2_TCG`, `cardlabo_` — đối chiếu trang chính thức thì **không phải tài khoản shop trỏ tới**. Thay bằng `yuyuteiNews`, `hareruya2pokeca`, `cardlabo_info`. `cardrush_pokemon`, `FullaheadTcg` vẫn chưa kiểm. **Handle X phải lấy từ link trên trang chính thức, không đoán theo tên.**
+- **Quét tài khoản CHI NHÁNH, không quét tài khoản chuỗi**: tài khoản chuỗi đăng khuyến mãi toàn quốc, quét nó thì bài Tokyo và Osaka y hệt nhau. 8 handle chi nhánh, mỗi cái lấy từ trang cửa hàng chính thức.
+- **Luồng bài X KHÔNG có người duyệt** — chấp nhận được (khác hẳn luồng giá) vì: (1) chỉ lưu **LINK**, không bao giờ ghi vào `reference_prices`; (2) mọi thứ Grok khai đều bỏ trừ cái link, và link phải qua 3 lớp: handle khớp danh bạ, **mốc giờ tự giải từ snowflake**, **chính X (oEmbed) xác nhận bài tồn tại + đúng tác giả**; (3) nội dung do X tự vẽ trong khung nhúng — DEAL không chép chữ/ảnh.
+- **GitHub Actions thay Vercel Cron**: Vercel Hobby chỉ cho cron 1 lần/ngày, biểu thức dày hơn làm hỏng deploy. Workflow `kaitori-posts.yml` gọi `POST /api/cron/kaitori-posts` với `Bearer CRON_SECRET` (thiếu/sai → 404, so khóa bằng `timingSafeEqual`). Nhìn ngược 6 giờ vì GitHub hay trễ lịch.
+- **"2 ngày tự xóa" chạy hai chỗ**: xóa thật đầu mỗi lượt quét (trước cả kiểm ngân sách), và lọc 48h lúc đọc — lịch quét có chết thì bài cũ vẫn rơi đúng hạn.
+- 💰 **Trần ngân sách cứng** `KAITORI_POSTS_MONTHLY_BUDGET` (mặc định 2.000 bài ≈ $10/tháng). Lý do: bộ lọc ngày của X Search chỉ nhận YYYY-MM-DD theo UTC → **mỗi lượt đọc lại cả ngày**, 6 lượt/ngày. Chạm trần thì không gọi Grok tới đầu tháng (JST).
+- **Migration `20261021030000_kaitori_posts`**: chỉ THÊM 2 bảng `kaitori_posts`, `kaitori_post_runs`, không đụng bảng cũ.
+- **CSP nới cho đúng một route** `/kaitori/:region` (script + frame từ platform.twitter.com); mọi trang có form/chat/đăng nhập giữ CSP chặt. Chính sách bảo mật thêm đoạn nói trang này tải nội dung từ X — **không đổi `TERMS_VERSION`** vì DEAL không thu thêm dữ liệu gì.
+- Tách `callXSearch()` dùng chung trong `xai.ts`; hành vi của nút quét giá không đổi.
+- Tagline cạnh logo dời từ `md` lên `lg` (ở 768–1023px bị bóp thành cột chữ dọc). Mục 買取 trên nav chỉ hiện từ md: đã đo ở 654px, thêm mục là logo bị bóp về 0px.
+- +32 test (danh bạ, đọc link + snowflake, service quét bài).
+
 ## [0.32.0] — 2026-10-13 — Thu thập giá 買取 từ X qua Grok + tách ba loại giá
 
 ### Bối cảnh

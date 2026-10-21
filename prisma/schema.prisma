@@ -11,42 +11,42 @@ datasource db {
 }
 
 model User {
-  id              String    @id @default(cuid())
-  email           String    @unique
-  passwordHash    String    @map("password_hash")
-  displayName     String    @map("display_name")
-  emailVerifiedAt DateTime? @map("email_verified_at") // null = chưa xác nhận email
+  id                   String    @id @default(cuid())
+  email                String    @unique
+  passwordHash         String    @map("password_hash")
+  displayName          String    @map("display_name")
+  emailVerifiedAt      DateTime? @map("email_verified_at") // null = chưa xác nhận email
   // Phiên bản 利用規約 user đã đồng ý (null/khác bản hiện hành = phải đồng ý lại)
   termsAcceptedVersion String?   @map("terms_accepted_version")
   termsAcceptedAt      DateTime? @map("terms_accepted_at")
   // Chỉ chủ web bật thủ công (Supabase → cột is_vip). Hiển thị vương miện + nhãn
   // VIP ở mọi nơi kèm tên; nâng level sàn lên 10 (xem profile-service).
-  isVip           Boolean   @default(false) @map("is_vip")
+  isVip                Boolean   @default(false) @map("is_vip")
   // Mốc "đã xem hoạt động" (comment vào tin mình, 購入希望, chào bán tin gom).
   // Set khi mở trang cá nhân; item mới hơn mốc = new → badge đỏ ở nav.
-  activitySeenAt  DateTime? @map("activity_seen_at")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
-  deletedAt       DateTime? @map("deleted_at")
+  activitySeenAt       DateTime? @map("activity_seen_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+  deletedAt            DateTime? @map("deleted_at")
 
-  sessions        Session[]
-  listings        Listing[]
-  conversations       Conversation[] @relation("ConversationBuyer")
-  conversationsAsSeller Conversation[] @relation("ConversationSeller")
-  messages        Message[]
-  tradesAsBuyer   Trade[]        @relation("TradeBuyer")
-  tradesAsSeller  Trade[]        @relation("TradeSeller")
-  ratingsGiven     Rating[]          @relation("RatingsGiven")
-  ratingsReceived  Rating[]          @relation("RatingsReceived")
-  reportsMade      Report[]          @relation("ReportsMade")
-  reportsReceived  Report[]          @relation("ReportsReceived")
-  comments         Comment[]
-  purchaseRequests PurchaseRequest[]
-  buyOrders        BuyOrder[]
-  buyOrderOffers   BuyOrderOffer[]
-  emailTokens      EmailToken[]
-  favorites        Favorite[]
-  pushSubscriptions PushSubscription[]
+  sessions              Session[]
+  listings              Listing[]
+  conversations         Conversation[]     @relation("ConversationBuyer")
+  conversationsAsSeller Conversation[]     @relation("ConversationSeller")
+  messages              Message[]
+  tradesAsBuyer         Trade[]            @relation("TradeBuyer")
+  tradesAsSeller        Trade[]            @relation("TradeSeller")
+  ratingsGiven          Rating[]           @relation("RatingsGiven")
+  ratingsReceived       Rating[]           @relation("RatingsReceived")
+  reportsMade           Report[]           @relation("ReportsMade")
+  reportsReceived       Report[]           @relation("ReportsReceived")
+  comments              Comment[]
+  purchaseRequests      PurchaseRequest[]
+  buyOrders             BuyOrder[]
+  buyOrderOffers        BuyOrderOffer[]
+  emailTokens           EmailToken[]
+  favorites             Favorite[]
+  pushSubscriptions     PushSubscription[]
 
   @@map("users")
 }
@@ -242,11 +242,11 @@ model PurchaseRequest {
 // người bán đã chào bán). sellerId lưu trực tiếp (không suy từ listing nữa) để
 // hỗ trợ cả hai nguồn — xem migration backfill cho hàng cũ.
 model Conversation {
-  id         String  @id @default(cuid())
-  listingId  String? @map("listing_id")  // null nếu hội thoại đến từ BuyOrder
-  buyOrderId String? @map("buy_order_id") // null nếu hội thoại đến từ Listing
-  buyerId    String  @map("buyer_id")
-  sellerId   String  @map("seller_id") // NOT NULL từ P9.1 (backfill xong ở P8)
+  id               String    @id @default(cuid())
+  listingId        String?   @map("listing_id") // null nếu hội thoại đến từ BuyOrder
+  buyOrderId       String?   @map("buy_order_id") // null nếu hội thoại đến từ Listing
+  buyerId          String    @map("buyer_id")
+  sellerId         String    @map("seller_id") // NOT NULL từ P9.1 (backfill xong ở P8)
   // Mốc "đã đọc" của từng bên (null = chưa mở lần nào). Tin chưa đọc = tin của
   // bên kia có created_at > mốc này. Buyer null khi vừa được match → báo là 1.
   buyerLastReadAt  DateTime? @map("buyer_last_read_at")
@@ -257,8 +257,8 @@ model Conversation {
   // history + price_records — chỉ xóa nội dung messages.
   messagesPurgeAt  DateTime? @map("messages_purge_at")
   messagesPurgedAt DateTime? @map("messages_purged_at")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
   listing  Listing?  @relation(fields: [listingId], references: [id])
   buyOrder BuyOrder? @relation(fields: [buyOrderId], references: [id])
@@ -453,9 +453,9 @@ model PriceRecord {
 // bao giờ trộn chung: nguồn ngoài không được coi là dữ liệu đóng cho AI dự đoán
 // giá. quantity = số pack quan sát; priceJpy = đơn giá/pack tại recordedAt.
 model ReferencePrice {
-  id     String @id @default(cuid())
-  cardId String @map("card_id")
-  source String // nhãn nguồn hiển thị cho user, vd "Round One", "遊々亭"
+  id         String   @id @default(cuid())
+  cardId     String   @map("card_id")
+  source     String // nhãn nguồn hiển thị cho user, vd "Round One", "遊々亭"
   /// LOẠI giá — quyết định nhóm thống kê. KHÔNG được trộn ba loại này vào
   /// cùng một trung bình: shop thu vào luôn thấp hơn giá rao, trộn ra con số
   /// vô nghĩa mà nhìn vẫn như thật.
@@ -492,4 +492,38 @@ model RateLimit {
   // Phục vụ dọn rác lazy (xóa cửa sổ đã hết hạn).
   @@index([windowEnd])
   @@map("rate_limits")
+}
+
+/// Bài 買取 của shop trên X, hiện ở /kaitori/[vùng] bằng EMBED CHÍNH THỨC của X.
+/// CHỈ lưu link (handle + post_id) và mốc giờ — KHÔNG lưu chữ hay ảnh của bài:
+/// nội dung do X tự hiện trong khung nhúng, shop xóa bài trên X là bài tự mất ở
+/// đây. Đây cũng KHÔNG phải dữ liệu giá: không bao giờ đi vào reference_prices.
+/// Sống tối đa 48 giờ (xóa ở mỗi lượt quét). Xem docs/kaitori.md.
+model KaitoriPost {
+  id        String   @id @default(cuid())
+  /// ID bài trên X (snowflake, dạng chuỗi số) — khóa chống trùng giữa các lượt quét.
+  postId    String   @unique @map("post_id")
+  /// Handle đúng chữ hoa/thường như trong danh bạ (src/lib/kaitori-shops.ts).
+  handle    String
+  /// Giải từ snowflake của postId, KHÔNG lấy ngày Grok khai (mô hình đoán sai được).
+  postedAt  DateTime @map("posted_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([postedAt])
+  @@map("kaitori_posts")
+}
+
+/// Nhật ký mỗi lượt quét bài 買取 — để tính trần ngân sách X Search trong tháng
+/// và hiện "cập nhật lúc …" trên trang. Giữ ~40 ngày.
+model KaitoriPostRun {
+  id           String   @id @default(cuid())
+  ranAt        DateTime @default(now()) @map("ran_at")
+  /// Số bài X Search đã đọc (xAI tính tiền theo con số này).
+  postsFetched Int      @map("posts_fetched")
+  saved        Int
+  /// "budget" = bỏ qua vì đã chạm trần tháng; null = đã quét.
+  skipped      String?
+
+  @@index([ranAt])
+  @@map("kaitori_post_runs")
 }

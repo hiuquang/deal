@@ -43,6 +43,13 @@ export default function PrivacyPage() {
           cho bên thứ ba khi chưa có sự đồng ý của người dùng. Chúng tôi không
           bán thông tin cá nhân cho các đơn vị quảng cáo.
         </p>
+        <p>
+          Trang <strong>買取</strong> theo từng khu vực hiện bài đăng của các shop bằng khung nhúng
+          chính thức của X (Twitter). Khi mở trang đó, trình duyệt của bạn tải nội dung trực tiếp từ
+          máy chủ của X, nên X nhận được các thông tin kỹ thuật thông thường (địa chỉ IP, loại trình
+          duyệt) và có thể đặt cookie của X theo chính sách của họ. DEAL yêu cầu X không dùng lượt
+          xem này để cá nhân hóa (Do Not Track) và không gửi thông tin tài khoản DEAL của bạn cho X.
+        </p>
       </Section>
 
       <Section title="4. Công khai dữ liệu giá đóng">

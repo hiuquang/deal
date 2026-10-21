@@ -124,7 +124,9 @@ export function NavBar() {
         <Link href="/" className="flex min-w-0 shrink items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.jpg" alt="DEAL" className="h-10 w-auto shrink-0 sm:h-12" />
-          <span className="hidden text-xs text-slate-500 md:inline">{t("nav.tagline")}</span>
+          {/* Từ lg chứ không phải md: ở 768–1023px hàng nav vừa đủ chỗ cho các
+              mục, tagline chen vào là bị bóp thành cột chữ dọc cạnh logo. */}
+          <span className="hidden text-xs text-slate-500 lg:inline">{t("nav.tagline")}</span>
         </Link>
 
         {/* Desktop: các mục nằm ngang. Ẩn dưới sm vì tổng bề rộng vượt màn hình
@@ -138,6 +140,13 @@ export function NavBar() {
           </Link>
           <Link href="/buy-orders/new" className="rounded-md px-3 py-1.5 hover:bg-slate-100">
             {t("nav.buyOrders")}
+          </Link>
+          {/* Chỉ từ md. Đã đo ở 654px: hàng nav vốn đã sát mép (logo co còn
+              25px), thêm mục này vào là logo bị bóp về 0 và header tràn — nhãn
+              ngắn lại thành 買取 cũng không cứu được. Dưới md vẫn vào được qua
+              footer; dưới sm thì có trong menu hamburger. */}
+          <Link href="/kaitori" className="hidden rounded-md px-3 py-1.5 hover:bg-slate-100 md:block">
+            {t("nav.kaitori")}
           </Link>
           {me && (
             <Link href="/chat" className="relative rounded-md px-3 py-1.5 hover:bg-slate-100">
@@ -234,6 +243,9 @@ export function NavBar() {
           </Link>
           <Link href="/buy-orders/new" className="block rounded-md px-2 py-2.5 hover:bg-slate-100">
             {t("nav.buyOrders")}
+          </Link>
+          <Link href="/kaitori" className="block rounded-md px-2 py-2.5 hover:bg-slate-100">
+            {t("nav.kaitori")}
           </Link>
           {me && (
             <Link

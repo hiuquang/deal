@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import * as listingService from "@/server/services/listing-service";
 import * as buyOrderService from "@/server/services/buy-order-service";
 import { siteUrl } from "@/lib/site";
+import { KAITORI_REGIONS } from "@/lib/kaitori-shops";
 
 // Sitemap để Google biết từng tin đăng tồn tại — chợ mới không có backlink nào,
 // không khai báo thì crawler chỉ thấy mỗi trang chủ.
@@ -30,6 +31,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteUrl();
   const staticPages: MetadataRoute.Sitemap = [
     { url: base, changeFrequency: "hourly", priority: 1 },
+    // 買取: trang chọn vùng gần như không đổi; trang từng vùng đổi theo bài X
+    // (4 tiếng/lần) → daily là đúng nhịp thật, và là trang trả lời đúng câu
+    // người ta gõ vào Google ("bán thẻ pokemon ở nhật") → ưu tiên cao hơn.
+    { url: `${base}/kaitori`, changeFrequency: "monthly", priority: 0.5 },
+    ...KAITORI_REGIONS.map((region) => ({
+      url: `${base}/kaitori/${region}`,
+      changeFrequency: "daily" as const,
+      priority: 0.7,
+    })),
     { url: `${base}/terms`, changeFrequency: "yearly", priority: 0.2 },
     { url: `${base}/privacy`, changeFrequency: "yearly", priority: 0.2 },
   ];

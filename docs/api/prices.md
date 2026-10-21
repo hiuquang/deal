@@ -33,6 +33,16 @@ Quy ước chung: [README.md](README.md). Bất biến: [business-rules.md](../b
 
 Thu thập giá 買取 từ X qua Grok. Chi tiết + lý do thiết kế: [kaitori.md](../kaitori.md).
 
+### POST /api/cron/kaitori-posts (CHỈ GITHUB ACTIONS)
+
+Quét link bài 買取 của các shop trên X → lưu vào `kaitori_posts` để nhúng ở `/kaitori/[vùng]`. **Không đụng `reference_prices`.**
+
+- Header bắt buộc: `Authorization: Bearer <CRON_SECRET>`. Thiếu env hoặc sai khóa → **404** (không phải 401: người dò không cần biết ở đây có gì).
+- Chỉ POST (tốn tiền xAI thật). `maxDuration = 60`.
+- 200, khi quét: `{ "status": "ok", "purged", "linksFound", "candidates", "saved", "postsFetched", "used", "budget" }`
+- 200, khi chạm trần tháng: `{ "status": "skipped_budget", "purged", "used", "budget" }` — không gọi Grok.
+- 503 `XAI_NOT_CONFIGURED` · 502 `XAI_FAILED` / `XAI_BAD_OUTPUT`.
+
 - Gate `requireOwner()` (env `OWNER_USER_ID`). Không phải chủ web → **404**, không phải 403: người lạ dò trúng URL không có lý do gì để biết ở đây CÓ trang họ không vào được. Thiếu env → chặn hết.
 - `scan` **KHÔNG ghi gì vào DB**, chỉ trả đề xuất chờ duyệt. `import` là cửa DUY NHẤT đưa 買取 vào `reference_prices`, và chỉ nhận dòng đã có `cardId` do người chọn.
 - ⚠️ `scan` gọi API xAI **tốn tiền thật** → chỉ POST, không bao giờ để GET.

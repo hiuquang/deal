@@ -15,6 +15,11 @@ export const MESSAGES = {
   "nav.logout": { vi: "Đăng xuất", en: "Log out" },
   "nav.unreadAria": { vi: "{n} tin nhắn chưa đọc", en: "{n} unread messages" },
   "nav.activityAria": { vi: "{n} thông báo mới", en: "{n} new notifications" },
+  // Nhãn để NGUYÊN chữ Nhật ở cả hai ngôn ngữ (quyết định của chủ web
+  // 2026-10-21): 買取 là từ người dùng gặp ngay trên biển hiệu và bảng giá của
+  // shop — dịch ra thì họ phải dịch ngược lại khi đứng trước cửa hàng. Đây là
+  // ngoại lệ có chủ đích với việc đã gỡ tiếng Nhật khỏi UI ở v0.17.0.
+  "nav.kaitori": { vi: "買取", en: "買取" },
   "nav.menu": { vi: "Menu", en: "Menu" },
   "common.loading": { vi: "Đang tải…", en: "Loading…" },
   "common.loadError": { vi: "Tải dữ liệu thất bại.", en: "Failed to load." },

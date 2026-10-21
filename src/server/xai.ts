@@ -99,11 +99,17 @@ function extractJson(text: string): unknown {
   }
 }
 
-export async function searchKaitori(input: {
+/**
+ * Một lượt gọi Grok + X Search. Dùng chung cho quét GIÁ (chờ duyệt) và quét BÀI
+ * (link để nhúng) — hai luồng khác nhau ở prompt và ở chỗ đầu ra được tin tới
+ * đâu, nhưng cách gọi, trần chi phí và cách giấu lỗi phải giống hệt nhau.
+ */
+async function callXSearch(input: {
+  prompt: string;
   handles: string[];
   fromDate: string;
   toDate: string;
-}): Promise<{ items: KaitoriCandidate[]; postsFetched: number }> {
+}): Promise<{ text: string; postsFetched: number }> {
   const apiKey = process.env.XAI_API_KEY;
   if (!apiKey) {
     throw new ApiError(
@@ -121,8 +127,9 @@ export async function searchKaitori(input: {
     },
     body: JSON.stringify({
       model: MODEL,
-      input: [{ role: "user", content: buildPrompt(input.handles, input.fromDate, input.toDate) }],
+      input: [{ role: "user", content: input.prompt }],
       // `to_date` là mốc LOẠI TRỪ theo tài liệu xAI — bên gọi đã cộng thêm 1 ngày.
+      // Cả hai chỉ nhận YYYY-MM-DD theo giờ UTC: KHÔNG lọc được theo giờ.
       tools: [
         {
           type: "x_search",
@@ -143,16 +150,75 @@ export async function searchKaitori(input: {
   }
 
   const payload: unknown = await res.json();
-  const parsed = responseSchema.safeParse(extractJson(collectText(payload)));
+  const usage = (payload as { usage?: { server_side_tool_usage_details?: Record<string, number> } })
+    .usage?.server_side_tool_usage_details;
+  return { text: collectText(payload), postsFetched: usage?.x_posts_fetched ?? 0 };
+}
+
+export async function searchKaitori(input: {
+  handles: string[];
+  fromDate: string;
+  toDate: string;
+}): Promise<{ items: KaitoriCandidate[]; postsFetched: number }> {
+  const { text, postsFetched } = await callXSearch({
+    ...input,
+    prompt: buildPrompt(input.handles, input.fromDate, input.toDate),
+  });
+
+  const parsed = responseSchema.safeParse(extractJson(text));
   if (!parsed.success) {
     console.error(`[xai] output sai schema: ${parsed.error.message.slice(0, 300)}`);
     throw new ApiError(502, "XAI_BAD_OUTPUT", "Grok trả về dữ liệu sai định dạng.");
   }
 
-  const usage = (payload as { usage?: { server_side_tool_usage_details?: Record<string, number> } })
-    .usage?.server_side_tool_usage_details;
-  const postsFetched = usage?.x_posts_fetched ?? 0;
   console.log(`[xai] quét ${input.handles.length} handle → ${parsed.data.items.length} đề xuất, ${postsFetched} bài đã đọc`);
-
   return { items: parsed.data.items, postsFetched };
+}
+
+// ---- Quét BÀI 買取 để nhúng ở /kaitori/[vùng] ----
+
+const postsResponseSchema = z.object({
+  posts: z.array(z.object({ url: z.string().max(500) })).max(80),
+});
+
+function buildPostsPrompt(handles: string[], fromDate: string, toDate: string): string {
+  return [
+    `Tìm các bài đăng của các tài khoản: ${handles.join(", ")}`,
+    `trong khoảng ${fromDate} đến ${toDate} (UTC) có nội dung là BẢNG GIÁ 買取 / 買取表 /`,
+    "買取価格 / 高価買取 (giá shop THU VÀO thẻ bài từ khách).",
+    "",
+    "Bỏ qua bài chỉ quảng cáo 販売 (shop bán ra), giải đấu, sự kiện, giờ mở cửa, tuyển dụng.",
+    "Bỏ qua bài đăng lại (repost) của người khác.",
+    "",
+    "Trả lời DUY NHẤT bằng JSON hợp lệ, không giải thích, không bọc trong ```:",
+    '{"posts":[{"url":"https://x.com/<handle>/status/<id>"}]}',
+    "",
+    "Chỉ đưa link bài bạn THẬT SỰ thấy trong kết quả tìm kiếm. Không tìm được gì thì trả {\"posts\":[]}.",
+  ].join("\n");
+}
+
+/**
+ * Trả LINK bài 買取 Grok thấy — chưa kiểm gì cả. Bên gọi bắt buộc: đối chiếu
+ * handle với danh bạ, tự giải mốc giờ từ snowflake, và hỏi lại chính X (oEmbed)
+ * xem bài có thật không, trước khi lưu. Xem `kaitori-posts-service.ts`.
+ */
+export async function searchKaitoriPostUrls(input: {
+  handles: string[];
+  fromDate: string;
+  toDate: string;
+}): Promise<{ urls: string[]; postsFetched: number }> {
+  const { text, postsFetched } = await callXSearch({
+    ...input,
+    prompt: buildPostsPrompt(input.handles, input.fromDate, input.toDate),
+  });
+
+  const parsed = postsResponseSchema.safeParse(extractJson(text));
+  if (!parsed.success) {
+    console.error(`[xai] output bài sai schema: ${parsed.error.message.slice(0, 300)}`);
+    throw new ApiError(502, "XAI_BAD_OUTPUT", "Grok trả về dữ liệu sai định dạng.");
+  }
+
+  const urls = parsed.data.posts.map((p) => p.url);
+  console.log(`[xai] quét bài ${input.handles.length} handle → ${urls.length} link, ${postsFetched} bài đã đọc`);
+  return { urls, postsFetched };
 }

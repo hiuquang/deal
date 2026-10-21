@@ -8,6 +8,9 @@ export function SiteFooter() {
   return (
     <footer className="mx-auto max-w-5xl space-y-2 px-4 py-8 text-center text-xs text-slate-400">
       <p className="space-x-3">
+        <Link href="/kaitori" className="hover:text-brand-600 hover:underline">
+          {t("nav.kaitori")}
+        </Link>
         <Link href="/terms" className="hover:text-brand-600 hover:underline">
           {t("legal.terms")}
         </Link>

@@ -21,13 +21,18 @@ export const KAITORI_KIND = "kaitori";
  * Các shop thẻ bài Nhật đăng bảng giá 買取 đều đặn trên X. Để trong code chứ
  * không phải env: đây là tri thức về thị trường, sửa thì sửa kèm review, chứ
  * không phải thứ đổi theo môi trường triển khai.
+ *
+ * ⚠️ Sửa 2026-10-21: v0.32.0 ghi `yuyu_tei`, `hareruya2_TCG`, `cardlabo_` — đối
+ * chiếu với trang chính thức thì KHÔNG phải tài khoản shop trỏ tới. Đã thay
+ * bằng handle lấy từ link trên site của chính shop. Hai dòng còn lại CHƯA
+ * kiểm được (xem docs/kaitori.md, mục "chờ kiểm tay").
  */
 export const DEFAULT_SHOP_HANDLES = [
-  "yuyu_tei",
-  "cardrush_pokemon",
-  "hareruya2_TCG",
-  "FullaheadTcg",
-  "cardlabo_",
+  "yuyuteiNews", // yuyu-tei.jp, chân trang
+  "hareruya2pokeca", // hareruya2.com, "ハレツーX"
+  "cardlabo_info", // c-labo.jp, đầu trang
+  "cardrush_pokemon", // chưa kiểm
+  "FullaheadTcg", // chưa kiểm
 ];
 
 /** Trần số ngày quét ngược — quét rộng là tốn tiền API mà dữ liệu cũ vô dụng. */

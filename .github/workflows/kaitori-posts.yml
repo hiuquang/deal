@@ -1,0 +1,42 @@
+name: Quét bài 買取 trên X
+
+# Vì sao ở GitHub mà không phải Vercel Cron: gói Vercel Hobby chỉ cho cron chạy
+# 1 lần/ngày (biểu thức dày hơn làm HỎNG deploy). GitHub Actions miễn phí cho
+# repo public. Xem docs/kaitori.md.
+#
+# Lưu ý của GitHub: repo public KHÔNG có commit nào trong 60 ngày thì lịch
+# `schedule` tự bị tắt — vào tab Actions bật lại.
+on:
+  schedule:
+    # 4 tiếng/lần theo UTC (= 9, 13, 17, 21, 1, 5 giờ JST). GitHub hay trễ vài
+    # phút tới vài chục phút lúc đông; service nhìn ngược 6 giờ nên không hụt bài.
+    - cron: "0 */4 * * *"
+  # Nút "Run workflow" để chạy tay khi cần thử.
+  workflow_dispatch:
+
+# Hai lượt không bao giờ chạy chồng — mỗi lượt là tiền xAI thật.
+concurrency:
+  group: kaitori-posts
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Gọi endpoint quét
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          DEAL_URL: ${{ vars.DEAL_URL || 'https://deal-green.vercel.app' }}
+        run: |
+          # Chưa cài đặt xong thì chỉ cảnh báo, không đỏ: đỏ là GitHub gửi mail
+          # báo lỗi 6 lần/ngày cho một việc chưa bắt đầu. Endpoint tự chặn
+          # (404) nên bỏ qua ở đây không hở gì.
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::warning::Chưa đặt secret CRON_SECRET (Settings → Secrets and variables → Actions) — bỏ qua lượt này."
+            exit 0
+          fi
+          # -f: HTTP lỗi (404 sai khóa, 503 thiếu XAI_API_KEY, 502 Grok lỗi) → job đỏ.
+          curl -fsS --max-time 90 -X POST \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$DEAL_URL/api/cron/kaitori-posts"
