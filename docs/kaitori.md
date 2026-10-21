@@ -65,6 +65,20 @@ Quyết định chủ web (2026-10-21): **vào trang là chọn khu vực**, ch�
 - `/kaitori/[vùng]`: tĩnh + ISR 10 phút (`dynamicParams = false` → vùng lạ 404). Route riêng chứ không dùng `?region=` để mỗi vùng là một trang tĩnh, link dán vào group trỏ thẳng đúng vùng.
 - Chỉ tiếng Việt (như `/terms`); nhãn nav để nguyên **買取** ở cả hai ngôn ngữ (quyết định chủ web — đó là chữ trên biển hiệu shop).
 
+### Tin có thể làm giá biến động — `src/lib/kaitori-news.ts`
+
+Trang chọn vùng `/kaitori` hiện **4 tin mới nhất** (`NEWS_ON_PAGE`; chủ web chốt 3 rồi xin thêm tin SNKRDUNK, 2026-10-21), đặt SAU hai thẻ chọn vùng. Dữ liệu tĩnh trong code, mỗi lần đổi tin là một lần deploy.
+
+**Quy tắc (test `tests/kaitori-news.test.ts` chặn phần máy kiểm được):**
+
+1. **Chỉ nguồn chính thức** = trang của chính tổ chức ra quyết định (`OFFICIAL_NEWS_HOSTS`): hãng Pokémon (pokemon-card.com, pokemoncenter-online.com, pokemon.co.jp + subdomain), hoặc **sàn bán lại thông báo chính sách của chính sàn** (snkrdunk.com, about.mercari.com — KHÔNG phải jp.mercari.com nơi có tin đăng). Không tin đồn, không leak, không báo tổng hợp, không bài của shop hay group — tin sai trên trang về GIÁ là người ta bán hớ thật. Với SNKRDUNK: chỉ tóm tắt thông báo công khai + dẫn link; lập trường không lấy dữ liệu giá/tin đăng của sàn vẫn giữ nguyên.
+2. **Tự viết tóm tắt tiếng Việt**, không chép nguyên văn, không lấy ảnh; luôn kèm link bài gốc.
+3. **Chỉ chọn tin đụng tới cung/cầu thật**: bán thêm, bốc thăm, in lại, promo, đổi luật thi đấu, sàn lớn cấm/ngừng bán. Tin sự kiện, livestream, phỏng vấn thì bỏ, dù mới hơn.
+4. `impact` nói **cơ chế** ("nguồn cung tăng"), **không phán con số** giá lên/xuống bao nhiêu.
+5. Soát lại thì cập nhật `NEWS_CHECKED_ON` — ngày này hiện ngay dưới tiêu đề khối tin.
+
+Nguồn tin: trang tin chính thức <https://www.pokemon-card.com/info/> và mục tin của Pokémon Center Online. Đọc nguyên văn trang gốc trước khi viết, và đọc TỚI CUỐI: câu quan trọng nhất của tin 29/09 (đợt bốc thăm thêm box 30th tháng 12) nằm ở dòng cuối trang, đọc mỗi phần đầu là mất.
+
 ### Danh bạ — `src/lib/kaitori-shops.ts`
 
 Dữ liệu trong code, không phải DB. **5 shop mỗi vùng do chủ web chọn tay** (`FEATURED_SHOP_IDS`) — chưa có dữ liệu 買取 theo shop để xếp tự động; đừng tự đổi sang xếp theo số liệu khi chưa bàn lại. Trang ghi "5 shop thu thẻ", **không** ghi "giá cao nhất": chưa có số liệu nào chứng minh điều đó.

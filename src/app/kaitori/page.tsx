@@ -1,13 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { KAITORI_REGIONS, REGION_HINT, REGION_LABEL } from "@/lib/kaitori-shops";
+import { NEWS_CHECKED_ON, NEWS_ON_PAGE, latestNews } from "@/lib/kaitori-news";
+
+/** "2026-10-16" → "16/10/2026" — định dạng tay, không qua Intl (khỏi lệch múi giờ). */
+function viDate(iso: string): string {
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
 
 // Cửa vào: chỉ chọn vùng. Nội dung thật ở /kaitori/[vùng] — tách route chứ
 // không dùng ?region= để mỗi vùng là một trang tĩnh riêng (ISR), link dán vào
 // group dẫn thẳng tới đúng vùng, và Google thấy hai trang thay vì một.
 const TITLE = "買取 — Shop thu thẻ ở Tokyo và Osaka | DEAL";
 const DESC =
-  "Chọn khu vực để xem 5 shop thu thẻ TCG (買取) và bài bảng giá 買取 mới nhất họ đăng trên X.";
+  "Chọn khu vực để xem 5 shop thu thẻ TCG (買取) và bảng giá 買取 mới nhất họ đăng trên X, kèm tin chính thức có thể làm giá Pokémon Card biến động.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -50,6 +57,43 @@ export default function KaitoriRegionChooser() {
           </li>
         ))}
       </ul>
+
+      {/* Đặt SAU hai thẻ chọn vùng: việc chính của trang vẫn là chọn vùng,
+          tin là thứ đọc thêm. */}
+      <section className="space-y-3">
+        <div>
+          <h2 className="text-xl font-black text-slate-900">Tin có thể làm giá biến động</h2>
+          <p className="mt-1 text-xs text-slate-400">
+            Chỉ từ nguồn chính thức · soát ngày {viDate(NEWS_CHECKED_ON)}
+          </p>
+        </div>
+        <ul className="space-y-3">
+          {latestNews(NEWS_ON_PAGE).map((news) => (
+            <li key={news.id} className="rounded-2xl border border-slate-200 bg-white p-5">
+              <p className="text-xs font-medium text-slate-400">{viDate(news.publishedOn)}</p>
+              <h3 className="mt-1 font-bold text-slate-900">{news.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">{news.summary}</p>
+              <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm leading-relaxed text-amber-900">
+                <span className="font-bold">Ảnh hưởng tới giá: </span>
+                {news.impact}
+              </p>
+              <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                {[news.source, ...(news.moreSources ?? [])].map((src, i) => (
+                  <a
+                    key={src.url}
+                    href={src.url}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className="font-medium text-brand-600 hover:underline"
+                  >
+                    {i === 0 ? "Nguồn" : "Xem thêm"}: {src.label} ↗
+                  </a>
+                ))}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   );
 }

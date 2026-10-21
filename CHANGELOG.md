@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## [0.34.0] — 2026-10-21 — Tin có thể làm giá biến động trên trang 買取
+
+### Bối cảnh
+Chủ web yêu cầu: ở trang chọn Tokyo / Osaka, hiện 3 tin Pokémon mới nhất có thể ảnh hưởng lớn tới giá. Người Việt ở Nhật đọc không kịp tin chính thức tiếng Nhật, mà tin về nguồn cung (bốc thăm, in lại) là thứ quyết định nên giữ hay bán box ngay.
+
+### Tính năng
+- Trang `/kaitori` có khối **"Tin có thể làm giá biến động"** dưới hai thẻ chọn vùng: 4 tin mới nhất, mỗi tin gồm ngày, tóm tắt tiếng Việt, dòng **"Ảnh hưởng tới giá"** và link nguồn chính thức.
+- 4 tin đầu tiên:
+  - 19/10 — **SNKRDUNK ngừng giao dịch 30th CELEBRATION カードセット (御三家)**, cả bộ 9 loại lẫn 9 set lẻ (hàng bị mở/tráo ruột tăng vọt). Kèm lệnh cấm của Mercari từ 16/9.
+  - 16/10 — Special Deck Set MEGA ra 13/11, có in lại ハイパーボール · ボスの指令 · リーリエの決心.
+  - 16/10 — Promo Card Pack đợt 6 phát ở gym từ 1/11.
+  - 29/09 — Pokémon Center Online dự kiến bốc thăm bán thêm box 30th CELEBRATION, Premium Deck Set エーフィ・ブラッキー, FUTURISTIC BOX vào khoảng tháng 12.
+
+### Kỹ thuật
+- Dữ liệu tĩnh `src/lib/kaitori-news.ts`. **Chỉ nhận link từ trang chính thức** (`isOfficialNewsUrl`, bắt buộc https): hãng Pokémon (pokemon-card.com, pokemoncenter-online.com, pokemon.co.jp + subdomain) và **thông báo chính sách của chính sàn** (snkrdunk.com, about.mercari.com — không nhận jp.mercari.com). Test chặn cả domain giả dạng kiểu `pokemon-card.com.evil.com`.
+- Tin SNKRDUNK: chỉ tóm tắt thông báo công khai của sàn + dẫn link. Lập trường v0.30.0 không đổi — không lấy dữ liệu giá hay tin đăng của SNKRDUNK.
+- Chỉ chọn tin đụng tới cung/cầu; dòng "ảnh hưởng" nói cơ chế, **không phán con số** — DEAL không có dữ liệu để phán.
+- Tóm tắt tự viết, không chép nguyên văn, không lấy ảnh. `NEWS_CHECKED_ON` hiện trên trang để người đọc biết tin cũ tới đâu.
+- +7 test (342 pass).
+
 ## [0.33.1] — 2026-10-21 — Vá lỗ hổng thư viện
 
 ### Bối cảnh
