@@ -89,7 +89,7 @@ export const IMAGE_STYLE = [
 ].join(" ");
 
 /** Ngày soát lại toàn bộ tin + link (JST). */
-export const NEWS_CHECKED_ON = "2026-10-21";
+export const NEWS_CHECKED_ON = "2026-10-22";
 
 export const POKEMON_NEWS: PokemonNews[] = [
   {

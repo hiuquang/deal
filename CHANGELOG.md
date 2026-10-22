@@ -15,6 +15,7 @@ Chủ web muốn mỗi tin trên `/kaitori` có một ảnh tạo bằng Gemini/
 - Script `npm run news:images` (Gemini `gemini-nano-banana-2.1` hoặc OpenAI `gpt-image-2.5-flare`), khóa chỉ ở `.env` local, không in khóa, thu ảnh về webp 256px. Bộ ảnh đầu tạo qua app Gemini trên web vì chưa có khóa; từng ảnh đối chiếu **SHA-256** với bản gốc trước khi dùng.
 - 4 ảnh tổng ~22KB trong `public/news/`; `alt=""` vì là ảnh trang trí. CSP không đổi (ảnh cùng domain).
 - +2 test (344 pass).
+- Soát tin ngày 22/10 (`NEWS_CHECKED_ON`): pokemon-card.com không có tin mới từ 16/10; thông báo SNKRDUNK vẫn hiệu lực. Tin "mở đặt Special Deck MEGA từ 23/10" chỉ thấy ở trang tổng hợp, chưa thấy nguồn chính thức → không đưa lên.
 
 ## [0.34.0] — 2026-10-21 — Tin có thể làm giá biến động trên trang 買取
 
