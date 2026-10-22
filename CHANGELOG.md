@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## [0.36.0] — 2026-10-22 — Mỗi vùng đúng 4 bài 買取 giá cao nhất, tự bù khi bài hết hạn
+
+### Bối cảnh
+Chủ web muốn mỗi vùng luôn có đủ 4 bài 買取 giá cao nhất; bài không có giá thì "lấy từ trên xuống" cho đủ. Trước đây trang hiện tất cả bài trong 48h theo giờ đăng, và khi bài top hết hạn thì trang thưa đi cho tới khi có người chọn tay lại.
+
+### Tính năng
+- Trang vùng hiện **đúng 4 bài**, xếp theo **giá thẻ cao nhất trong bài**, có nhãn "#1 ¥5,200,000 · ミズゴロウ☆ 1ED" phía trên mỗi bài.
+- Thiếu bài có giá → **bù bằng bài mới nhất**. Bài top hết 48h → **bài kế tiếp tự lên**.
+
+### Kỹ thuật
+- Migration `20261022040000_kaitori_post_price`: thêm `top_price_jpy`, `top_card` (nullable) vào `kaitori_posts`. CHỈ để xếp hạng hiển thị, không vào `reference_prices`.
+- `rankForDisplay()` (hàm thuần, có test): giá desc, null xếp sau theo giờ đăng mới nhất.
+- Grok API được yêu cầu trả `maxPriceJpy` + `card` (đọc cả ảnh); sai dạng → null. `fillMissingPrice` điền giá cho bài đã có mà còn trống.
+- Đổi tên `searchKaitoriPostUrls` → `searchKaitoriPosts` (trả object thay vì chuỗi link).
+- Ghi lại kết quả đối chiếu công cụ tìm bài (Yahoo / X search / Grok / ChatGPT) trong `docs/kaitori.md`: Grok đọc được ảnh nhưng sót 4/8 bài cao nhất; X giấu @namba_clabo khỏi tìm kiếm.
+- +6 test (350 pass).
+
 ## [0.35.0] — 2026-10-21 — Ảnh minh hoạ cho tin trên trang 買取
 
 ### Bối cảnh

@@ -95,13 +95,15 @@ reference_prices  id, card_id→cards, source, quantity, price_jpy, note?,
                      cho AI. Hiển thị công khai để tạo mặt bằng giá khi web còn
                      ít giao dịch. quantity=số pack, price_jpy=đơn giá/pack.
 
-kaitori_posts     id, post_id UNIQUE, handle, posted_at, created_at
+kaitori_posts     id, post_id UNIQUE, handle, posted_at, top_price_jpy?, top_card?, created_at
                   index(posted_at)
                   ── Bài 買取 của shop trên X, hiện ở /kaitori/[vùng] bằng EMBED
                      chính thức của X. CHỈ lưu link (handle + post_id) + mốc giờ,
                      KHÔNG lưu chữ/ảnh. posted_at giải từ snowflake của post_id,
                      không lấy ngày Grok khai. Sống tối đa 48h. KHÔNG phải dữ liệu
                      giá — không bao giờ đi vào reference_prices.
+                     top_price_jpy/top_card = giá thẻ cao nhất trong bài, CHỈ để
+                     xếp hạng 4 bài/vùng (null = chưa đọc được → bù sau).
 
 kaitori_post_runs id, ran_at, posts_fetched, saved, skipped?
                   index(ran_at)

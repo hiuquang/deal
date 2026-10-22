@@ -16,19 +16,22 @@ vi.mock("@/server/repositories/kaitoriPosts", () => ({
   recordRun: vi.fn(),
   existingPostIds: vi.fn(),
   insertPosts: vi.fn(),
+  fillMissingPrice: vi.fn(),
   listPosts: vi.fn(),
   lastScanAt: vi.fn(),
 }));
-vi.mock("@/server/xai", () => ({ searchKaitoriPostUrls: vi.fn() }));
+vi.mock("@/server/xai", () => ({ searchKaitoriPosts: vi.fn() }));
 vi.mock("@/server/x-oembed", () => ({ verifyPostAuthor: vi.fn() }));
 
 import * as repo from "@/server/repositories/kaitoriPosts";
-import { searchKaitoriPostUrls } from "@/server/xai";
+import { searchKaitoriPosts } from "@/server/xai";
 import { verifyPostAuthor } from "@/server/x-oembed";
 import {
   DEFAULT_MONTHLY_BUDGET,
+  POSTS_ON_PAGE,
   listForRegion,
   monthlyBudget,
+  rankForDisplay,
   refresh,
   selectCandidates,
   startOfMonthJst,
@@ -36,7 +39,7 @@ import {
 import { allPostHandles, regionPostHandles } from "@/lib/kaitori-shops";
 
 const mRepo = vi.mocked(repo);
-const mSearch = vi.mocked(searchKaitoriPostUrls);
+const mSearch = vi.mocked(searchKaitoriPosts);
 const mVerify = vi.mocked(verifyPostAuthor);
 
 const NOW = new Date("2026-10-21T03:00:00.000Z");
@@ -113,7 +116,7 @@ describe("refresh", () => {
   });
 
   it("gọi Grok với đúng danh sách handle và cửa sổ ngày UTC (to_date loại trừ)", async () => {
-    mSearch.mockResolvedValue({ urls: [], postsFetched: 0 });
+    mSearch.mockResolvedValue({ posts: [], postsFetched: 0 });
     await refresh(NOW);
     expect(mSearch).toHaveBeenCalledWith({
       handles: allPostHandles(),
@@ -128,11 +131,11 @@ describe("refresh", () => {
     const wrongAuthor = hoursAgo(3);
     const seen = hoursAgo(4);
     mSearch.mockResolvedValue({
-      urls: [
-        url("namba_clabo", real),
-        url("namba_clabo", deleted),
-        url("namba_clabo", wrongAuthor),
-        url("namba_clabo", seen),
+      posts: [
+        { url: url("namba_clabo", real), maxPriceJpy: 95_000_000, card: "ブラッキー☆" },
+        { url: url("namba_clabo", deleted) },
+        { url: url("namba_clabo", wrongAuthor) },
+        { url: url("namba_clabo", seen), maxPriceJpy: 40_000_000, card: "ブラッキー グレート" },
       ],
       postsFetched: 37,
     });
@@ -147,14 +150,22 @@ describe("refresh", () => {
 
     expect(mVerify).toHaveBeenCalledTimes(3); // không hỏi lại bài `seen`
     expect(mRepo.insertPosts).toHaveBeenCalledWith([
-      { postId: real, handle: "namba_clabo", postedAt: new Date(NOW.getTime() - HOUR) },
+      {
+        postId: real,
+        handle: "namba_clabo",
+        postedAt: new Date(NOW.getTime() - HOUR),
+        topPriceJpy: 95_000_000,
+        topCard: "ブラッキー☆",
+      },
     ]);
+    // Bài đã có nhưng lượt này đọc được giá → điền giá, không thêm dòng.
+    expect(mRepo.fillMissingPrice).toHaveBeenCalledWith(seen, 40_000_000, "ブラッキー グレート");
     expect(mRepo.recordRun).toHaveBeenCalledWith({ postsFetched: 37, saved: 1 });
     expect(r).toMatchObject({ status: "ok", saved: 1, postsFetched: 37, used: 37 });
   });
 
   it("so tác giả không phân biệt hoa/thường (X trả chữ hoa khác danh bạ vẫn nhận)", async () => {
-    mSearch.mockResolvedValue({ urls: [url("HBSTnipponbashi", hoursAgo(1))], postsFetched: 1 });
+    mSearch.mockResolvedValue({ posts: [{ url: url("HBSTnipponbashi", hoursAgo(1)) }], postsFetched: 1 });
     mVerify.mockResolvedValue("hbstNipponbashi");
     const r = await refresh(NOW);
     expect(r).toMatchObject({ saved: 1 });
@@ -189,14 +200,50 @@ describe("startOfMonthJst", () => {
 });
 
 describe("listForRegion", () => {
-  it("đọc đúng handle của vùng, lọc 48 giờ cả lúc ĐỌC", async () => {
-    mRepo.listPosts.mockResolvedValue([]);
+  it("đọc đúng handle của vùng, lọc 48 giờ cả lúc ĐỌC, trả đúng 4 bài đã xếp hạng", async () => {
+    const mk = (id: string, h: number, price: number | null) => ({
+      postId: id, handle: "namba_clabo", postedAt: new Date(NOW.getTime() - h * HOUR), topPriceJpy: price, topCard: null,
+    });
+    mRepo.listPosts.mockResolvedValue([mk("a", 1, null), mk("b", 2, 100), mk("c", 3, 5000), mk("d", 4, 300), mk("e", 5, 200)]);
     mRepo.lastScanAt.mockResolvedValue(null);
-    await listForRegion("osaka", NOW);
-    expect(mRepo.listPosts).toHaveBeenCalledWith(
-      regionPostHandles("osaka"),
-      new Date(NOW.getTime() - 48 * HOUR),
-      30
-    );
+    const r = await listForRegion("osaka", NOW);
+    expect(mRepo.listPosts).toHaveBeenCalledWith(regionPostHandles("osaka"), new Date(NOW.getTime() - 48 * HOUR), 300);
+    expect(r.posts.map((p) => p.postId)).toEqual(["c", "d", "e", "b"]);
+  });
+});
+
+describe("rankForDisplay — 4 bài: giá cao trước, thiếu thì bù bài mới nhất", () => {
+  const mk = (id: string, h: number, price: number | null) => ({
+    postId: id, handle: "x", postedAt: new Date(NOW.getTime() - h * HOUR), topPriceJpy: price, topCard: null,
+  });
+
+  it("mặc định đúng 4 bài", () => {
+    expect(POSTS_ON_PAGE).toBe(4);
+  });
+
+  it("giá cao nhất lên trước", () => {
+    const r = rankForDisplay([mk("a", 1, 100), mk("b", 2, 9000), mk("c", 3, 500), mk("d", 4, 70), mk("e", 5, 20)]);
+    expect(r.map((p) => p.postId)).toEqual(["b", "c", "a", "d"]);
+  });
+
+  it("thiếu bài có giá → bù bằng bài chưa có giá, MỚI NHẤT trước", () => {
+    const r = rankForDisplay([mk("old", 30, null), mk("p1", 10, 1000), mk("new", 1, null), mk("mid", 5, null)]);
+    expect(r.map((p) => p.postId)).toEqual(["p1", "new", "mid", "old"]);
+  });
+
+  it("cùng giá thì bài mới hơn lên trước", () => {
+    const r = rankForDisplay([mk("cu", 20, 100000), mk("moi", 2, 100000)]);
+    expect(r.map((p) => p.postId)).toEqual(["moi", "cu"]);
+  });
+
+  it("ít hơn 4 bài thì trả hết, không bịa thêm", () => {
+    expect(rankForDisplay([mk("a", 1, null)])).toHaveLength(1);
+    expect(rankForDisplay([])).toEqual([]);
+  });
+
+  it("không làm xáo mảng gốc", () => {
+    const src = [mk("a", 1, 1), mk("b", 2, 2)];
+    rankForDisplay(src);
+    expect(src.map((p) => p.postId)).toEqual(["a", "b"]);
   });
 });

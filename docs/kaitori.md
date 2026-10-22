@@ -147,6 +147,29 @@ GitHub Actions (0 */4 * * *)  ── POST + Bearer CRON_SECRET ──▶  /api/c
 
 **"2 ngày tự xóa"** chạy ở hai chỗ: xóa thật ở mỗi lượt quét, và **lọc 48 giờ lúc đọc** — lịch quét có chết thì bài cũ vẫn rơi khỏi trang đúng hạn (ISR 10 phút).
 
+### Mỗi vùng đúng 4 bài — giá cao trước, thiếu thì bù bài mới nhất
+
+Quyết định chủ web 2026-10-22. Bảng `kaitori_posts` lưu thêm `top_price_jpy` + `top_card` (giá 買取 cao nhất của MỘT thẻ trong bài và tên thẻ đó). **Chỉ để xếp hạng hiển thị — không phải dữ liệu giá, không bao giờ vào `reference_prices`.**
+
+- `rankForDisplay()`: giá cao nhất trước; bài chưa có giá (bảng chỉ có trong ảnh chưa đọc được) xếp sau, **mới nhất trước**, để bù cho đủ `POSTS_ON_PAGE = 4`. Cùng giá thì bài mới hơn trước.
+- Trang đọc cả pool bài trong 48h rồi mới xếp hạng → **bài top hết hạn thì bài kế tiếp tự lên**, không ai phải làm gì. Vì vậy hãy lưu NHIỀU bài (cả bài giá thấp, cả bài chỉ có ảnh), không chỉ đúng 4.
+- **48h tính từ giờ SHOP ĐĂNG trên X** (snowflake), không phải lúc đưa lên DEAL — chủ web xác nhận 2026-10-22.
+- Grok (API) được yêu cầu trả `maxPriceJpy` + `card`, đọc cả chữ lẫn ảnh; sai dạng → null, không loại bài. Bài đã có mà lượt sau đọc được giá → `fillMissingPrice` điền vào (không ghi đè giá đã có).
+- Trên trang: nhãn "#1 ¥5,200,000 · ミズゴロウ☆ 1ED" nằm NGOÀI khung nhúng của X (dữ kiện giá do DEAL ghi).
+
+### Tìm bài bằng tay khi chưa bật quét tự động — dùng công cụ nào
+
+Đối chiếu ngày 2026-10-22 (tìm top 4/vùng):
+
+| Công cụ | Được | Không được |
+|---|---|---|
+| **Yahoo!リアルタイム検索** (`ID:<handle> 買取`, không cần đăng nhập) | Đọc CHỮ của mọi bài, kể cả **@namba_clabo** (X giấu tài khoản này khỏi tìm kiếm); giữ được số kiểu emoji 1️⃣5️⃣ | Không đọc ảnh |
+| **X search** (cần đăng nhập) | Kiểm chéo, mở ảnh gốc | Không thấy @namba_clabo; số emoji thành ảnh |
+| **Grok trên x.com/i/grok** | **Đọc giá trong ảnh** (bắt ミュウVMAX ¥100,000 trong bảng 本気) | Sót 4/8 bài cao nhất: 2 bài giá ghi ngay trong chữ + 2 bài cao nhất Osaka của @namba_clabo |
+| ChatGPT (miễn phí, web search) | — | Không xác minh được bài nào (không vào được X) |
+
+→ Quy trình: Grok + Yahoo cùng chạy, gộp, rồi MỞ ẢNH kiểm những giá chỉ có trong ảnh. Mọi link vẫn qua 3 lớp (danh bạ, snowflake, oEmbed).
+
 ### Vì sao GitHub Actions mà không phải Vercel Cron
 
 Gói Vercel **Hobby chỉ cho cron chạy 1 lần/ngày**; biểu thức dày hơn làm **hỏng deploy**. GitHub Actions miễn phí cho repo public. Hai điều cần biết:

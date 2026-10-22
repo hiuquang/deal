@@ -16,12 +16,32 @@ export async function existingPostIds(postIds: string[]): Promise<Set<string>> {
   return new Set(rows.map((r) => r.postId));
 }
 
+export interface PostRow {
+  postId: string;
+  handle: string;
+  postedAt: Date;
+  /** Giá cao nhất trong bài — chỉ để xếp hạng hiển thị. Vắng = chưa đọc được. */
+  topPriceJpy?: number | null;
+  topCard?: string | null;
+}
+
 /** Ghi bài mới; trùng `postId` (hai lượt quét chồng nhau) thì bỏ qua, không lỗi. */
-export async function insertPosts(
-  rows: { postId: string; handle: string; postedAt: Date }[]
-): Promise<number> {
+export async function insertPosts(rows: PostRow[]): Promise<number> {
   if (rows.length === 0) return 0;
   const { count } = await prisma.kaitoriPost.createMany({ data: rows, skipDuplicates: true });
+  return count;
+}
+
+/**
+ * Điền giá cho bài ĐÃ có mà còn trống giá — lượt quét sau đọc được giá (vd từ
+ * ảnh) thì bài cũ cũng được xếp hạng đúng. Không ghi đè giá đã có: giá đầu
+ * tiên đọc được là giá shop đăng lúc đó, lượt sau không có lý do để đổi.
+ */
+export async function fillMissingPrice(postId: string, topPriceJpy: number, topCard: string | null) {
+  const { count } = await prisma.kaitoriPost.updateMany({
+    where: { postId, topPriceJpy: null },
+    data: { topPriceJpy, topCard },
+  });
   return count;
 }
 
@@ -37,7 +57,7 @@ export function listPosts(handles: string[], since: Date, limit: number) {
     },
     orderBy: { postedAt: "desc" },
     take: limit,
-    select: { postId: true, handle: true, postedAt: true },
+    select: { postId: true, handle: true, postedAt: true, topPriceJpy: true, topCard: true },
   });
 }
 

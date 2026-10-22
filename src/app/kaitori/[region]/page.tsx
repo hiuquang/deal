@@ -106,6 +106,9 @@ export default async function KaitoriRegionPage({
     handle: p.handle,
     shopName: shopOfHandle(p.handle)?.nameJa ?? p.handle,
     timeLabel: TIME_JST.format(p.postedAt),
+    priceLabel: p.topPriceJpy
+      ? `¥${p.topPriceJpy.toLocaleString("ja-JP")}${p.topCard ? ` · ${p.topCard}` : ""}`
+      : null,
   }));
 
   return (
@@ -145,9 +148,9 @@ export default async function KaitoriRegionPage({
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-xl font-black text-slate-900">Bài 買取 mới trên X</h2>
+          <h2 className="text-xl font-black text-slate-900">4 bài 買取 giá cao nhất trên X</h2>
           <p className="mt-1 text-xs text-slate-400">
-            Cập nhật 4 tiếng/lần · bài quá 2 ngày tự ẩn
+            Xếp theo giá thẻ cao nhất trong bài · bài quá 2 ngày (tính từ lúc shop đăng) tự ẩn, bài kế tiếp tự lên thay
             {data.updatedAt && <> · lần gần nhất {TIME_JST.format(data.updatedAt)}</>}
           </p>
         </div>

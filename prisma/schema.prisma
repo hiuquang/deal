@@ -500,14 +500,20 @@ model RateLimit {
 /// đây. Đây cũng KHÔNG phải dữ liệu giá: không bao giờ đi vào reference_prices.
 /// Sống tối đa 48 giờ (xóa ở mỗi lượt quét). Xem docs/kaitori.md.
 model KaitoriPost {
-  id        String   @id @default(cuid())
+  id          String   @id @default(cuid())
   /// ID bài trên X (snowflake, dạng chuỗi số) — khóa chống trùng giữa các lượt quét.
-  postId    String   @unique @map("post_id")
+  postId      String   @unique @map("post_id")
   /// Handle đúng chữ hoa/thường như trong danh bạ (src/lib/kaitori-shops.ts).
-  handle    String
+  handle      String
   /// Giải từ snowflake của postId, KHÔNG lấy ngày Grok khai (mô hình đoán sai được).
-  postedAt  DateTime @map("posted_at")
-  createdAt DateTime @default(now()) @map("created_at")
+  postedAt    DateTime @map("posted_at")
+  /// Giá 買取 cao nhất ghi trong bài (yên) — CHỈ để xếp hạng 4 bài hiện trên
+  /// trang, KHÔNG phải dữ liệu giá: không bao giờ vào reference_prices.
+  /// null = chưa đọc được giá (bài chỉ có ảnh) → xếp sau, dùng để bù khi thiếu.
+  topPriceJpy Int?     @map("top_price_jpy")
+  /// Tên thẻ ứng với topPriceJpy, đúng chữ trong bài — hiện kèm giá cho dễ đọc.
+  topCard     String?  @map("top_card")
+  createdAt   DateTime @default(now()) @map("created_at")
 
   @@index([postedAt])
   @@map("kaitori_posts")

@@ -16,7 +16,7 @@
  *     shop xóa bài là bài tự mất.
  */
 import * as repo from "@/server/repositories/kaitoriPosts";
-import { searchKaitoriPostUrls } from "@/server/xai";
+import { searchKaitoriPosts, type KaitoriPostHit } from "@/server/xai";
 import { verifyPostAuthor } from "@/server/x-oembed";
 import { parseXStatusUrl, snowflakeTime } from "@/lib/x-status";
 import {
@@ -29,7 +29,7 @@ import {
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
 
-/** Bài sống 48 giờ — quyết định chủ web ("2 ngày tự xóa"). */
+/** Bài sống 48 giờ tính từ GIỜ SHOP ĐĂNG trên X — chủ web xác nhận 2026-10-22. */
 export const POST_TTL_MS = 2 * DAY;
 /** Nhìn ngược 6 giờ cho lịch 4 giờ: GitHub Actions hay trễ, chồng lấn thì dedupe lo. */
 const LOOKBACK_MS = 6 * HOUR;
@@ -40,8 +40,13 @@ const MAX_VERIFY_PER_RUN = 40;
 const VERIFY_CONCURRENCY = 10;
 /** Bài "từ tương lai" quá mức lệch đồng hồ cho phép = ID bịa. */
 const CLOCK_SKEW_MS = 5 * 60_000;
-/** Số bài hiện trên một trang vùng. */
-const PAGE_LIMIT = 30;
+/**
+ * Mỗi vùng hiện đúng 4 bài: giá cao nhất trước; thiếu bài có giá thì bù bằng
+ * bài mới nhất — quyết định chủ web 2026-10-22 ("làm sao cho đủ bài").
+ */
+export const POSTS_ON_PAGE = 4;
+/** Đọc tối đa ngần này bài trong 48h để xếp hạng — dư sức cho 8 handle. */
+const RANK_POOL = 300;
 
 /**
  * Trần số bài X Search đọc mỗi tháng (xAI tính ~$5/1.000 bài). Mặc định 2.000
@@ -72,17 +77,20 @@ export interface PostCandidate {
   /** Đúng chữ hoa/thường như trong danh bạ. */
   handle: string;
   postedAt: Date;
+  topPriceJpy: number | null;
+  topCard: string | null;
 }
 
 /**
  * Lọc link Grok đưa về: chỉ giữ link bài X đúng dạng, của handle CÓ trong danh
  * bạ, mốc giờ (giải từ snowflake) nằm trong 48 giờ qua. Hàm thuần để test.
  */
-export function selectCandidates(urls: string[], now: Date): PostCandidate[] {
+export function selectCandidates(hits: (string | KaitoriPostHit)[], now: Date): PostCandidate[] {
   const seen = new Set<string>();
   const out: PostCandidate[] = [];
-  for (const url of urls) {
-    const ref = parseXStatusUrl(url);
+  for (const hit of hits) {
+    const h = typeof hit === "string" ? { url: hit } : hit;
+    const ref = parseXStatusUrl(h.url);
     if (!ref) continue;
     const handle = matchPostHandle(ref.handle);
     if (!handle) continue;
@@ -92,7 +100,13 @@ export function selectCandidates(urls: string[], now: Date): PostCandidate[] {
     if (age > POST_TTL_MS || age < -CLOCK_SKEW_MS) continue;
     if (seen.has(ref.postId)) continue;
     seen.add(ref.postId);
-    out.push({ postId: ref.postId, handle, postedAt });
+    out.push({
+      postId: ref.postId,
+      handle,
+      postedAt,
+      topPriceJpy: h.maxPriceJpy ?? null,
+      topCard: h.maxPriceJpy ? (h.card ?? null) : null,
+    });
   }
   return out;
 }
@@ -136,27 +150,31 @@ export async function refresh(now: Date = new Date()): Promise<RefreshResult> {
     return { status: "skipped_budget", purged, used, budget };
   }
 
-  const { urls, postsFetched } = await searchKaitoriPostUrls({
+  const { posts: hits, postsFetched } = await searchKaitoriPosts({
     handles: allPostHandles(),
     fromDate: utcDate(now.getTime() - LOOKBACK_MS),
     // to_date là mốc LOẠI TRỪ → cộng 1 ngày để lấy được bài hôm nay.
     toDate: utcDate(now.getTime() + DAY),
   });
 
-  const candidates = selectCandidates(urls, now);
+  const candidates = selectCandidates(hits, now);
   const existing = await repo.existingPostIds(candidates.map((c) => c.postId));
+  // Bài đã có mà lượt này đọc được giá → điền vào (bài cũ cũng được xếp hạng đúng).
+  for (const c of candidates) {
+    if (existing.has(c.postId) && c.topPriceJpy) await repo.fillMissingPrice(c.postId, c.topPriceJpy, c.topCard);
+  }
   const fresh = candidates.filter((c) => !existing.has(c.postId)).slice(0, MAX_VERIFY_PER_RUN);
   const verified = await verifyAll(fresh);
   const saved = await repo.insertPosts(verified);
   await repo.recordRun({ postsFetched, saved });
 
   console.log(
-    `[kaitori-posts] ${urls.length} link → ${candidates.length} hợp lệ → ${fresh.length} mới → ${saved} đã lưu; xóa ${purged} bài cũ; đọc ${postsFetched} bài (tháng: ${used + postsFetched}/${budget})`
+    `[kaitori-posts] ${hits.length} link → ${candidates.length} hợp lệ → ${fresh.length} mới → ${saved} đã lưu; xóa ${purged} bài cũ; đọc ${postsFetched} bài (tháng: ${used + postsFetched}/${budget})`
   );
   return {
     status: "ok",
     purged,
-    linksFound: urls.length,
+    linksFound: hits.length,
     candidates: candidates.length,
     saved,
     postsFetched,
@@ -165,8 +183,31 @@ export async function refresh(now: Date = new Date()): Promise<RefreshResult> {
   };
 }
 
+export interface RankedPost {
+  postId: string;
+  handle: string;
+  postedAt: Date;
+  topPriceJpy: number | null;
+  topCard: string | null;
+}
+
+/**
+ * Chọn bài hiện trên trang: giá cao nhất trước; bài chưa có giá xếp sau (mới
+ * nhất trước) để BÙ cho đủ `limit`. Cùng giá thì bài mới hơn lên trước. Hàm thuần.
+ */
+export function rankForDisplay(posts: RankedPost[], limit = POSTS_ON_PAGE): RankedPost[] {
+  return [...posts]
+    .sort((a, b) => {
+      const pa = a.topPriceJpy ?? -1;
+      const pb = b.topPriceJpy ?? -1;
+      if (pa !== pb) return pb - pa;
+      return b.postedAt.getTime() - a.postedAt.getTime();
+    })
+    .slice(0, limit);
+}
+
 export interface RegionPosts {
-  posts: { postId: string; handle: string; postedAt: Date }[];
+  posts: RankedPost[];
   /** Lượt quét thật gần nhất; null = chưa quét lần nào. */
   updatedAt: Date | null;
 }
@@ -174,9 +215,9 @@ export interface RegionPosts {
 export async function listForRegion(region: KaitoriRegion, now: Date = new Date()): Promise<RegionPosts> {
   // Lọc 48 giờ cả lúc ĐỌC: nếu lịch quét chết, bài cũ vẫn tự biến mất đúng hạn.
   const since = new Date(now.getTime() - POST_TTL_MS);
-  const [posts, updatedAt] = await Promise.all([
-    repo.listPosts(regionPostHandles(region), since, PAGE_LIMIT),
+  const [pool, updatedAt] = await Promise.all([
+    repo.listPosts(regionPostHandles(region), since, RANK_POOL),
     repo.lastScanAt(),
   ]);
-  return { posts, updatedAt };
+  return { posts: rankForDisplay(pool), updatedAt };
 }

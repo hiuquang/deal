@@ -178,8 +178,24 @@ export async function searchKaitori(input: {
 // ---- Quét BÀI 買取 để nhúng ở /kaitori/[vùng] ----
 
 const postsResponseSchema = z.object({
-  posts: z.array(z.object({ url: z.string().max(500) })).max(80),
+  posts: z
+    .array(
+      z.object({
+        url: z.string().max(500),
+        // Giá + tên thẻ CHỈ để xếp hạng hiển thị, không vào dataset → nhận
+        // khi hợp lệ, sai dạng thì bỏ (về null) chứ không loại cả bài.
+        maxPriceJpy: z.number().int().positive().max(10_000_000_000).nullable().optional().catch(null),
+        card: z.string().trim().min(1).max(120).nullable().optional().catch(null),
+      })
+    )
+    .max(80),
 });
+
+export interface KaitoriPostHit {
+  url: string;
+  maxPriceJpy?: number | null;
+  card?: string | null;
+}
 
 function buildPostsPrompt(handles: string[], fromDate: string, toDate: string): string {
   return [
@@ -190,8 +206,12 @@ function buildPostsPrompt(handles: string[], fromDate: string, toDate: string): 
     "Bỏ qua bài chỉ quảng cáo 販売 (shop bán ra), giải đấu, sự kiện, giờ mở cửa, tuyển dụng.",
     "Bỏ qua bài đăng lại (repost) của người khác.",
     "",
+    "Với mỗi bài, đọc cả CHỮ lẫn ẢNH bảng giá: maxPriceJpy = giá 買取 cao nhất của MỘT thẻ",
+    "trong bài (số nguyên yên), card = tên thẻ đó đúng như shop ghi. Không đọc được giá thì để null,",
+    "TUYỆT ĐỐI không đoán.",
+    "",
     "Trả lời DUY NHẤT bằng JSON hợp lệ, không giải thích, không bọc trong ```:",
-    '{"posts":[{"url":"https://x.com/<handle>/status/<id>"}]}',
+    '{"posts":[{"url":"https://x.com/<handle>/status/<id>","maxPriceJpy":100000,"card":"…"}]}',
     "",
     "Chỉ đưa link bài bạn THẬT SỰ thấy trong kết quả tìm kiếm. Không tìm được gì thì trả {\"posts\":[]}.",
   ].join("\n");
@@ -202,11 +222,11 @@ function buildPostsPrompt(handles: string[], fromDate: string, toDate: string): 
  * handle với danh bạ, tự giải mốc giờ từ snowflake, và hỏi lại chính X (oEmbed)
  * xem bài có thật không, trước khi lưu. Xem `kaitori-posts-service.ts`.
  */
-export async function searchKaitoriPostUrls(input: {
+export async function searchKaitoriPosts(input: {
   handles: string[];
   fromDate: string;
   toDate: string;
-}): Promise<{ urls: string[]; postsFetched: number }> {
+}): Promise<{ posts: KaitoriPostHit[]; postsFetched: number }> {
   const { text, postsFetched } = await callXSearch({
     ...input,
     prompt: buildPostsPrompt(input.handles, input.fromDate, input.toDate),
@@ -218,7 +238,7 @@ export async function searchKaitoriPostUrls(input: {
     throw new ApiError(502, "XAI_BAD_OUTPUT", "Grok trả về dữ liệu sai định dạng.");
   }
 
-  const urls = parsed.data.posts.map((p) => p.url);
-  console.log(`[xai] quét bài ${input.handles.length} handle → ${urls.length} link, ${postsFetched} bài đã đọc`);
-  return { urls, postsFetched };
+  const posts = parsed.data.posts;
+  console.log(`[xai] quét bài ${input.handles.length} handle → ${posts.length} link, ${postsFetched} bài đã đọc`);
+  return { posts, postsFetched };
 }
