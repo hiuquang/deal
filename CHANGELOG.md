@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## [0.35.0] — 2026-10-21 — Ảnh minh hoạ cho tin trên trang 買取
+
+### Bối cảnh
+Chủ web muốn mỗi tin trên `/kaitori` có một ảnh tạo bằng Gemini/ChatGPT, đặt ở góc phải cuối tin.
+
+### Tính năng
+- Mỗi tin có **ảnh minh hoạ 96px ở góc phải cuối thẻ tin**; link nguồn bên trái không còn bị ngắt dòng trên điện thoại.
+- 4 ảnh đầu tạo bằng **Gemini**: hộp có biển cấm + kính lúp (SNKRDUNK), 3 hộp deck + tờ lịch (Special Deck), lá thẻ úp buộc nơ + cúp (Promo), lồng quay xổ số + hộp trơn + bông tuyết (bốc thăm tháng 12).
+
+### Kỹ thuật
+- **Cấm nhân vật Pokémon, logo, bao bì "na ná hàng thật", chữ** trong ảnh (`IMAGE_STYLE`): tài sản trí tuệ của hãng; ảnh AI giống hộp box thật cạnh tin về giá là đánh lừa; mô hình viết chữ hay sai. Test chặn từ cấm ngay trong prompt, so **nguyên từ** ("unbranded" thì được). Lúc viết, lỗi thoát ký tự từng biến `` thành ký tự backspace vô hình → test **luôn xanh**; đã sửa và chứng minh test bắt được "Pikachu".
+- Tách `imagePrompt` (gửi mô hình) và `imageFile` (điền TAY sau khi đã xem ảnh); test chặn `imageFile` trỏ tới file không có thật.
+- Script `npm run news:images` (Gemini `gemini-nano-banana-2.1` hoặc OpenAI `gpt-image-2.5-flare`), khóa chỉ ở `.env` local, không in khóa, thu ảnh về webp 256px. Bộ ảnh đầu tạo qua app Gemini trên web vì chưa có khóa; từng ảnh đối chiếu **SHA-256** với bản gốc trước khi dùng.
+- 4 ảnh tổng ~22KB trong `public/news/`; `alt=""` vì là ảnh trang trí. CSP không đổi (ảnh cùng domain).
+- +2 test (344 pass).
+
 ## [0.34.0] — 2026-10-21 — Tin có thể làm giá biến động trên trang 買取
 
 ### Bối cảnh

@@ -77,19 +77,39 @@ export default function KaitoriRegionChooser() {
                 <span className="font-bold">Ảnh hưởng tới giá: </span>
                 {news.impact}
               </p>
-              <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
-                {[news.source, ...(news.moreSources ?? [])].map((src, i) => (
-                  <a
-                    key={src.url}
-                    href={src.url}
-                    target="_blank"
-                    rel="noopener noreferrer nofollow"
-                    className="font-medium text-brand-600 hover:underline"
-                  >
-                    {i === 0 ? "Nguồn" : "Xem thêm"}: {src.label} ↗
-                  </a>
-                ))}
-              </p>
+              {/* Hàng cuối: link nguồn bên trái, ảnh minh hoạ ở GÓC PHẢI CUỐI
+                  (yêu cầu chủ web). items-end để ảnh bám đáy thẻ dù link
+                  xuống nhiều dòng. */}
+              <div className="mt-3 flex items-end justify-between gap-3">
+                <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                  {[news.source, ...(news.moreSources ?? [])].map((src, i) => (
+                    <a
+                      key={src.url}
+                      href={src.url}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      // nowrap: cạnh ảnh 96px trên điện thoại, link hẹp lại và
+                      // "↗" rớt xuống dòng riêng trông như lỗi.
+                      className="whitespace-nowrap font-medium text-brand-600 hover:underline"
+                    >
+                      {i === 0 ? "Nguồn" : "Xem thêm"}: {src.label} ↗
+                    </a>
+                  ))}
+                </p>
+                {news.imageFile && (
+                  // Ảnh minh hoạ thuần trang trí (đồ vật chung chung, không
+                  // phải ảnh sản phẩm) → alt rỗng để trình đọc màn hình bỏ qua.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={news.imageFile}
+                    alt=""
+                    width={96}
+                    height={96}
+                    loading="lazy"
+                    className="h-24 w-24 shrink-0 rounded-xl"
+                  />
+                )}
+              </div>
             </li>
           ))}
         </ul>

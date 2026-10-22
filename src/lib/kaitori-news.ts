@@ -60,7 +60,33 @@ export interface PokemonNews {
   source: { label: string; url: string };
   /** Nguồn chính thức khác cùng chuyện (vd sàn thứ hai ra quyết định tương tự). */
   moreSources?: { label: string; url: string }[];
+  /**
+   * Mô tả hình minh hoạ để `npm run news:images` gửi cho Gemini/OpenAI. Chỉ tả
+   * ĐỒ VẬT chung chung — xem `IMAGE_STYLE` cho phần cấm (nhân vật, logo, chữ).
+   */
+  imagePrompt?: string;
+  /**
+   * Ảnh đã tạo, đường dẫn trong `public/` (vd "/news/abc.webp"). Chỉ điền SAU
+   * khi đã tạo và XEM ảnh — test chặn đường dẫn trỏ tới file không có thật.
+   */
+  imageFile?: string;
 }
+
+/**
+ * Phong cách + điều cấm dùng chung cho mọi ảnh minh hoạ tin.
+ *
+ * Cấm nhân vật Pokémon, logo, bao bì "na ná hàng thật", và chữ: (1) đó là tài
+ * sản trí tuệ của hãng, trên một web công khai; (2) ảnh AI giống hộp box thật
+ * đặt cạnh tin về GIÁ là đánh lừa người đọc rằng đó là ảnh sản phẩm; (3) mô
+ * hình ảnh viết chữ hay sai, chữ sai cạnh tin thật còn tệ hơn không có ảnh.
+ */
+export const IMAGE_STYLE = [
+  "Flat vector illustration, minimal and friendly, navy blue (#16305c) with warm amber (#f59e0b) accents,",
+  "plain white background, soft shadow, one centered subject, square composition, generous margin.",
+  "Absolutely NO text, letters, numbers, logos, brand marks or watermarks.",
+  "NO Pokémon, NO anime or cartoon characters, NO recognizable product packaging —",
+  "only generic, unbranded everyday objects.",
+].join(" ");
 
 /** Ngày soát lại toàn bộ tin + link (JST). */
 export const NEWS_CHECKED_ON = "2026-10-21";
@@ -68,6 +94,9 @@ export const NEWS_CHECKED_ON = "2026-10-21";
 export const POKEMON_NEWS: PokemonNews[] = [
   {
     id: "snkrdunk-30th-cardset-stop-2026-10",
+    imageFile: "/news/snkrdunk-30th-cardset-stop-2026-10.webp",
+    imagePrompt:
+      "A plain unbranded gift box for collectible cards with its lid slightly lifted, a large red circular prohibition sign over it, and a small magnifying glass inspecting the opened seam.",
     publishedOn: "2026-10-19",
     title: "SNKRDUNK ngừng giao dịch 30th CELEBRATION カードセット (御三家) — cả bộ 9 loại",
     summary:
@@ -81,6 +110,9 @@ export const POKEMON_NEWS: PokemonNews[] = [
   },
   {
     id: "mega-special-deck-2026-11",
+    imageFile: "/news/mega-special-deck-2026-11.webp",
+    imagePrompt:
+      "Three plain unbranded deck boxes standing side by side, a tear-off desk calendar page next to them, and a few small sparkles suggesting a new release day.",
     publishedOn: "2026-10-16",
     title: "Special Deck Set MEGA ra ngày 13/11 — có in lại thẻ chơi phổ biến",
     summary:
@@ -94,6 +126,9 @@ export const POKEMON_NEWS: PokemonNews[] = [
   },
   {
     id: "promo-pack-6-2026-11",
+    imageFile: "/news/promo-pack-6-2026-11.webp",
+    imagePrompt:
+      "A single face-down trading card with a simple geometric back pattern, tied with a ribbon like a prize, next to a small trophy cup.",
     publishedOn: "2026-10-16",
     title: "Promo Card Pack đợt 6 phát ở gym từ 1/11",
     summary:
@@ -107,6 +142,9 @@ export const POKEMON_NEWS: PokemonNews[] = [
   },
   {
     id: "30th-extra-lottery-2026-12",
+    imageFile: "/news/30th-extra-lottery-2026-12.webp",
+    imagePrompt:
+      "A round raffle drum with paper tickets spilling out, beside a small stack of plain unbranded sealed boxes and a single snowflake.",
     publishedOn: "2026-09-29",
     title: "Box 30th CELEBRATION sẽ được bốc thăm bán thêm khoảng tháng 12",
     summary:

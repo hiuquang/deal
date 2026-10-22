@@ -3,6 +3,8 @@
  * chỉ nguồn chính thức (tin sai trên trang về giá là người ta bán hớ thật),
  * đủ dữ kiện để người đọc tự kiểm, và luôn hiện đúng NEWS_ON_PAGE tin mới nhất.
  */
+import { existsSync } from "fs";
+import path from "path";
 import { describe, expect, it } from "vitest";
 import {
   NEWS_CHECKED_ON,
@@ -70,6 +72,24 @@ describe("danh sách tin", () => {
     expect(top).toHaveLength(NEWS_ON_PAGE);
     for (let i = 1; i < top.length; i++) {
       expect(top[i - 1].publishedOn >= top[i].publishedOn).toBe(true);
+    }
+  });
+
+  it("imageFile phải là webp trong /news/ và file có thật trong public/", () => {
+    for (const n of POKEMON_NEWS) {
+      if (!n.imageFile) continue;
+      expect(n.imageFile, n.id).toMatch(/^\/news\/[a-z0-9-]+\.webp$/);
+      expect(existsSync(path.join(process.cwd(), "public", n.imageFile)), n.imageFile).toBe(true);
+    }
+  });
+
+  it("prompt ảnh không được nhắc tới Pokémon, nhân vật hay logo", () => {
+    // IMAGE_STYLE đã cấm, nhưng prompt riêng của từng tin mà tả "Pikachu"
+    // thì lệnh cấm chung vô nghĩa — chặn ngay từ chữ.
+    // Nguyên từ (\b): "unbranded" là chữ ta CẦN có, không được bắt nhầm.
+    const banned = /\b(pok[eé]mon|pikachu|charizard|eevee|gengar|logos?|brands?|mascot)\b/i;
+    for (const n of POKEMON_NEWS) {
+      if (n.imagePrompt) expect(n.imagePrompt, n.id).not.toMatch(banned);
     }
   });
 

@@ -79,6 +79,23 @@ Trang chọn vùng `/kaitori` hiện **4 tin mới nhất** (`NEWS_ON_PAGE`; ch�
 
 Nguồn tin: trang tin chính thức <https://www.pokemon-card.com/info/> và mục tin của Pokémon Center Online. Đọc nguyên văn trang gốc trước khi viết, và đọc TỚI CUỐI: câu quan trọng nhất của tin 29/09 (đợt bốc thăm thêm box 30th tháng 12) nằm ở dòng cuối trang, đọc mỗi phần đầu là mất.
 
+#### Ảnh minh hoạ tin (góc phải cuối mỗi tin, 96px)
+
+Tạo bằng Gemini hoặc OpenAI (quyết định chủ web 2026-10-21):
+
+```
+npm run news:images                     # tạo ảnh còn thiếu
+npm run news:images -- --force          # tạo lại tất cả
+npm run news:images -- --provider openai
+```
+
+- Khóa `GEMINI_API_KEY` hoặc `OPENAI_API_KEY` **chỉ ở `.env` local** (đã gitignore). Script không in khóa ra đâu cả. Vercel không cần khóa.
+- Ảnh thu về **webp 256×256** trong `public/news/<id>.webp` (vài chục KB) rồi commit.
+- **Hai bước tách nhau**: `imagePrompt` (gửi cho mô hình) và `imageFile` (điền TAY sau khi đã MỞ XEM ảnh). Mô hình vẫn có thể lén vẽ chữ hay một nhân vật quen — người phải xem trước khi lên trang. Test chặn `imageFile` trỏ tới file không có thật.
+- **Cấm** nhân vật Pokémon, logo, bao bì "na ná hàng thật", chữ (`IMAGE_STYLE`). Lý do: tài sản trí tuệ của hãng trên web công khai; ảnh AI giống hộp box thật cạnh tin về GIÁ là đánh lừa; mô hình viết chữ hay sai. Test chặn từ cấm ngay trong prompt (so nguyên từ — "unbranded" thì được).
+- Ảnh là trang trí → `alt=""`.
+- **Bộ ảnh đầu (2026-10-21) tạo bằng app Gemini trên web, không qua API** (chủ web chưa có khóa): cùng `IMAGE_STYLE` + `imagePrompt`, thu nhỏ 256px ngay trong trang rồi chép dữ liệu ra file, **đối chiếu SHA-256 với bản gốc** từng ảnh trước khi dùng (một lần chép thiếu ký tự đệm `=` bị bắt nhờ đó). Có khóa rồi thì dùng script cho nhanh.
+
 ### Danh bạ — `src/lib/kaitori-shops.ts`
 
 Dữ liệu trong code, không phải DB. **5 shop mỗi vùng do chủ web chọn tay** (`FEATURED_SHOP_IDS`) — chưa có dữ liệu 買取 theo shop để xếp tự động; đừng tự đổi sang xếp theo số liệu khi chưa bàn lại. Trang ghi "5 shop thu thẻ", **không** ghi "giá cao nhất": chưa có số liệu nào chứng minh điều đó.
