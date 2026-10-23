@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## [0.37.0] — 2026-10-23 — Thiết kế lại trang 買取: bảng xếp hạng, thẻ vùng có màu, tin gọn
+
+### Bối cảnh
+Chủ web: thiết kế "quá đơn sơ, toàn chữ, khó nhìn, rất rối". Trang vùng là một chuỗi khung nhúng X (hay không tải được → chỉ còn ô chữ xám); trang chọn vùng là 4 khối chữ dài.
+
+### Tính năng
+- **Trang vùng**: dải đầu trang màu thương hiệu + biểu tượng vùng (🗼/🏯) + nút chuyển vùng; thẻ shop có ô chữ cái màu, khu/ga thành nhãn, nút "Trang 買取"; **bảng xếp hạng** 4 bài với huy chương 1–2–3 (vàng logo/bạc/đồng), **giá cỡ lớn**, tên thẻ, tên **chi nhánh** ("カードラボ なんば店") và "17 giờ trước".
+- **Bài gốc X gập lại**, bấm "Xem bài gốc trên X" mới tải `widgets.js` — trang nhẹ, X lỗi/bị chặn thì bảng xếp hạng vẫn nguyên.
+- **Trang chọn vùng**: 2 thẻ vùng màu riêng (navy / gold) kèm **giá thu cao nhất 48h** của vùng; thẻ tin gọn: nhãn màu theo chiều tác động ("↘ Ngừng bán", "◎ Promo mới"…), tiêu đề, một đoạn ảnh hưởng, ảnh minh hoạ vẫn ở **góc phải cuối** (yêu cầu cũ), phần dài gập vào "Chi tiết".
+- Giữ bố cục chủ web đã chốt: hàng 5 shop NẰM TRÊN, bài đăng NẰM DƯỚI.
+
+### Kỹ thuật
+- `KaitoriLeaderboard` (client) thay `XPostEmbeds` (đã xóa); `agoVi()` (có test); `HANDLE_BRANCH` + `postSourceName()` (tên chi nhánh lấy từ trang chính thức, test đòi mọi handle được quét đều khai).
+- Tin có thêm `tag` (≤16 ký tự, có test) + `tone` (down/up/watch).
+- `/kaitori` chuyển sang ISR 10 phút (đọc giá cao nhất từ DB); DB lỗi → thẻ vùng vẫn hiện.
+- Cập nhật bài 23/10 theo quy trình Yahoo + Grok + tự kiểm ảnh. **Grok đọc ảnh sai 3/5 lần kiểm** (bịa 2, báo thiếu 1) → chỉ ghi giá đã kiểm tay; ghi lại trong `docs/kaitori.md`.
+- +4 test (350 → 354 pass).
+
 ## [0.36.0] — 2026-10-22 — Mỗi vùng đúng 4 bài 買取 giá cao nhất, tự bù khi bài hết hạn
 
 ### Bối cảnh

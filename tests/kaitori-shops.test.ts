@@ -17,6 +17,8 @@ import {
   matchPostHandle,
   regionPostHandles,
   shopOfHandle,
+  HANDLE_BRANCH,
+  postSourceName,
 } from "@/lib/kaitori-shops";
 
 const HANDLE = /^[A-Za-z0-9_]{1,15}$/;
@@ -127,5 +129,19 @@ describe("handle quét bài trên X", () => {
     // 遊々亭 không có cửa hàng → có ở cả hai.
     expect(tokyo.has("yuyuteiNews")).toBe(true);
     expect(new Set(regionPostHandles("osaka")).has("yuyuteiNews")).toBe(true);
+  });
+});
+
+describe("tên chi nhánh cạnh bài đăng", () => {
+  it("handle nào được quét cũng có mục tên chi nhánh (rỗng được, nhưng phải khai)", () => {
+    const keys = new Set(Object.keys(HANDLE_BRANCH).map((h) => h.toLowerCase()));
+    for (const h of allPostHandles()) expect(keys.has(h.toLowerCase()), h).toBe(true);
+  });
+
+  it("ghép tên chuỗi + chi nhánh; tài khoản online thì chỉ tên chuỗi", () => {
+    expect(postSourceName("namba_clabo")).toBe("カードラボ なんば店");
+    expect(postSourceName("NIPPONBASHI_LAB")).toBe("カードラボ 大阪日本橋店");
+    expect(postSourceName("yuyuteiNews")).toBe("遊々亭");
+    expect(postSourceName("someone_else")).toBe("someone_else");
   });
 });

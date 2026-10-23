@@ -168,7 +168,9 @@ Quyết định chủ web 2026-10-22. Bảng `kaitori_posts` lưu thêm `top_pri
 | **Grok trên x.com/i/grok** | **Đọc giá trong ảnh** (bắt ミュウVMAX ¥100,000 trong bảng 本気) | Sót 4/8 bài cao nhất: 2 bài giá ghi ngay trong chữ + 2 bài cao nhất Osaka của @namba_clabo |
 | ChatGPT (miễn phí, web search) | — | Không xác minh được bài nào (không vào được X) |
 
-→ Quy trình: Grok + Yahoo cùng chạy, gộp, rồi MỞ ẢNH kiểm những giá chỉ có trong ảnh. Mọi link vẫn qua 3 lớp (danh bạ, snowflake, oEmbed).
+→ Quy trình: Grok + Yahoo cùng chạy, gộp, rồi MỞ ẢNH kiểm những giá chỉ có trong ảnh.
+
+**Grok đọc ảnh KHÔNG đáng tin nếu không kiểm** (2026-10-23, đưa thẳng 12 link cho Grok trên X đọc ảnh): trong 5 bài kiểm tay, Grok **bịa 2** (¥6,500,000 "ミツバのまもり" cho bài chỉ có 4 thẻ, cao nhất ¥65,000; ¥15,000,000 cho bài cao nhất ¥3,300,000), **báo thiếu 1** (¥10,000,000 trong khi ảnh có パンプジン ¥18,000,000), đúng 2. → Giá Grok đọc từ ảnh CHỈ được ghi vào `top_price_jpy` sau khi người mở ảnh xác nhận; chưa kiểm thì để null (bài vẫn dùng để bù chỗ). Mẹo: ảnh X chỉ tải khi trang được VẼ — tab nền thì chụp màn hình một lần rồi mới lấy `img`. Mọi link vẫn qua 3 lớp (danh bạ, snowflake, oEmbed).
 
 ### Vì sao GitHub Actions mà không phải Vercel Cron
 

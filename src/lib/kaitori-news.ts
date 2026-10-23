@@ -53,6 +53,10 @@ export interface PokemonNews {
   publishedOn: string;
   /** Tiêu đề do DEAL viết, tiếng Việt. */
   title: string;
+  /** Nhãn 1–2 từ trên thẻ tin ("Ngừng bán", "In lại"…) — đọc lướt là biết loại tin. */
+  tag: string;
+  /** Màu nhãn: "down" = có thể kéo giá xuống, "up" = có thể đẩy giá lên, "watch" = cần theo dõi. */
+  tone: "down" | "up" | "watch";
   /** Tin nói gì — dữ kiện, không bình luận. */
   summary: string;
   /** Vì sao có thể làm giá biến động — nói cơ chế, không phán con số. */
@@ -94,6 +98,8 @@ export const NEWS_CHECKED_ON = "2026-10-22";
 export const POKEMON_NEWS: PokemonNews[] = [
   {
     id: "snkrdunk-30th-cardset-stop-2026-10",
+    tag: "Ngừng bán",
+    tone: "down",
     imageFile: "/news/snkrdunk-30th-cardset-stop-2026-10.webp",
     imagePrompt:
       "A plain unbranded gift box for collectible cards with its lid slightly lifted, a large red circular prohibition sign over it, and a small magnifying glass inspecting the opened seam.",
@@ -110,6 +116,8 @@ export const POKEMON_NEWS: PokemonNews[] = [
   },
   {
     id: "mega-special-deck-2026-11",
+    tag: "In lại",
+    tone: "down",
     imageFile: "/news/mega-special-deck-2026-11.webp",
     imagePrompt:
       "Three plain unbranded deck boxes standing side by side, a tear-off desk calendar page next to them, and a few small sparkles suggesting a new release day.",
@@ -126,6 +134,8 @@ export const POKEMON_NEWS: PokemonNews[] = [
   },
   {
     id: "promo-pack-6-2026-11",
+    tag: "Promo mới",
+    tone: "watch",
     imageFile: "/news/promo-pack-6-2026-11.webp",
     imagePrompt:
       "A single face-down trading card with a simple geometric back pattern, tied with a ribbon like a prize, next to a small trophy cup.",
@@ -142,6 +152,8 @@ export const POKEMON_NEWS: PokemonNews[] = [
   },
   {
     id: "30th-extra-lottery-2026-12",
+    tag: "Bốc thăm thêm",
+    tone: "down",
     imageFile: "/news/30th-extra-lottery-2026-12.webp",
     imagePrompt:
       "A round raffle drum with paper tickets spilling out, beside a small stack of plain unbranded sealed boxes and a single snowflake.",

@@ -34,6 +34,12 @@ export const REGION_LABEL: Record<KaitoriRegion, string> = {
   osaka: "Osaka · Kansai",
 };
 
+/** Biểu tượng vùng trên thẻ chọn vùng + đầu trang vùng (emoji, không phải logo của ai). */
+export const REGION_EMOJI: Record<KaitoriRegion, string> = {
+  tokyo: "🗼",
+  osaka: "🏯",
+};
+
 export const REGION_HINT: Record<KaitoriRegion, string> = {
   tokyo: "Akihabara · Ikebukuro",
   osaka: "Namba · Nipponbashi · Kyoto · Kobe",
@@ -202,6 +208,30 @@ export function allPostHandles(): string[] {
 export function matchPostHandle(handle: string): string | undefined {
   const lower = handle.toLowerCase();
   return allPostHandles().find((h) => h.toLowerCase() === lower);
+}
+
+/**
+ * Tên chi nhánh của từng tài khoản X — cùng chuỗi có nhiều tài khoản (カードラボ
+ * なんば vs 日本橋), ghi mỗi tên chuỗi thì người xem không biết đi đâu. Lấy
+ * đúng tên cửa hàng trên trang chính thức. Tài khoản chung (online) để trống.
+ */
+export const HANDLE_BRANCH: Record<string, string> = {
+  hareruya2tower: "秋葉原タワー店",
+  hareruya2ikbkr: "池袋店",
+  hareruya2namba: "なんば店",
+  akihabara_labo: "秋葉原ラジオ会館本店",
+  namba_clabo: "なんば店",
+  nipponbashi_lab: "大阪日本橋店",
+  HBSTnipponbashi: "日本橋本店",
+  yuyuteiNews: "",
+};
+
+/** "カードラボ なんば店" — tên hiện cạnh bài đăng. */
+export function postSourceName(handle: string): string {
+  const shop = shopOfHandle(handle);
+  const key = Object.keys(HANDLE_BRANCH).find((h) => h.toLowerCase() === handle.toLowerCase());
+  const branch = key ? HANDLE_BRANCH[key] : "";
+  return shop ? `${shop.nameJa}${branch ? ` ${branch}` : ""}` : handle;
 }
 
 /** Shop nào sở hữu một handle — để ghi tên shop cạnh bài đăng. */

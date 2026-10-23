@@ -57,7 +57,9 @@ describe("danh sách tin", () => {
     expect(new Set(POKEMON_NEWS.map((n) => n.id)).size).toBe(POKEMON_NEWS.length);
     for (const n of POKEMON_NEWS) {
       expect(n.publishedOn, n.id).toMatch(DATE);
-      for (const field of [n.title, n.summary, n.impact, n.source.label]) {
+      // Nhãn phải NGẮN — nó nằm trên thẻ tin để đọc lướt, dài là phá bố cục.
+      expect(n.tag.length, n.id).toBeLessThanOrEqual(16);
+      for (const field of [n.title, n.tag, n.summary, n.impact, n.source.label]) {
         expect(field.trim(), n.id).not.toBe("");
       }
     }

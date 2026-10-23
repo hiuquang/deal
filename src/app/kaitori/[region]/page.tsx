@@ -3,16 +3,20 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   DIRECTORY_CHECKED_ON,
+  GAME_LABEL,
   KAITORI_REGIONS,
+  REGION_EMOJI,
+  REGION_HINT,
   REGION_LABEL,
   featuredShops,
   isKaitoriRegion,
-  shopOfHandle,
+  postSourceName,
   type KaitoriRegion,
   type KaitoriShop,
 } from "@/lib/kaitori-shops";
 import * as kaitoriPostsService from "@/server/services/kaitori-posts-service";
-import { XPostEmbeds, type EmbedPost } from "@/components/x-post-embeds";
+import { KaitoriLeaderboard, type LeaderboardPost } from "@/components/kaitori-leaderboard";
+import { agoVi } from "@/lib/ago-vi";
 
 // ISR 10 phút: bài chỉ đổi 4 tiếng/lần (và cron gọi revalidatePath ngay sau
 // mỗi lượt), nên không cần truy vấn DB cho từng lượt xem. Mốc 10 phút chỉ để
@@ -59,23 +63,49 @@ const TIME_JST = new Intl.DateTimeFormat("vi-VN", {
   minute: "2-digit",
 });
 
-function ShopTile({ shop, region }: { shop: KaitoriShop; region: KaitoriRegion }) {
+/** Màu ô chữ cái đầu của shop — để 5 thẻ shop phân biệt được bằng mắt, không cần đọc. */
+const AVATAR = [
+  "bg-brand-600 text-white",
+  "bg-gold-500 text-white",
+  "bg-sky-500 text-white",
+  "bg-rose-500 text-white",
+  "bg-emerald-600 text-white",
+];
+
+function ShopTile({ shop, region, index }: { shop: KaitoriShop; region: KaitoriRegion; index: number }) {
   const places = shop.branches[region]?.places ?? [];
   const primary = shop.links[0];
   return (
-    <li className="w-[68%] shrink-0 snap-start sm:w-[42%] lg:w-auto">
+    <li className="w-[72%] shrink-0 snap-start sm:w-[44%] lg:w-auto">
       <a
         href={primary.url}
         target="_blank"
         rel="noopener noreferrer nofollow"
-        className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-brand-500"
+        className="group flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md"
       >
-        <span className="text-lg font-bold text-slate-900">{shop.nameJa}</span>
-        <span className="text-xs text-slate-400">{shop.nameLatin}</span>
-        <span className="mt-2 flex-1 text-sm text-slate-600">
-          {places.length > 0 ? places.join(" / ") : "Gửi thẻ qua bưu điện"}
+        <div className="flex items-center gap-3">
+          <span
+            aria-hidden
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg font-black ${AVATAR[index % AVATAR.length]}`}
+          >
+            {shop.nameJa.charAt(0)}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate font-bold text-slate-900">{shop.nameJa}</p>
+            <p className="truncate text-xs text-slate-400">{shop.nameLatin}</p>
+          </div>
+        </div>
+        <ul className="mt-3 flex flex-1 flex-wrap content-start gap-1.5">
+          {(places.length > 0 ? places : ["Gửi bưu điện"]).map((place) => (
+            <li key={place} className="rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
+              {place}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-xs text-slate-400">{shop.games.map((g) => GAME_LABEL[g]).join(" · ")}</p>
+        <span className="mt-3 inline-flex items-center justify-center rounded-lg bg-brand-50 px-3 py-2 text-sm font-bold text-brand-700 transition group-hover:bg-brand-600 group-hover:text-white">
+          {primary.label} ↗
         </span>
-        <span className="mt-3 text-sm font-bold text-brand-600">{primary.label} ↗</span>
       </a>
     </li>
   );
@@ -101,33 +131,38 @@ export default async function KaitoriRegionPage({
     console.error("[kaitori] không đọc được bài đăng:", e);
   }
 
-  const posts: EmbedPost[] = data.posts.map((p) => ({
+  const now = new Date();
+  const posts: LeaderboardPost[] = data.posts.map((p) => ({
     postId: p.postId,
     handle: p.handle,
-    shopName: shopOfHandle(p.handle)?.nameJa ?? p.handle,
-    timeLabel: TIME_JST.format(p.postedAt),
-    priceLabel: p.topPriceJpy
-      ? `¥${p.topPriceJpy.toLocaleString("ja-JP")}${p.topCard ? ` · ${p.topCard}` : ""}`
-      : null,
+    shopName: postSourceName(p.handle),
+    price: p.topPriceJpy ? `¥${p.topPriceJpy.toLocaleString("ja-JP")}` : null,
+    card: p.topCard,
+    ago: agoVi(p.postedAt, now),
   }));
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
-      <header className="flex flex-wrap items-end justify-between gap-3">
-        <h1 className="text-3xl font-black text-slate-900">
-          買取 <span className="text-brand-600">· {REGION_LABEL[region]}</span>
-        </h1>
-        <nav aria-label="Chọn khu vực" className="flex gap-1 rounded-full bg-slate-100 p-1 text-sm">
+      {/* Đầu trang: một dải màu thương hiệu thay cho tiêu đề chữ trơn — mở
+          trang ra là biết đang ở vùng nào, chuyển vùng ngay tại đó. */}
+      <header className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-700 via-brand-600 to-brand-500 p-6 text-white shadow-lg sm:p-8">
+        <span aria-hidden className="pointer-events-none absolute -right-4 -top-6 select-none text-[7rem] leading-none opacity-20 sm:text-[9rem]">
+          {REGION_EMOJI[region]}
+        </span>
+        <p className="text-sm font-medium text-brand-100">買取 · Shop thu thẻ</p>
+        <h1 className="mt-1 text-3xl font-black sm:text-4xl">{REGION_LABEL[region]}</h1>
+        <p className="mt-1 text-sm text-brand-100">{REGION_HINT[region]}</p>
+        <nav aria-label="Chọn khu vực" className="relative mt-5 inline-flex gap-1 rounded-full bg-white/15 p-1 text-sm backdrop-blur">
           {KAITORI_REGIONS.map((r) => (
             <Link
               key={r}
               href={`/kaitori/${r}`}
               aria-current={r === region ? "page" : undefined}
-              className={`rounded-full px-4 py-1.5 font-medium ${
-                r === region ? "bg-white text-brand-700 shadow-sm" : "text-slate-500 hover:text-slate-800"
+              className={`rounded-full px-4 py-1.5 font-semibold transition ${
+                r === region ? "bg-white text-brand-700 shadow" : "text-white/80 hover:text-white"
               }`}
             >
-              {REGION_LABEL[r]}
+              {REGION_EMOJI[r]} {REGION_LABEL[r]}
             </Link>
           ))}
         </nav>
@@ -136,38 +171,39 @@ export default async function KaitoriRegionPage({
       {/* Hàng ngang: điện thoại vuốt ngang (khung tự cuộn, trang không cuộn
           ngang), từ lg thì đủ chỗ cho 5 cột. overscroll-x-contain để vuốt hết
           hàng không kéo theo cử chỉ "quay lại" của trình duyệt. */}
-      <section aria-label="Shop thu thẻ">
+      <section aria-label="Shop thu thẻ" className="space-y-3">
+        <h2 className="text-xl font-black text-slate-900">🏪 Shop thu thẻ</h2>
         {/* scroll-px-4 phải đi cùng px-4: thiếu nó, snap-start kéo thẻ đầu
             dính sát mép màn hình (lệch đúng 16px, đã đo). */}
         <ul className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto overscroll-x-contain px-4 pb-2 lg:mx-0 lg:grid lg:grid-cols-5 lg:overflow-visible lg:px-0">
-          {shops.map((shop) => (
-            <ShopTile key={shop.id} shop={shop} region={region} />
+          {shops.map((shop, i) => (
+            <ShopTile key={shop.id} shop={shop} region={region} index={i} />
           ))}
         </ul>
       </section>
 
       <section className="space-y-3">
-        <div>
-          <h2 className="text-xl font-black text-slate-900">4 bài 買取 giá cao nhất trên X</h2>
-          <p className="mt-1 text-xs text-slate-400">
-            Xếp theo giá thẻ cao nhất trong bài · bài quá 2 ngày (tính từ lúc shop đăng) tự ẩn, bài kế tiếp tự lên thay
-            {data.updatedAt && <> · lần gần nhất {TIME_JST.format(data.updatedAt)}</>}
-          </p>
+        <div className="flex items-end justify-between gap-3">
+          <h2 className="text-xl font-black text-slate-900">🏆 Giá thu cao nhất 48 giờ qua</h2>
+          {data.updatedAt && (
+            <span className="shrink-0 text-xs text-slate-400">cập nhật {TIME_JST.format(data.updatedAt)}</span>
+          )}
         </div>
-
         {posts.length > 0 ? (
-          <XPostEmbeds posts={posts} />
+          <KaitoriLeaderboard posts={posts} />
         ) : (
-          <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-500">
-            Chưa có bài 買取 nào trong 2 ngày qua. Bấm vào shop ở trên để xem bảng giá trên trang của họ.
+          <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
+            Chưa có bài 買取 nào trong 2 ngày qua — xem bảng giá ngay trên trang của shop bên dưới.
           </p>
         )}
+        <p className="text-xs text-slate-400">
+          Giá là giá thẻ cao nhất trong bài shop đăng trên X · bài quá 48 giờ tự ẩn
+        </p>
       </section>
 
       <p className="text-xs leading-relaxed text-slate-400">
-        DEAL không liên kết và không nhận hoa hồng từ các shop trên. Bài đăng hiện bằng khung nhúng
-        chính thức của X — nội dung do shop đăng, DEAL không lưu lại. Danh bạ soát ngày{" "}
-        {DIRECTORY_CHECKED_ON}.
+        DEAL không liên kết và không nhận hoa hồng từ các shop trên. Bài gốc hiện bằng khung nhúng
+        chính thức của X — nội dung do shop đăng, DEAL không lưu lại. Danh bạ soát ngày {DIRECTORY_CHECKED_ON}.
       </p>
     </div>
   );
