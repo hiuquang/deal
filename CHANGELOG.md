@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [0.37.1] — 2026-10-25 — Cập nhật trang 買取 ngày 25/10
+
+### Tính năng
+- Tin mới: **bộ mở rộng 「ハドウシーカー」 ra 27/11** (pokemon-card.com, 23/10). Trang hiện **5 tin** (giữ 4 thì tin bốc thăm box 30th tháng 12 bị đẩy ra). Tin mới tạm chưa có ảnh minh hoạ — Gemini đòi đăng nhập mới cho tạo ảnh.
+- Soát tin 25/10: thông báo SNKRDUNK vẫn hiệu lực.
+
+### Kỹ thuật
+- Bài X 25/10 (dữ liệu DB, không cần deploy): xóa 23 bài quá 48h, thêm 18 bài qua 3 lớp kiểm. Giá Osaka đọc từ ảnh đều tự mở kiểm. Hai bảng ゴールドスター của カードラボ giờ ghi **ASK** cho ブラッキー 未開封 (trước là ¥95,000,000 / ¥35,000,000) → giá đó không còn công bố. X và Gemini đều đã đăng xuất trong browser pane → lượt này không dùng được Grok.
+
 ## [0.37.0] — 2026-10-23 — Thiết kế lại trang 買取: bảng xếp hạng, thẻ vùng có màu, tin gọn
 
 ### Bối cảnh

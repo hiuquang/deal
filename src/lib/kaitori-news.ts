@@ -34,8 +34,12 @@ export const OFFICIAL_NEWS_HOSTS = [
   "about.mercari.com", // メルカリ, trang thông cáo báo chí (không phải jp.mercari.com nơi có tin đăng)
 ];
 
-/** Số tin hiện trên trang. Chủ web chốt 3 rồi xin thêm 1 (2026-10-21). */
-export const NEWS_ON_PAGE = 4;
+/**
+ * Số tin hiện trên trang. Chủ web chốt 3 rồi xin thêm 1 (2026-10-21); lên 5
+ * ngày 2026-10-25 khi có tin bộ mới — giữ 4 thì tin bốc thăm box 30th (tác
+ * động giá mạnh nhất) bị đẩy khỏi trang.
+ */
+export const NEWS_ON_PAGE = 5;
 
 export function isOfficialNewsUrl(url: string): boolean {
   try {
@@ -93,9 +97,23 @@ export const IMAGE_STYLE = [
 ].join(" ");
 
 /** Ngày soát lại toàn bộ tin + link (JST). */
-export const NEWS_CHECKED_ON = "2026-10-22";
+export const NEWS_CHECKED_ON = "2026-10-25";
 
 export const POKEMON_NEWS: PokemonNews[] = [
+  {
+    id: "hadou-seeker-m7-2026-11",
+    imagePrompt:
+      "A single sealed, completely blank, unbranded foil booster pack standing upright, a small blank tear-off calendar page beside it, and a few sparkles suggesting a new release.",
+    tag: "Bộ mới",
+    tone: "watch",
+    publishedOn: "2026-10-23",
+    title: "Bộ mở rộng mới 「ハドウシーカー」 ra ngày 27/11",
+    summary:
+      "Pack MEGA mới, giá ¥200/pack (5 thẻ). Thẻ chính hãng giới thiệu: メガルカリオZex, メガガブリアスZex, メガアブソルZex, kèm コルニの本気, シンボラーex… Hãng chưa công bố số pack mỗi box, thẻ SAR, hay cách bán (bốc thăm hay không).",
+    impact:
+      "Bộ mới thường kéo cầu sang thẻ của bộ đó: box và thẻ hiếm của bộ mới hay có giá cao lúc đầu rồi hạ dần khi hàng về đủ, còn bộ cũ có thể bớt người săn. Thẻ mạnh trong luật thi đấu cũng làm giá các thẻ đi kèm đổi theo.",
+    source: { label: "pokemon-card.com", url: "https://www.pokemon-card.com/ex/m7/" },
+  },
   {
     id: "snkrdunk-30th-cardset-stop-2026-10",
     tag: "Ngừng bán",
