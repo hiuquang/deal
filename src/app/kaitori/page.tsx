@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { KAITORI_REGIONS, REGION_EMOJI, REGION_HINT, REGION_LABEL, type KaitoriRegion } from "@/lib/kaitori-shops";
+import { KAITORI_FOCUS, KAITORI_REGIONS, REGION_EMOJI, REGION_HINT, REGION_LABEL, type KaitoriRegion } from "@/lib/kaitori-shops";
 import { NEWS_CHECKED_ON, NEWS_ON_PAGE, latestNews, type PokemonNews } from "@/lib/kaitori-news";
 import * as kaitoriPostsService from "@/server/services/kaitori-posts-service";
 
@@ -87,7 +87,7 @@ export default async function KaitoriRegionChooser() {
               <span className="mt-6 block min-h-[3.25rem]">
                 {tops[i] ? (
                   <>
-                    <span className="block text-xs font-medium uppercase tracking-wide text-white/70">Giá thu cao nhất 48h</span>
+                    <span className="block text-xs font-medium uppercase tracking-wide text-white/70">Giá thu {KAITORI_FOCUS} cao nhất 48h</span>
                     <span className="block text-2xl font-black tabular-nums">{tops[i]!.price}</span>
                     {tops[i]!.card && <span className="block truncate text-xs text-white/80">{tops[i]!.card}</span>}
                   </>

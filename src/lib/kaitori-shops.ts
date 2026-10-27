@@ -34,6 +34,14 @@ export const REGION_LABEL: Record<KaitoriRegion, string> = {
   osaka: "Osaka · Kansai",
 };
 
+/**
+ * Bảng xếp hạng CHỈ tính thẻ thuộc bộ này — quyết định chủ web 2026-10-27
+ * ("chỉ cập nhật tiệm nào thu 30th thôi"). Gồm thẻ [M6a], Premium Deck [MF],
+ * card set, và các bản in kèm nhãn "(30th)" như ミュウ(R/RGB). Giá xếp hạng là
+ * giá thẻ 30th cao nhất trong bài, KHÔNG phải giá cao nhất của cả bài.
+ */
+export const KAITORI_FOCUS = "30th CELEBRATION";
+
 /** Biểu tượng vùng trên thẻ chọn vùng + đầu trang vùng (emoji, không phải logo của ai). */
 export const REGION_EMOJI: Record<KaitoriRegion, string> = {
   tokyo: "🗼",

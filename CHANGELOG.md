@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [0.37.2] — 2026-10-27 — Bảng xếp hạng 買取 chỉ tính 30th CELEBRATION
+
+### Bối cảnh
+Chủ web: "cập nhật giá chỉ cập nhật tiệm nào thu 30th thôi".
+
+### Tính năng
+- Bảng xếp hạng ở `/kaitori/[vùng]` và giá trên thẻ vùng ở `/kaitori` giờ **chỉ tính bài thu thẻ 30th CELEBRATION** ([M6a], Premium Deck [MF], card set, bản in "(30th)" như ミュウ R/RGB). Giá hiện là **giá thẻ 30th cao nhất trong bài**.
+- Tiêu đề, chú thích và câu khi trống ghi rõ phạm vi 30th.
+
+### Kỹ thuật
+- `KAITORI_FOCUS` trong `kaitori-shops.ts`; prompt Grok quét bài chỉ nhận bài 30th, cảnh báo chữ trùng (Persona 30th Anniversary, SorAZセレブレーション).
+- Dữ liệu 27/10 (DB): gỡ 16 bài không có thẻ 30th, thêm 7 bài; sửa tay giá 2 bài cũ về giá thẻ 30th (bài カードラボ 秋葉原 trước ghi ¥65,000 メガリザードンXex SAR → ¥4,500 エーフィex 043/040 [MF]).
+- Ghi phạm vi + bẫy vào `docs/kaitori.md`.
+
 ## [0.37.1] — 2026-10-25 — Cập nhật trang 買取 ngày 25/10
 
 ### Tính năng

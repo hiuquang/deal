@@ -7,6 +7,7 @@ import {
   KAITORI_REGIONS,
   REGION_EMOJI,
   REGION_HINT,
+  KAITORI_FOCUS,
   REGION_LABEL,
   featuredShops,
   isKaitoriRegion,
@@ -184,7 +185,7 @@ export default async function KaitoriRegionPage({
 
       <section className="space-y-3">
         <div className="flex items-end justify-between gap-3">
-          <h2 className="text-xl font-black text-slate-900">🏆 Giá thu cao nhất 48 giờ qua</h2>
+          <h2 className="text-xl font-black text-slate-900">🏆 Giá thu {KAITORI_FOCUS} cao nhất 48 giờ qua</h2>
           {data.updatedAt && (
             <span className="shrink-0 text-xs text-slate-400">cập nhật {TIME_JST.format(data.updatedAt)}</span>
           )}
@@ -193,11 +194,11 @@ export default async function KaitoriRegionPage({
           <KaitoriLeaderboard posts={posts} />
         ) : (
           <p className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
-            Chưa có bài 買取 nào trong 2 ngày qua — xem bảng giá ngay trên trang của shop bên dưới.
+            Chưa có bài 買取 {KAITORI_FOCUS} nào trong 2 ngày qua — xem bảng giá ngay trên trang của shop ở trên.
           </p>
         )}
         <p className="text-xs text-slate-400">
-          Giá là giá thẻ cao nhất trong bài shop đăng trên X · bài quá 48 giờ tự ẩn
+          Chỉ tính thẻ {KAITORI_FOCUS} ([M6a], Premium Deck, bản in "(30th)") · giá là giá thẻ 30th cao nhất trong bài · bài quá 48 giờ tự ẩn
         </p>
       </section>
 

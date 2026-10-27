@@ -157,6 +157,17 @@ Quyết định chủ web 2026-10-22. Bảng `kaitori_posts` lưu thêm `top_pri
 - Grok (API) được yêu cầu trả `maxPriceJpy` + `card`, đọc cả chữ lẫn ảnh; sai dạng → null, không loại bài. Bài đã có mà lượt sau đọc được giá → `fillMissingPrice` điền vào (không ghi đè giá đã có).
 - Trên trang: nhãn "#1 ¥5,200,000 · ミズゴロウ☆ 1ED" nằm NGOÀI khung nhúng của X (dữ kiện giá do DEAL ghi).
 
+### Chỉ xếp hạng bài thu 30th CELEBRATION (từ 2026-10-27)
+
+Quyết định chủ web 2026-10-27: "chỉ cập nhật tiệm nào thu 30th thôi". Hằng `KAITORI_FOCUS` trong `kaitori-shops.ts`.
+
+- **Thuộc phạm vi**: thẻ mã [M6a], Premium Deck [MF] (vd エーフィex 043/040, ブラッキーex 044/040), card set, và bản in kèm nhãn "(30th)" — **ミュウ R/RGB (赤/青/緑)** là thẻ 30th đắt nhất (¥300k–600k).
+- **Không phải 30th dù trùng chữ**: "Persona 30th Anniversary" (Vanguard), "SorAZセレブレーション" (hololive).
+- Giá xếp hạng = **giá thẻ 30th cao nhất trong bài**, KHÔNG phải giá cao nhất cả bài. Bài nhiều bộ (vd bảng có cả メガリザードンXex SAR) thì chỉ lấy dòng 30th.
+- Bài không có thẻ 30th nào → không lưu (đã gỡ 16 bài cũ khi đổi phạm vi).
+- Đổi phạm vi thì giá cũ trong DB phải **ghi đè tay** (`fillMissingPrice` cố ý không ghi đè).
+- Bài 30th trong 48h có lúc rất ít → trang có thể hiện dưới 4 bài. Đó là đúng: không bù bằng bài bộ khác.
+
 ### Tìm bài bằng tay khi chưa bật quét tự động — dùng công cụ nào
 
 Đối chiếu ngày 2026-10-22 (tìm top 4/vùng):
