@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## [0.39.0] — 2026-10-27 — Thêm BOX 30th còn seal + 4 shop chuyên 買取
+
+### Bối cảnh
+Chủ web: thêm bài 買取 sản phẩm 30th **còn nguyên seal**. 4 shop hiện có không đăng bài nào như vậy trong 48h; shop chuyên 買取 thì đăng hằng ngày.
+
+### Tính năng
+- Phạm vi xếp hạng 30th gồm thêm **sản phẩm còn seal**: BOX 30th CELEBRATION (シュリンク付き / 未開封), FUTURISTIC BOX, プレミアムデッキセット, カードセット 9種 (段ボール未開封).
+- **Thêm 4 shop** vào hàng shop (chủ web chọn): Tokyo — トレカショップYK 秋葉原 (2 tài khoản), トレカアビス 新宿; Osaka — ネクストジェン買取 大阪店, トレカQUQU 日本橋オタロード店. Mỗi vùng còn **6 shop**.
+- Shop chỉ công bố giá trên X: nút "Bài 買取 trên X" trỏ tới Yahoo!リアルタイム検索 — xem được không cần đăng nhập X.
+
+### Kỹ thuật
+- Prompt Grok quét bài nhận cả BOX 30th còn seal. 10 handle được quét (trần 20).
+- Dữ liệu 27/10 (DB): +1 bài 晴れる屋2 池袋 (ミュウ:赤 RGB ¥500,000, đọc từ ảnh đã tự mở kiểm) và +8 bài BOX 30th, giá đọc từ chữ của shop, tác giả xác nhận qua oEmbed. Tokyo: FUTURISTIC BOX ¥60,000 (YK); Osaka: FUTURISTIC BOX ¥54,000 (QUQU).
+
 ## [0.38.0] — 2026-10-27 — Loại カードラボ, bài gốc X mở sẵn
 
 ### Tính năng

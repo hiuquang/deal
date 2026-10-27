@@ -168,6 +168,8 @@ Bài gốc X ở bảng xếp hạng **mở sẵn** ngay khi vào trang (chủ w
 Quyết định chủ web 2026-10-27: "chỉ cập nhật tiệm nào thu 30th thôi". Hằng `KAITORI_FOCUS` trong `kaitori-shops.ts`.
 
 - **Thuộc phạm vi**: thẻ mã [M6a], Premium Deck [MF] (vd エーフィex 043/040, ブラッキーex 044/040), card set, và bản in kèm nhãn "(30th)" — **ミュウ R/RGB (赤/青/緑)** là thẻ 30th đắt nhất (¥300k–600k).
+- **Sản phẩm còn seal** (thêm 2026-10-27): BOX 30th CELEBRATION シュリンク付き/未開封, FUTURISTIC BOX, プレミアムデッキセット, カードセット 9種 (段ボール未開封). Coi chừng "ストレージBOX" = hộp đựng thẻ, KHÔNG phải box seal.
+- Shop chuyên 買取 (YK, アビス, ネクストジェン, QUQU) đăng giá BOX ngay trong CHỮ → đọc chữ, khỏi đoán ảnh. Chữ dài bị oEmbed cắt "…" thì mở bài xem phần còn lại (QUQU để FUTURISTIC BOX ở cuối).
 - **Không phải 30th dù trùng chữ**: "Persona 30th Anniversary" (Vanguard), "SorAZセレブレーション" (hololive).
 - Giá xếp hạng = **giá thẻ 30th cao nhất trong bài**, KHÔNG phải giá cao nhất cả bài. Bài nhiều bộ (vd bảng có cả メガリザードンXex SAR) thì chỉ lấy dòng 30th.
 - Bài không có thẻ 30th nào → không lưu (đã gỡ 16 bài cũ khi đổi phạm vi).

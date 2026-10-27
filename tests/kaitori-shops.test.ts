@@ -1,6 +1,6 @@
 /**
  * Test danh bạ shop 買取 — dữ liệu TĨNH nên test ở đây là test QUY TẮC: mỗi
- * dòng tương ứng một lời hứa trang /kaitori/[vùng] đưa ra (đúng 4 shop, link
+ * dòng tương ứng một lời hứa trang /kaitori/[vùng] đưa ra (đúng 6 shop, link
  * chính thức kiểm được, không vùng nào rỗng) và một lời hứa với hóa đơn xAI
  * (chỉ quét handle có trong danh bạ, không quét trùng, không vượt trần 20 của
  * X Search). Người sau thêm shop mà quên một điều thì test đỏ ngay.
@@ -71,14 +71,14 @@ describe("danh bạ shop 買取", () => {
   });
 });
 
-describe("4 shop mỗi vùng", () => {
-  it("mỗi vùng đúng 4 shop, không trùng, id nào cũng có thật", () => {
+describe("6 shop mỗi vùng", () => {
+  it("mỗi vùng đúng 6 shop, không trùng, id nào cũng có thật", () => {
     for (const region of KAITORI_REGIONS) {
       const ids = FEATURED_SHOP_IDS[region];
-      expect(ids.length, region).toBe(4);
-      expect(new Set(ids).size, region).toBe(4);
+      expect(ids.length, region).toBe(6);
+      expect(new Set(ids).size, region).toBe(6);
       // featuredShops lọc id không tồn tại → độ dài lệch là có id gõ sai.
-      expect(featuredShops(region).length, region).toBe(4);
+      expect(featuredShops(region).length, region).toBe(6);
     }
   });
 
@@ -148,6 +148,7 @@ describe("tên chi nhánh cạnh bài đăng", () => {
     expect(postSourceName("hareruya2namba")).toBe("晴れる屋2 なんば店");
     expect(postSourceName("HBSTNIPPONBASHI")).toBe("ホビーステーション 日本橋本店");
     expect(postSourceName("yuyuteiNews")).toBe("遊々亭");
+    expect(postSourceName("AKIBA_YK2")).toBe("トレカショップYK 秋葉原2号店");
     expect(postSourceName("someone_else")).toBe("someone_else");
   });
 });

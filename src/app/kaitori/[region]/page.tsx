@@ -198,7 +198,7 @@ export default async function KaitoriRegionPage({
           </p>
         )}
         <p className="text-xs text-slate-400">
-          Chỉ tính thẻ {KAITORI_FOCUS} ([M6a], Premium Deck, bản in "(30th)") · giá là giá thẻ 30th cao nhất trong bài · bài quá 48 giờ tự ẩn
+          Chỉ tính {KAITORI_FOCUS}: thẻ [M6a], Premium Deck, bản in "(30th)" và BOX còn seal (未開封) · giá là giá món 30th cao nhất trong bài · bài quá 48 giờ tự ẩn
         </p>
       </section>
 

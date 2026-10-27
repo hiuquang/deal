@@ -37,8 +37,9 @@ export const REGION_LABEL: Record<KaitoriRegion, string> = {
 /**
  * Bảng xếp hạng CHỈ tính thẻ thuộc bộ này — quyết định chủ web 2026-10-27
  * ("chỉ cập nhật tiệm nào thu 30th thôi"). Gồm thẻ [M6a], Premium Deck [MF],
- * card set, và các bản in kèm nhãn "(30th)" như ミュウ(R/RGB). Giá xếp hạng là
- * giá thẻ 30th cao nhất trong bài, KHÔNG phải giá cao nhất của cả bài.
+ * card set, các bản in kèm nhãn "(30th)" như ミュウ(R/RGB), và — thêm cùng
+ * ngày — BOX 30th còn seal (未開封 / シュリンク付き). Giá xếp hạng là giá món
+ * 30th cao nhất trong bài, KHÔNG phải giá cao nhất của cả bài.
  */
 export const KAITORI_FOCUS = "30th CELEBRATION";
 
@@ -90,7 +91,7 @@ export interface KaitoriShop {
 }
 
 /** Ngày soát lại toàn bộ link + handle trong danh bạ (JST). */
-export const DIRECTORY_CHECKED_ON = "2026-10-21";
+export const DIRECTORY_CHECKED_ON = "2026-10-27";
 
 export const KAITORI_SHOPS: KaitoriShop[] = [
   {
@@ -158,6 +159,65 @@ export const KAITORI_SHOPS: KaitoriShop[] = [
     ],
     mailOrder: true,
   },
+  // ---- Shop chuyên 買取 — thêm 2026-10-27 (chủ web) để có bài thu BOX 30th còn seal.
+  // Ba shop chỉ công bố giá trên X → nút đầu tiên trỏ tới Yahoo!リアルタイム検索
+  // các bài 買取 của họ: xem được khi CHƯA đăng nhập X (trang hồ sơ X thì trống).
+  {
+    id: "toreca-yk",
+    nameJa: "トレカショップYK",
+    nameLatin: "Toreca Shop YK",
+    branches: {
+      // akiba_yk = 秋葉原店, akiba_yk2 = 秋葉原2号店 (tên hiển thị của chính tài khoản).
+      tokyo: { places: ["秋葉原"], xHandles: ["akiba_yk", "akiba_yk2"] },
+    },
+    games: ["pokemon", "onepiece", "other"],
+    links: [
+      { label: "Bài 買取 trên X", url: "https://search.yahoo.co.jp/realtime/search?p=ID%3Aakiba_yk+%E8%B2%B7%E5%8F%96" },
+      { label: "Trang chính thức", url: "https://yk-collection.jp/" },
+    ],
+  },
+  {
+    id: "toreca-abyss",
+    nameJa: "トレカアビス",
+    nameLatin: "Toreca Abyss",
+    branches: {
+      // Không có web chính thức; handle đối chiếu với trang shop trên トレカの地図.
+      tokyo: { places: ["新宿"], xHandles: ["toreabi01"] },
+    },
+    games: ["pokemon", "onepiece"],
+    links: [{ label: "Bài 買取 trên X", url: "https://search.yahoo.co.jp/realtime/search?p=ID%3Atoreabi01+%E8%B2%B7%E5%8F%96" }],
+  },
+  {
+    id: "nextgen",
+    nameJa: "ネクストジェン買取",
+    nameLatin: "NEXT GEN Kaitori",
+    branches: {
+      // Tên cũ "スピード買取" nên handle là speedkitr. Web chính thức có địa chỉ
+      // 大阪店 日本橋東 và bảng giá trùng với bài X (30th BOX ¥23,900, 2026-10-27).
+      osaka: { places: ["日本橋"], xHandles: ["speedkitr"] },
+    },
+    games: ["pokemon", "onepiece", "other"],
+    links: [
+      { label: "Bảng 買取 Pokémon", url: "https://www.tcg-nextgen.com/index/index/product?cate=132" },
+      { label: "Trang chính thức", url: "https://www.tcg-nextgen.com/" },
+    ],
+    mailOrder: true,
+  },
+  {
+    id: "toreca-ququ",
+    nameJa: "トレカQUQU",
+    nameLatin: "Toreca QUQU",
+    branches: {
+      // Handle lấy từ shop BASE chính thức (torekaququ.base.shop). Chi nhánh 石切参道
+      // (Higashi-Osaka) có tài khoản riêng, chưa quét.
+      osaka: { places: ["日本橋オタロード"], xHandles: ["torekaQUQU"] },
+    },
+    games: ["pokemon"],
+    links: [
+      { label: "Bài 買取 trên X", url: "https://search.yahoo.co.jp/realtime/search?p=ID%3AtorekaQUQU+%E8%B2%B7%E5%8F%96" },
+      { label: "Shop chính thức", url: "https://torekaququ.base.shop/" },
+    ],
+  },
 ];
 
 /**
@@ -170,8 +230,8 @@ export const KAITORI_SHOPS: KaitoriShop[] = [
  * c-labo.jp chưa có bảng giá xem được.
  */
 export const FEATURED_SHOP_IDS: Record<KaitoriRegion, string[]> = {
-  tokyo: ["hareruya2", "yuyu-tei", "hobbystation", "surugaya"],
-  osaka: ["hareruya2", "hobbystation", "yuyu-tei", "surugaya"],
+  tokyo: ["hareruya2", "yuyu-tei", "hobbystation", "surugaya", "toreca-yk", "toreca-abyss"],
+  osaka: ["hareruya2", "hobbystation", "yuyu-tei", "surugaya", "nextgen", "toreca-ququ"],
 };
 
 export function getShop(id: string): KaitoriShop | undefined {
@@ -215,6 +275,11 @@ export const HANDLE_BRANCH: Record<string, string> = {
   hareruya2namba: "なんば店",
   HBSTnipponbashi: "日本橋本店",
   yuyuteiNews: "",
+  akiba_yk: "秋葉原店",
+  akiba_yk2: "秋葉原2号店",
+  toreabi01: "新宿店",
+  speedkitr: "大阪店",
+  torekaQUQU: "日本橋オタロード店",
 };
 
 /** "晴れる屋2 なんば店" — tên hiện cạnh bài đăng. */
