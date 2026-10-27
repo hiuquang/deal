@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [0.38.0] — 2026-10-27 — Loại カードラボ, bài gốc X mở sẵn
+
+### Tính năng
+- **Loại カードラボ** khỏi trang 買取 (chủ web): trang 買取 chính thức của họ không công bố giá, bấm sang không xem được gì. Mỗi vùng còn **4 shop**; không quét 3 tài khoản X của カードラボ nữa, đã xóa 3 bài của họ khỏi bảng xếp hạng.
+- **Bài gốc trên X mở sẵn** ngay khi vào trang vùng (trước phải bấm "Xem bài gốc trên X"). Vẫn gập lại được.
+
+### Kỹ thuật
+- `widgets.js` tải một lần khi bảng xếp hạng hiện (useEffect), không còn đợi người bấm.
+- Câu chữ bỏ con số "5 shop". +1 test chặn thêm lại カードラボ (355 pass).
+
 ## [0.37.2] — 2026-10-27 — Bảng xếp hạng 買取 chỉ tính 30th CELEBRATION
 
 ### Bối cảnh

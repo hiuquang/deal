@@ -114,24 +114,6 @@ export const KAITORI_SHOPS: KaitoriShop[] = [
     mailOrder: true,
   },
   {
-    id: "c-labo",
-    nameJa: "カードラボ",
-    nameLatin: "Card Labo",
-    branches: {
-      tokyo: { places: ["秋葉原", "池袋"], xHandles: ["akihabara_labo"] },
-      osaka: {
-        places: ["なんば", "日本橋", "天王寺"],
-        xHandles: ["namba_clabo", "nipponbashi_lab"],
-      },
-    },
-    games: ["pokemon", "onepiece", "other"],
-    links: [
-      { label: "Trang 買取", url: "https://www.c-labo.jp/kaitori/" },
-      { label: "Cửa hàng", url: "https://www.c-labo.jp/shop/" },
-    ],
-    xHandle: "cardlabo_info",
-  },
-  {
     id: "yuyu-tei",
     nameJa: "遊々亭",
     nameLatin: "Yuyu-tei",
@@ -179,13 +161,17 @@ export const KAITORI_SHOPS: KaitoriShop[] = [
 ];
 
 /**
- * 5 shop hiện trên hàng ngang của mỗi vùng, theo đúng thứ tự này — CHỦ WEB
+ * Shop hiện trên hàng ngang của mỗi vùng, theo đúng thứ tự này — CHỦ WEB
  * chọn tay (quyết định 2026-10-21). Chưa có dữ liệu 買取 theo shop để xếp tự
  * động; khi nào có thì mới bàn lại, đừng tự đổi sang xếp theo số liệu.
+ *
+ * カードラボ đã bị LOẠI 2026-10-27 (chủ web): trang 買取 chính thức của họ
+ * không công bố giá → người xem bấm sang không thấy gì. Đừng thêm lại khi
+ * c-labo.jp chưa có bảng giá xem được.
  */
 export const FEATURED_SHOP_IDS: Record<KaitoriRegion, string[]> = {
-  tokyo: ["hareruya2", "c-labo", "yuyu-tei", "hobbystation", "surugaya"],
-  osaka: ["c-labo", "hareruya2", "hobbystation", "yuyu-tei", "surugaya"],
+  tokyo: ["hareruya2", "yuyu-tei", "hobbystation", "surugaya"],
+  osaka: ["hareruya2", "hobbystation", "yuyu-tei", "surugaya"],
 };
 
 export function getShop(id: string): KaitoriShop | undefined {
@@ -219,22 +205,19 @@ export function matchPostHandle(handle: string): string | undefined {
 }
 
 /**
- * Tên chi nhánh của từng tài khoản X — cùng chuỗi có nhiều tài khoản (カードラボ
- * なんば vs 日本橋), ghi mỗi tên chuỗi thì người xem không biết đi đâu. Lấy
+ * Tên chi nhánh của từng tài khoản X — cùng chuỗi có nhiều tài khoản (晴れる屋2
+ * 秋葉原 vs 池袋), ghi mỗi tên chuỗi thì người xem không biết đi đâu. Lấy
  * đúng tên cửa hàng trên trang chính thức. Tài khoản chung (online) để trống.
  */
 export const HANDLE_BRANCH: Record<string, string> = {
   hareruya2tower: "秋葉原タワー店",
   hareruya2ikbkr: "池袋店",
   hareruya2namba: "なんば店",
-  akihabara_labo: "秋葉原ラジオ会館本店",
-  namba_clabo: "なんば店",
-  nipponbashi_lab: "大阪日本橋店",
   HBSTnipponbashi: "日本橋本店",
   yuyuteiNews: "",
 };
 
-/** "カードラボ なんば店" — tên hiện cạnh bài đăng. */
+/** "晴れる屋2 なんば店" — tên hiện cạnh bài đăng. */
 export function postSourceName(handle: string): string {
   const shop = shopOfHandle(handle);
   const key = Object.keys(HANDLE_BRANCH).find((h) => h.toLowerCase() === handle.toLowerCase());

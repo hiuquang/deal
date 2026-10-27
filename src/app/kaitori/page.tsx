@@ -19,7 +19,7 @@ function viDate(iso: string): string {
 // group dẫn thẳng tới đúng vùng, và Google thấy hai trang thay vì một.
 const TITLE = "買取 — Shop thu thẻ ở Tokyo và Osaka | DEAL";
 const DESC =
-  "Chọn khu vực để xem 5 shop thu thẻ TCG (買取) và bảng giá 買取 mới nhất họ đăng trên X, kèm tin chính thức có thể làm giá Pokémon Card biến động.";
+  "Chọn khu vực để xem các shop thu thẻ TCG (買取) và bảng giá 買取 mới nhất họ đăng trên X, kèm tin chính thức có thể làm giá Pokémon Card biến động.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -92,7 +92,7 @@ export default async function KaitoriRegionChooser() {
                     {tops[i]!.card && <span className="block truncate text-xs text-white/80">{tops[i]!.card}</span>}
                   </>
                 ) : (
-                  <span className="block text-sm text-white/80">5 shop thu thẻ · bảng giá mới trên X</span>
+                  <span className="block text-sm text-white/80">Shop thu thẻ · bảng giá mới trên X</span>
                 )}
               </span>
               <span className="mt-4 inline-flex items-center gap-1 rounded-full bg-white/20 px-4 py-1.5 text-sm font-bold backdrop-blur transition group-hover:bg-white group-hover:text-slate-900">

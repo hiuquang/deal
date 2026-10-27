@@ -37,7 +37,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { region } = await params;
   if (!isKaitoriRegion(region)) return {};
-  const title = `買取 ${REGION_LABEL[region]} — 5 shop thu thẻ + bảng giá mới trên X | DEAL`;
+  const title = `買取 ${REGION_LABEL[region]} — shop thu thẻ + bảng giá mới trên X | DEAL`;
   const description = `Shop thu thẻ Pokémon, One Piece ở ${REGION_LABEL[region]} và bài bảng giá 買取 họ đăng trên X trong 2 ngày qua.`;
   return {
     title,

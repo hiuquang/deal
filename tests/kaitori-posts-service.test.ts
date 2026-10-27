@@ -75,9 +75,9 @@ describe("selectCandidates", () => {
   it("loại bài quá 48 giờ và ID 'từ tương lai' (bịa)", () => {
     const out = selectCandidates(
       [
-        url("namba_clabo", hoursAgo(47)),
-        url("namba_clabo", hoursAgo(49)),
-        url("namba_clabo", hoursAgo(-1)), // 1 giờ SAU hiện tại
+        url("hareruya2namba", hoursAgo(47)),
+        url("hareruya2namba", hoursAgo(49)),
+        url("hareruya2namba", hoursAgo(-1)), // 1 giờ SAU hiện tại
       ],
       NOW
     );
@@ -86,14 +86,14 @@ describe("selectCandidates", () => {
 
   it("mốc giờ giải từ snowflake, không lấy gì khác Grok khai", () => {
     const id = hoursAgo(3);
-    const [c] = selectCandidates([url("namba_clabo", id)], NOW);
+    const [c] = selectCandidates([url("hareruya2namba", id)], NOW);
     expect(c.postedAt.getTime()).toBe(NOW.getTime() - 3 * HOUR);
   });
 
   it("bỏ link rác và bài trùng (x.com vs twitter.com cùng id)", () => {
     const id = hoursAgo(2);
     const out = selectCandidates(
-      ["không phải link", url("namba_clabo", id), `https://twitter.com/namba_clabo/status/${id}`],
+      ["không phải link", url("hareruya2namba", id), `https://twitter.com/hareruya2namba/status/${id}`],
       NOW
     );
     expect(out).toHaveLength(1);
@@ -132,10 +132,10 @@ describe("refresh", () => {
     const seen = hoursAgo(4);
     mSearch.mockResolvedValue({
       posts: [
-        { url: url("namba_clabo", real), maxPriceJpy: 95_000_000, card: "ブラッキー☆" },
-        { url: url("namba_clabo", deleted) },
-        { url: url("namba_clabo", wrongAuthor) },
-        { url: url("namba_clabo", seen), maxPriceJpy: 40_000_000, card: "ブラッキー グレート" },
+        { url: url("hareruya2namba", real), maxPriceJpy: 95_000_000, card: "ブラッキー☆" },
+        { url: url("hareruya2namba", deleted) },
+        { url: url("hareruya2namba", wrongAuthor) },
+        { url: url("hareruya2namba", seen), maxPriceJpy: 40_000_000, card: "ブラッキー グレート" },
       ],
       postsFetched: 37,
     });
@@ -152,7 +152,7 @@ describe("refresh", () => {
     expect(mRepo.insertPosts).toHaveBeenCalledWith([
       {
         postId: real,
-        handle: "namba_clabo",
+        handle: "hareruya2namba",
         postedAt: new Date(NOW.getTime() - HOUR),
         topPriceJpy: 95_000_000,
         topCard: "ブラッキー☆",
@@ -202,7 +202,7 @@ describe("startOfMonthJst", () => {
 describe("listForRegion", () => {
   it("đọc đúng handle của vùng, lọc 48 giờ cả lúc ĐỌC, trả đúng 4 bài đã xếp hạng", async () => {
     const mk = (id: string, h: number, price: number | null) => ({
-      postId: id, handle: "namba_clabo", postedAt: new Date(NOW.getTime() - h * HOUR), topPriceJpy: price, topCard: null,
+      postId: id, handle: "hareruya2namba", postedAt: new Date(NOW.getTime() - h * HOUR), topPriceJpy: price, topCard: null,
     });
     mRepo.listPosts.mockResolvedValue([mk("a", 1, null), mk("b", 2, 100), mk("c", 3, 5000), mk("d", 4, 300), mk("e", 5, 200)]);
     mRepo.lastScanAt.mockResolvedValue(null);

@@ -157,6 +157,12 @@ Quyết định chủ web 2026-10-22. Bảng `kaitori_posts` lưu thêm `top_pri
 - Grok (API) được yêu cầu trả `maxPriceJpy` + `card`, đọc cả chữ lẫn ảnh; sai dạng → null, không loại bài. Bài đã có mà lượt sau đọc được giá → `fillMissingPrice` điền vào (không ghi đè giá đã có).
 - Trên trang: nhãn "#1 ¥5,200,000 · ミズゴロウ☆ 1ED" nằm NGOÀI khung nhúng của X (dữ kiện giá do DEAL ghi).
 
+### カードラボ đã bị loại (2026-10-27)
+
+Chủ web: trang 買取 chính thức (c-labo.jp/kaitori) không công bố giá → người xem bấm sang không thấy gì. Đã bỏ khỏi danh bạ, không quét `akihabara_labo` / `namba_clabo` / `nipponbashi_lab`. Có test chặn thêm lại. Chỉ cân nhắc lại khi trang của họ có bảng giá xem được. (Quét giá cho /admin ở `kaitori-service.ts` là luồng khác, không đổi.)
+
+Bài gốc X ở bảng xếp hạng **mở sẵn** ngay khi vào trang (chủ web cùng ngày).
+
 ### Chỉ xếp hạng bài thu 30th CELEBRATION (từ 2026-10-27)
 
 Quyết định chủ web 2026-10-27: "chỉ cập nhật tiệm nào thu 30th thôi". Hằng `KAITORI_FOCUS` trong `kaitori-shops.ts`.

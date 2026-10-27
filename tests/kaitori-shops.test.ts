@@ -1,6 +1,6 @@
 /**
  * Test danh bạ shop 買取 — dữ liệu TĨNH nên test ở đây là test QUY TẮC: mỗi
- * dòng tương ứng một lời hứa trang /kaitori/[vùng] đưa ra (đúng 5 shop, link
+ * dòng tương ứng một lời hứa trang /kaitori/[vùng] đưa ra (đúng 4 shop, link
  * chính thức kiểm được, không vùng nào rỗng) và một lời hứa với hóa đơn xAI
  * (chỉ quét handle có trong danh bạ, không quét trùng, không vượt trần 20 của
  * X Search). Người sau thêm shop mà quên một điều thì test đỏ ngay.
@@ -71,14 +71,14 @@ describe("danh bạ shop 買取", () => {
   });
 });
 
-describe("5 shop mỗi vùng", () => {
-  it("mỗi vùng đúng 5 shop, không trùng, id nào cũng có thật", () => {
+describe("4 shop mỗi vùng", () => {
+  it("mỗi vùng đúng 4 shop, không trùng, id nào cũng có thật", () => {
     for (const region of KAITORI_REGIONS) {
       const ids = FEATURED_SHOP_IDS[region];
-      expect(ids.length, region).toBe(5);
-      expect(new Set(ids).size, region).toBe(5);
+      expect(ids.length, region).toBe(4);
+      expect(new Set(ids).size, region).toBe(4);
       // featuredShops lọc id không tồn tại → độ dài lệch là có id gõ sai.
-      expect(featuredShops(region).length, region).toBe(5);
+      expect(featuredShops(region).length, region).toBe(4);
     }
   });
 
@@ -111,6 +111,12 @@ describe("handle quét bài trên X", () => {
     }
   });
 
+  it("カードラボ đã loại (2026-10-27) — không quét, không hiện", () => {
+    const scanned = new Set(allPostHandles().map((h) => h.toLowerCase()));
+    for (const h of ["akihabara_labo", "namba_clabo", "nipponbashi_lab"]) expect(scanned.has(h), h).toBe(false);
+    for (const r of KAITORI_REGIONS) expect(FEATURED_SHOP_IDS[r]).not.toContain("c-labo");
+  });
+
   it("matchPostHandle không phân biệt hoa/thường và trả đúng chữ trong danh bạ", () => {
     expect(matchPostHandle("hbstnipponbashi")).toBe("HBSTnipponbashi");
     expect(matchPostHandle("YUYUTEINEWS")).toBe("yuyuteiNews");
@@ -124,8 +130,8 @@ describe("handle quét bài trên X", () => {
   it("handle Osaka không lọt sang trang Tokyo và ngược lại (trừ shop online)", () => {
     const tokyo = new Set(regionPostHandles("tokyo"));
     expect(tokyo.has("hareruya2namba")).toBe(false);
-    expect(tokyo.has("namba_clabo")).toBe(false);
-    expect(new Set(regionPostHandles("osaka")).has("akihabara_labo")).toBe(false);
+    expect(tokyo.has("HBSTnipponbashi")).toBe(false);
+    expect(new Set(regionPostHandles("osaka")).has("hareruya2tower")).toBe(false);
     // 遊々亭 không có cửa hàng → có ở cả hai.
     expect(tokyo.has("yuyuteiNews")).toBe(true);
     expect(new Set(regionPostHandles("osaka")).has("yuyuteiNews")).toBe(true);
@@ -139,8 +145,8 @@ describe("tên chi nhánh cạnh bài đăng", () => {
   });
 
   it("ghép tên chuỗi + chi nhánh; tài khoản online thì chỉ tên chuỗi", () => {
-    expect(postSourceName("namba_clabo")).toBe("カードラボ なんば店");
-    expect(postSourceName("NIPPONBASHI_LAB")).toBe("カードラボ 大阪日本橋店");
+    expect(postSourceName("hareruya2namba")).toBe("晴れる屋2 なんば店");
+    expect(postSourceName("HBSTNIPPONBASHI")).toBe("ホビーステーション 日本橋本店");
     expect(postSourceName("yuyuteiNews")).toBe("遊々亭");
     expect(postSourceName("someone_else")).toBe("someone_else");
   });

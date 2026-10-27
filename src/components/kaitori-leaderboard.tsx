@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 declare global {
   interface Window {
@@ -30,9 +30,9 @@ const MEDAL = [
 let widgetsPromise: Promise<void> | null = null;
 
 /**
- * Tải widgets.js của X MỘT lần, chỉ khi có người mở bài gốc. Không tải sẵn:
- * trang nhẹ hơn, X không nhận lượt xem của người chỉ lướt bảng xếp hạng, và
- * X có lỗi/bị chặn thì bảng xếp hạng vẫn nguyên vẹn.
+ * Tải widgets.js của X MỘT lần. Bài gốc MỞ SẴN ngay khi vào trang (chủ web
+ * 2026-10-27: người xem phải thấy bảng giá của shop luôn, không phải bấm).
+ * X có lỗi/bị chặn thì bảng xếp hạng vẫn nguyên, chỉ còn link sang X.
  */
 function ensureWidgets(): Promise<void> {
   if (window.twttr?.widgets) return Promise.resolve();
@@ -53,14 +53,6 @@ function ensureWidgets(): Promise<void> {
 }
 
 function PostCard({ post, rank }: { post: LeaderboardPost; rank: number }) {
-  const embedRef = useRef<HTMLDivElement>(null);
-
-  async function onToggle(e: React.SyntheticEvent<HTMLDetailsElement>) {
-    if (!e.currentTarget.open) return;
-    await ensureWidgets();
-    window.twttr?.widgets?.load(embedRef.current ?? undefined);
-  }
-
   return (
     <li className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="flex items-center gap-4 p-4 sm:p-5">
@@ -85,14 +77,15 @@ function PostCard({ post, rank }: { post: LeaderboardPost; rank: number }) {
         </div>
       </div>
 
-      <details onToggle={onToggle} className="group border-t border-slate-100">
+      {/* `open` sẵn; vẫn gập lại được nếu người xem muốn bảng gọn. */}
+      <details open className="group border-t border-slate-100">
         <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-2.5 text-sm font-medium text-brand-600 hover:bg-brand-50 sm:px-5 [&::-webkit-details-marker]:hidden">
           Xem bài gốc trên X
           <span aria-hidden className="text-slate-400 transition group-open:rotate-180">
             ▾
           </span>
         </summary>
-        <div ref={embedRef} className="px-4 pb-4 sm:px-5">
+        <div className="px-4 pb-4 sm:px-5">
           {/* widgets.js thay blockquote bằng khung nhúng chính thức của X;
               script bị chặn thì vẫn còn link sang X. */}
           <blockquote className="twitter-tweet" data-dnt="true" data-lang="ja" data-conversation="none">
@@ -112,8 +105,20 @@ function PostCard({ post, rank }: { post: LeaderboardPost; rank: number }) {
 }
 
 export function KaitoriLeaderboard({ posts }: { posts: LeaderboardPost[] }) {
+  const listRef = useRef<HTMLOListElement>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    ensureWidgets().then(() => {
+      if (!cancelled) window.twttr?.widgets?.load(listRef.current ?? undefined);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [posts]);
+
   return (
-    <ol className="grid gap-3 sm:grid-cols-2">
+    <ol ref={listRef} className="grid items-start gap-3 sm:grid-cols-2">
       {posts.map((post, i) => (
         <PostCard key={post.postId} post={post} rank={i + 1} />
       ))}
